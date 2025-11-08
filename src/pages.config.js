@@ -26,6 +26,7 @@ import SystemCheck from './pages/SystemCheck';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import CafeteriaOnboarding from './pages/CafeteriaOnboarding';
+import AdminCafeteriaApproval from './pages/AdminCafeteriaApproval';
 import Layout from './Layout.jsx';
 
 
@@ -58,6 +59,7 @@ export const PAGES = {
     "PrivacyPolicy": PrivacyPolicy,
     "TermsOfService": TermsOfService,
     "CafeteriaOnboarding": CafeteriaOnboarding,
+    "AdminCafeteriaApproval": AdminCafeteriaApproval,
 }
 
 export const pagesConfig = {

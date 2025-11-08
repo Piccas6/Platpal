@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Home, MapPin, UtensilsCrossed, HelpCircle, User, ChefHat, Target, UserCircle, Settings, UserCheck, BarChart3, Gift, Bug } from "lucide-react";
+import { Home, MapPin, UtensilsCrossed, HelpCircle, User, ChefHat, Target, UserCircle, Settings, UserCheck, BarChart3, Gift, Bug, Building2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import {
   Sidebar,
@@ -47,7 +46,8 @@ const cafeteriaNav = [
 ];
 
 const adminNav = [
-    { title: "Admin Dashboard", url: createPageUrl("AdminDashboard"), icon: Settings }
+    { title: "Admin Dashboard", url: createPageUrl("AdminDashboard"), icon: Settings },
+    { title: "Aprobar Cafeterías", url: createPageUrl("AdminCafeteriaApproval"), icon: Building2 }
 ];
 
 const debugNav = [
@@ -70,7 +70,6 @@ export default function Layout({ children, currentPageName }) {
     systemCheck: false
   });
 
-  // NUEVO: Estado para controlar redirección a onboarding
   const [shouldRedirectToOnboarding, setShouldRedirectToOnboarding] = useState(false);
 
   useEffect(() => {
@@ -84,13 +83,19 @@ export default function Layout({ children, currentPageName }) {
         setCurrentUser(user);
         setIsLoggedIn(true);
 
-        // NUEVO: Verificar si necesita onboarding
+        // FIXED: Nueva lógica de redirección al onboarding
+        // Solo redirigir si:
+        // 1. Es rol cafeteria
+        // 2. NO ha completado onboarding
+        // 3. NO tiene cafeterías asignadas
+        // 4. NO está ya en la página de onboarding
         if (
           user.app_role === 'cafeteria' && 
-          !user.onboarding_completado && 
-          !user.cafeteria_id &&
+          !user.onboarding_completado &&
+          (!user.cafeterias_asignadas || user.cafeterias_asignadas.length === 0) &&
           location.pathname !== createPageUrl("CafeteriaOnboarding")
         ) {
+          console.log('🔄 Redirigiendo a onboarding - usuario sin cafeterías');
           setShouldRedirectToOnboarding(true);
         }
       } catch (error) {
@@ -109,7 +114,6 @@ export default function Layout({ children, currentPageName }) {
   useEffect(() => {
     const fetchPageVisibility = async () => {
       try {
-        // Usar caché para reducir llamadas a API
         const cached = sessionStorage.getItem('platpal_page_visibility');
         if (cached) {
           setPageVisibility(JSON.parse(cached));
@@ -125,27 +129,24 @@ export default function Layout({ children, currentPageName }) {
         setPageVisibility(visibility);
         sessionStorage.setItem('platpal_page_visibility', JSON.stringify(visibility));
       } catch (error) {
-        // Si hay error (incluyendo rate limit), usar valores por defecto
         if (!error.message?.includes('Rate limit')) {
           console.error('Error fetching page visibility:', error);
         }
-        // If error, set default visibility to false for systemCheck
         setPageVisibility({ systemCheck: false });
       }
     };
     fetchPageVisibility();
-  }, []); // Solo ejecutar una vez al montar
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('platpal_language', language);
     window.dispatchEvent(new CustomEvent('languageChange', { detail: language }));
   }, [language]);
 
-  // NUEVO: Redirigir a onboarding si es necesario
   useEffect(() => {
     if (shouldRedirectToOnboarding) {
       window.location.href = createPageUrl("CafeteriaOnboarding");
-      setShouldRedirectToOnboarding(false); // Reset to prevent re-triggering if component re-renders
+      setShouldRedirectToOnboarding(false);
     }
   }, [shouldRedirectToOnboarding]);
 
@@ -276,7 +277,6 @@ export default function Layout({ children, currentPageName }) {
           </SidebarContent>
 
           <SidebarFooter className="border-t border-gray-100/50 p-4 space-y-4 mt-auto">
-            {/* Selector de Idioma - Más discreto */}
             <div className="px-2">
               <Select value={language} onValueChange={setLanguage}>
                 <SelectTrigger className="w-full h-8 text-xs border-gray-200 bg-gray-50 hover:bg-gray-100 transition-colors">
