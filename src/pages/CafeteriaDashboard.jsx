@@ -21,13 +21,13 @@ import {
   QrCode,
   Sparkles,
   Star,
-  Calendar,
   Loader2,
   Check,
   Building2,
   MapPin,
   Phone,
-  XCircle
+  XCircle,
+  RefreshCw
 } from "lucide-react";
 import {
   Select,
@@ -38,7 +38,6 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -53,21 +52,11 @@ function CafeteriaDashboard({ user }) {
   const navigate = useNavigate();
   const [menus, setMenus] = useState([]);
   const [reservations, setReservations] = useState([]);
-  const [reviews, setReviews] = useState([]);
-  const [dailyMenuInfo, setDailyMenuInfo] = useState(null);
-  const [showDailyMenuForm, setShowDailyMenuForm] = useState(false);
-  const [dailyMenuForm, setDailyMenuForm] = useState({
-    titulo: 'Menú del día',
-    contenido: '',
-    imagen_url: ''
-  });
   const [stats, setStats] = useState({
     totalMenusHoy: 0,
     menusVendidos: 0,
     ingresosHoy: 0,
-    pedidosPendientes: 0,
-    ratingPromedio: 0,
-    totalReviews: 0
+    pedidosPendientes: 0
   });
 
   const [availableCafeterias, setAvailableCafeterias] = useState([]);
@@ -88,44 +77,57 @@ function CafeteriaDashboard({ user }) {
   });
   const [isPublishing, setIsPublishing] = useState(false);
 
-  // Cargar cafeterías disponibles
+  // Cargar cafeterías del usuario
   useEffect(() => {
     const loadCafeterias = async () => {
       setIsLoading(true);
       try {
-        console.log('👤 Usuario actual:', user);
+        console.log('🔄 Cargando cafeterías del usuario...');
+        console.log('👤 Usuario:', user?.email);
         console.log('🏪 Cafeterías asignadas:', user?.cafeterias_asignadas);
 
-        const allCafeterias = await base44.entities.Cafeteria.list();
-        console.log('📊 Total cafeterías en DB:', allCafeterias.length);
+        const allCafeterias = await base44.entities.Cafeteria.list('-created_date');
+        console.log('📊 Total cafeterías en sistema:', allCafeterias.length);
 
         let userCafeterias = [];
 
         if (user?.cafeterias_asignadas && user.cafeterias_asignadas.length > 0) {
-          // MOSTRAR TODAS las cafeterías asignadas (aprobadas o no)
+          // Mostrar TODAS las cafeterías asignadas (aprobadas o no)
           userCafeterias = allCafeterias.filter(c =>
             user.cafeterias_asignadas.includes(c.id)
           );
-          console.log('✅ Cafeterías del usuario encontradas:', userCafeterias.length);
+          console.log('✅ Cafeterías encontradas:', userCafeterias.length);
+          console.log('📋 Lista:', userCafeterias.map(c => ({
+            id: c.id,
+            nombre: c.nombre,
+            aprobada: c.aprobada,
+            estado: c.estado_onboarding
+          })));
         } else if (user?.app_role === 'admin') {
           userCafeterias = allCafeterias.filter(c => c.activa);
-          console.log('👑 Admin - Mostrando cafeterías activas:', userCafeterias.length);
+          console.log('👑 Admin - Cafeterías activas:', userCafeterias.length);
         }
 
         setAvailableCafeterias(userCafeterias);
 
         if (userCafeterias.length > 0) {
           const firstCafe = userCafeterias[0];
-          console.log('🎯 Cafetería seleccionada:', firstCafe);
+          console.log('🎯 Seleccionando cafetería:', firstCafe.nombre);
           setSelectedCafeteriaId(firstCafe.id);
           setSelectedCafeteriaData(firstCafe);
+          setPublishFormData(prev => ({
+            ...prev,
+            precio_original: firstCafe.precio_original_default || 8.50,
+            hora_limite_reserva: firstCafe.hora_fin_reserva || "16:00",
+            hora_limite: firstCafe.hora_fin_recogida || "18:00"
+          }));
         } else {
-          console.log('⚠️ No hay cafeterías disponibles');
+          console.log('⚠️ Usuario sin cafeterías asignadas');
           setSelectedCafeteriaId(null);
           setSelectedCafeteriaData(null);
         }
       } catch (error) {
-        console.error("❌ Error loading cafeterias:", error);
+        console.error("❌ Error cargando cafeterías:", error);
       } finally {
         setIsLoading(false);
       }
@@ -136,75 +138,66 @@ function CafeteriaDashboard({ user }) {
     }
   }, [user]);
 
+  // Cargar datos de la cafetería seleccionada
   const loadData = useCallback(async () => {
-    try {
-      if (!selectedCafeteriaData) {
-        console.log('⚠️ No hay cafetería seleccionada');
-        return;
-      }
+    if (!selectedCafeteriaData) {
+      console.log('⏭️ No hay cafetería seleccionada, skipping load');
+      return;
+    }
 
+    try {
       const cafeteriaName = selectedCafeteriaData.nombre;
       const today = new Date().toISOString().split('T')[0];
 
       console.log('📊 Cargando datos para:', cafeteriaName);
 
-      const [allMenus, allReservations, allReviews, dailyMenus] = await Promise.all([
-        base44.entities.Menu.list('-created_date'),
-        base44.entities.Reserva.list('-created_date'),
-        base44.entities.MenuReview.filter({ cafeteria: cafeteriaName }),
-        base44.entities.DailyMenuInfo.filter({ cafeteria: cafeteriaName, fecha: today })
+      const [allMenus, allReservations] = await Promise.all([
+        base44.entities.Menu.list('-created_date', 50),
+        base44.entities.Reserva.list('-created_date', 100)
       ]);
 
+      // Filtrar menús de esta cafetería para hoy
       const todayMenus = allMenus.filter(m =>
         m.cafeteria === cafeteriaName && m.fecha === today
       );
       setMenus(todayMenus);
+      console.log('🍽️ Menús de hoy:', todayMenus.length);
 
+      // Filtrar reservas de esta cafetería
       const cafeteriaReservations = allReservations.filter(r =>
         r.cafeteria === cafeteriaName
       );
       setReservations(cafeteriaReservations);
-      setReviews(allReviews);
+      console.log('📋 Reservas totales:', cafeteriaReservations.length);
 
-      // Stats
-      const totalMenusHoy = todayMenus.reduce((acc, m) => acc + m.stock_total, 0);
+      // Calcular stats
+      const totalMenusHoy = todayMenus.reduce((sum, m) => sum + m.stock_total, 0);
       const menusVendidos = cafeteriaReservations.filter(r => 
         r.payment_status === 'completed' && r.created_date?.startsWith(today)
       ).length;
       const ingresosHoy = cafeteriaReservations
         .filter(r => r.payment_status === 'completed' && r.created_date?.startsWith(today))
-        .reduce((acc, r) => acc + (r.precio_total || 0), 0);
+        .reduce((sum, r) => sum + (r.precio_total || 0), 0);
       const pedidosPendientes = cafeteriaReservations.filter(r =>
         r.estado === 'pagado' && r.created_date?.startsWith(today)
       ).length;
-      const ratingPromedio = allReviews.length > 0
-        ? allReviews.reduce((acc, r) => acc + r.rating, 0) / allReviews.length
-        : 0;
 
       setStats({
         totalMenusHoy,
         menusVendidos,
         ingresosHoy,
-        pedidosPendientes,
-        ratingPromedio: ratingPromedio.toFixed(1),
-        totalReviews: allReviews.length
+        pedidosPendientes
       });
 
-      // Daily menu
-      if (dailyMenus.length > 0) {
-        setDailyMenuInfo(dailyMenus[0]);
-        setDailyMenuForm({
-          titulo: dailyMenus[0].titulo,
-          contenido: dailyMenus[0].contenido,
-          imagen_url: dailyMenus[0].imagen_url || ''
-        });
-      } else {
-        setDailyMenuInfo(null);
-      }
+      console.log('✅ Stats actualizadas:', {
+        totalMenusHoy,
+        menusVendidos,
+        ingresosHoy: `€${ingresosHoy.toFixed(2)}`,
+        pedidosPendientes
+      });
 
-      console.log('✅ Datos cargados correctamente');
     } catch (error) {
-      console.error("❌ Error loading data:", error);
+      console.error("❌ Error cargando datos:", error);
     }
   }, [selectedCafeteriaData]);
 
@@ -214,7 +207,7 @@ function CafeteriaDashboard({ user }) {
     }
   }, [loadData, selectedCafeteriaData]);
 
-  const handleDuplicateMenu = async (menu) => {
+  const handleDuplicateMenu = (menu) => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     navigate(createPageUrl("PublishMenu"), {
@@ -231,36 +224,13 @@ function CafeteriaDashboard({ user }) {
   const handleDeleteMenu = async (menuId) => {
     if (!confirm("¿Eliminar este menú?")) return;
     try {
+      console.log('🗑️ Eliminando menú:', menuId);
       await base44.entities.Menu.delete(menuId);
+      console.log('✅ Menú eliminado');
       loadData();
     } catch (error) {
-      console.error("Error deleting menu:", error);
+      console.error("❌ Error eliminando:", error);
       alert("Error al eliminar: " + error.message);
-    }
-  };
-
-  const handleSaveDailyMenu = async () => {
-    try {
-      if (!selectedCafeteriaData?.nombre) {
-        alert("Selecciona una cafetería");
-        return;
-      }
-
-      const today = new Date().toISOString().split('T')[0];
-      if (dailyMenuInfo) {
-        await base44.entities.DailyMenuInfo.update(dailyMenuInfo.id, dailyMenuForm);
-      } else {
-        await base44.entities.DailyMenuInfo.create({
-          ...dailyMenuForm,
-          cafeteria: selectedCafeteriaData.nombre,
-          fecha: today
-        });
-      }
-      setShowDailyMenuForm(false);
-      loadData();
-    } catch (error) {
-      console.error("Error saving daily menu:", error);
-      alert("Error: " + error.message);
     }
   };
 
@@ -268,17 +238,17 @@ function CafeteriaDashboard({ user }) {
     e.preventDefault();
 
     if (!selectedCafeteriaData?.aprobada) {
-      alert("Tu cafetería debe estar aprobada para publicar menús");
+      alert("⚠️ Tu cafetería debe estar aprobada para publicar menús");
       return;
     }
 
     if (!publishFormData.es_sorpresa && (!publishFormData.plato_principal || !publishFormData.plato_secundario)) {
-      alert("Completa los platos o activa 'Plato Sorpresa'");
+      alert("⚠️ Completa los platos o activa 'Plato Sorpresa'");
       return;
     }
 
     if (!publishFormData.stock_total || parseInt(publishFormData.stock_total) <= 0) {
-      alert("Indica cuántos menús quieres publicar");
+      alert("⚠️ Indica cuántos menús quieres publicar");
       return;
     }
 
@@ -308,8 +278,11 @@ function CafeteriaDashboard({ user }) {
         alergenos: ['ninguno']
       };
 
+      console.log('📤 Publicando menú:', menuData);
       await base44.entities.Menu.create(menuData);
+      console.log('✅ Menú publicado correctamente');
 
+      // Reset form
       setPublishFormData({
         plato_principal: "",
         plato_secundario: "",
@@ -323,13 +296,26 @@ function CafeteriaDashboard({ user }) {
 
       setShowPublishModal(false);
       loadData();
-      alert('✅ Menú publicado');
+      alert('✅ Menú publicado correctamente');
     } catch (error) {
-      console.error('❌ Error:', error);
+      console.error('❌ Error publicando:', error);
       alert('❌ Error: ' + error.message);
     } finally {
       setIsPublishing(false);
     }
+  };
+
+  const handleCafeteriaChange = (id) => {
+    const cafe = availableCafeterias.find(c => c.id === id);
+    console.log('🔄 Cambiando a cafetería:', cafe?.nombre);
+    setSelectedCafeteriaId(id);
+    setSelectedCafeteriaData(cafe);
+    setPublishFormData(prev => ({
+      ...prev,
+      precio_original: cafe.precio_original_default || 8.50,
+      hora_limite_reserva: cafe.hora_fin_reserva || "16:00",
+      hora_limite: cafe.hora_fin_recogida || "18:00"
+    }));
   };
 
   if (isLoading) {
@@ -343,51 +329,51 @@ function CafeteriaDashboard({ user }) {
     );
   }
 
-  // Si no tiene cafeterías asignadas
+  // Sin cafeterías asignadas
   if (availableCafeterias.length === 0) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-amber-50 flex items-center justify-center p-6">
-        <Card className="max-w-2xl w-full">
-          <CardHeader className="text-center">
-            <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-amber-500 rounded-full flex items-center justify-center mx-auto mb-4">
+        <Card className="max-w-2xl w-full shadow-2xl">
+          <CardHeader className="text-center border-b">
+            <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-amber-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
               <ChefHat className="w-10 h-10 text-white" />
             </div>
-            <CardTitle className="text-2xl">¡Bienvenido a PlatPal! 🎉</CardTitle>
-            <p className="text-gray-600 mt-2">Registra tu primer establecimiento para empezar</p>
+            <CardTitle className="text-3xl font-black">¡Bienvenido a PlatPal!</CardTitle>
+            <p className="text-gray-600 mt-2">Registra tu primer establecimiento</p>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="p-8 space-y-6">
             <div className="space-y-4">
-              <div className="flex gap-4 items-start">
-                <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <span className="text-emerald-700 font-bold">1</span>
+              <div className="flex gap-4">
+                <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-emerald-700 font-bold text-lg">1</span>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">Registra tu cafetería</h3>
-                  <p className="text-sm text-gray-600">Completa el formulario con los datos</p>
+                  <h3 className="font-bold text-gray-900">Registra tu cafetería</h3>
+                  <p className="text-sm text-gray-600">Completa el formulario</p>
                 </div>
               </div>
-              <div className="flex gap-4 items-start">
-                <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <span className="text-emerald-700 font-bold">2</span>
+              <div className="flex gap-4">
+                <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-emerald-700 font-bold text-lg">2</span>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">Espera la aprobación</h3>
-                  <p className="text-sm text-gray-600">Nuestro equipo revisará en 24-48h</p>
+                  <h3 className="font-bold text-gray-900">Espera la aprobación</h3>
+                  <p className="text-sm text-gray-600">24-48 horas</p>
                 </div>
               </div>
-              <div className="flex gap-4 items-start">
-                <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <span className="text-emerald-700 font-bold">3</span>
+              <div className="flex gap-4">
+                <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-emerald-700 font-bold text-lg">3</span>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">¡Empieza a vender!</h3>
-                  <p className="text-sm text-gray-600">Publica menús y recibe pedidos</p>
+                  <h3 className="font-bold text-gray-900">¡Empieza a vender!</h3>
+                  <p className="text-sm text-gray-600">Publica menús</p>
                 </div>
               </div>
             </div>
             <Button
               onClick={() => navigate(createPageUrl("CafeteriaOnboarding"))}
-              className="w-full bg-gradient-to-r from-emerald-600 to-amber-500 py-6"
+              className="w-full bg-gradient-to-r from-emerald-600 to-amber-500 py-6 text-lg font-bold shadow-lg hover:shadow-xl"
             >
               <Plus className="w-5 h-5 mr-2" />
               Registrar mi cafetería
@@ -406,7 +392,7 @@ function CafeteriaDashboard({ user }) {
         <div className="flex flex-col md:flex-row justify-between items-start gap-4">
           <div className="flex-1">
             <h1 className="text-4xl font-black text-gray-900">
-              Panel de {selectedCafeteriaData?.nombre || 'Establecimientos'}
+              {selectedCafeteriaData?.nombre || 'Panel de Cafetería'}
             </h1>
             <p className="text-gray-600 mt-1">Gestiona tus menús y pedidos</p>
 
@@ -414,50 +400,30 @@ function CafeteriaDashboard({ user }) {
             {availableCafeterias.length > 0 && (
               <div className="mt-4">
                 {availableCafeterias.length > 1 ? (
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                      🏪 Selecciona tu establecimiento
-                    </label>
-                    <Select
-                      value={selectedCafeteriaId}
-                      onValueChange={(id) => {
-                        const cafe = availableCafeterias.find(c => c.id === id);
-                        setSelectedCafeteriaId(id);
-                        setSelectedCafeteriaData(cafe);
-                      }}
-                    >
-                      <SelectTrigger className="w-full md:w-96 bg-white border-2 border-emerald-200">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {availableCafeterias.map(cafe => (
-                          <SelectItem key={cafe.id} value={cafe.id}>
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
-                                <span className="text-emerald-700 font-semibold text-sm">
-                                  {cafe.nombre.charAt(0)}
-                                </span>
-                              </div>
-                              <div>
-                                <p className="font-medium">{cafe.nombre}</p>
-                                <p className="text-xs text-gray-500">Campus {cafe.campus}</p>
-                              </div>
+                  <Select value={selectedCafeteriaId} onValueChange={handleCafeteriaChange}>
+                    <SelectTrigger className="w-full md:w-96 bg-white border-2 border-emerald-200 hover:border-emerald-300">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableCafeterias.map(cafe => (
+                        <SelectItem key={cafe.id} value={cafe.id}>
+                          <div className="flex items-center gap-3 py-1">
+                            <Building2 className="w-5 h-5 text-emerald-600" />
+                            <div>
+                              <p className="font-semibold">{cafe.nombre}</p>
+                              <p className="text-xs text-gray-500">Campus {cafe.campus}</p>
                             </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 ) : (
-                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 border-2 border-emerald-200 rounded-xl">
-                    <Building2 className="w-5 h-5 text-emerald-600" />
+                  <div className="inline-flex items-center gap-3 px-4 py-3 bg-emerald-50 border-2 border-emerald-200 rounded-xl">
+                    <Building2 className="w-6 h-6 text-emerald-600" />
                     <div>
-                      <p className="text-sm font-medium text-emerald-900">
-                        {availableCafeterias[0].nombre}
-                      </p>
-                      <p className="text-xs text-emerald-700">
-                        Campus {availableCafeterias[0].campus}
-                      </p>
+                      <p className="font-bold text-emerald-900">{availableCafeterias[0].nombre}</p>
+                      <p className="text-sm text-emerald-700">Campus {availableCafeterias[0].campus}</p>
                     </div>
                   </div>
                 )}
@@ -469,20 +435,21 @@ function CafeteriaDashboard({ user }) {
             <Button
               variant="outline"
               onClick={() => navigate(createPageUrl("CafeteriaOnboarding"))}
-              className="gap-2 border-2 border-emerald-600 text-emerald-600"
+              className="gap-2 border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-50"
             >
               <Plus className="w-4 h-4" />
               Añadir Establecimiento
             </Button>
             <Button onClick={loadData} variant="outline" className="gap-2">
-              🔄 Actualizar
+              <RefreshCw className="w-4 h-4" />
+              Actualizar
             </Button>
           </div>
         </div>
 
-        {/* ALERT - CAFETERÍA NO APROBADA */}
+        {/* ALERT - NO APROBADA */}
         {selectedCafeteriaData && !selectedCafeteriaData.aprobada && (
-          <Card className="border-4 border-orange-400 bg-gradient-to-r from-orange-100 to-amber-100 shadow-2xl">
+          <Card className="border-4 border-orange-400 bg-gradient-to-r from-orange-50 to-amber-50 shadow-2xl">
             <CardContent className="p-8">
               <div className="flex items-start gap-6">
                 <div className="w-20 h-20 bg-orange-600 rounded-3xl flex items-center justify-center shadow-lg animate-pulse flex-shrink-0">
@@ -491,46 +458,37 @@ function CafeteriaDashboard({ user }) {
                 <div className="flex-1 space-y-4">
                   <div>
                     <h2 className="text-3xl font-black text-orange-900 mb-2">
-                      ⏳ Tu cafetería está en revisión
+                      ⏳ Cafetería en Revisión
                     </h2>
                     <p className="text-lg text-orange-800">
-                      <strong>{selectedCafeteriaData.nombre}</strong> está siendo revisada por nuestro equipo.
+                      <strong>{selectedCafeteriaData.nombre}</strong> está siendo revisada
                     </p>
-                    <p className="text-orange-700 mt-2">
-                      Te notificaremos por email cuando sea aprobada (normalmente 24-48 horas).
+                    <p className="text-orange-700 mt-1">
+                      Te notificaremos por email (24-48h)
                     </p>
                   </div>
 
-                  <div className="bg-white/50 backdrop-blur rounded-xl p-4 border-2 border-orange-200">
-                    <p className="text-sm text-orange-900 mb-3">
-                      <strong>📋 Detalles de tu solicitud:</strong>
-                    </p>
-                    <div className="grid md:grid-cols-2 gap-3 text-sm">
-                      <div className="flex items-center gap-2 text-orange-800">
+                  <div className="bg-white/70 backdrop-blur rounded-xl p-4 border border-orange-200">
+                    <div className="grid md:grid-cols-3 gap-3 text-sm">
+                      <div className="flex items-center gap-2 text-orange-900">
                         <MapPin className="w-4 h-4" />
-                        <span><strong>Campus:</strong> {selectedCafeteriaData.campus}</span>
+                        <span>Campus {selectedCafeteriaData.campus}</span>
                       </div>
                       {selectedCafeteriaData.contacto && (
-                        <div className="flex items-center gap-2 text-orange-800">
+                        <div className="flex items-center gap-2 text-orange-900">
                           <Phone className="w-4 h-4" />
-                          <span><strong>Contacto:</strong> {selectedCafeteriaData.contacto}</span>
+                          <span>{selectedCafeteriaData.contacto}</span>
                         </div>
                       )}
-                      <div className="flex items-center gap-2 text-orange-800">
-                        <Calendar className="w-4 h-4" />
-                        <span><strong>Solicitado:</strong> {new Date(selectedCafeteriaData.fecha_solicitud).toLocaleDateString('es-ES', {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric'
-                        })}</span>
+                      <div className="text-orange-900">
+                        📅 {new Date(selectedCafeteriaData.fecha_solicitud).toLocaleDateString('es-ES')}
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-amber-100 border-2 border-amber-300 rounded-xl p-4">
+                  <div className="bg-amber-100 border border-amber-300 rounded-xl p-3">
                     <p className="text-sm text-amber-900">
-                      <strong>💡 Mientras tanto:</strong> Puedes explorar el panel y familiarizarte con las funciones,
-                      pero no podrás publicar menús hasta que tu cafetería sea aprobada.
+                      💡 <strong>Explora el panel</strong> pero no podrás publicar hasta la aprobación
                     </p>
                   </div>
                 </div>
@@ -539,100 +497,65 @@ function CafeteriaDashboard({ user }) {
           </Card>
         )}
 
-        {/* BADGE DE ESTADO */}
+        {/* BADGE ESTADO */}
         {selectedCafeteriaData && (
           <div className="flex items-center gap-3">
             {selectedCafeteriaData.aprobada ? (
-              <Badge className="bg-green-500 text-white px-4 py-2 text-sm">
+              <Badge className="bg-green-600 text-white px-4 py-2 shadow-md">
                 <CheckCircle2 className="w-4 h-4 mr-2" />
-                Cafetería Aprobada - Puedes publicar menús
+                ✅ Aprobada - Puedes publicar
               </Badge>
             ) : selectedCafeteriaData.estado_onboarding === 'rechazada' ? (
-              <Badge className="bg-red-500 text-white px-4 py-2 text-sm">
+              <Badge className="bg-red-600 text-white px-4 py-2 shadow-md">
                 <XCircle className="w-4 h-4 mr-2" />
-                Rechazada - Contacta con soporte
+                ❌ Rechazada
               </Badge>
             ) : (
-              <Badge className="bg-orange-500 text-white px-4 py-2 text-sm">
+              <Badge className="bg-orange-600 text-white px-4 py-2 shadow-md">
                 <Clock className="w-4 h-4 mr-2" />
-                En Revisión - Funcionalidad limitada
+                ⏳ En Revisión
               </Badge>
             )}
           </div>
         )}
 
-        {/* STATS GRID */}
-        <div className="grid md:grid-cols-5 gap-4">
-          <Card className={selectedCafeteriaData?.aprobada ? '' : 'opacity-50'}>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Menús Hoy</p>
-                  <p className="text-3xl font-bold text-gray-900 mt-1">{stats.totalMenusHoy}</p>
-                </div>
-                <Package className="w-10 h-10 text-blue-500" />
-              </div>
+        {/* STATS */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Card className={`hover:shadow-lg transition-all ${!selectedCafeteriaData?.aprobada && 'opacity-60'}`}>
+            <CardContent className="p-6 text-center">
+              <Package className="w-10 h-10 text-blue-600 mx-auto mb-2" />
+              <p className="text-sm text-gray-600">Menús Hoy</p>
+              <p className="text-3xl font-black text-gray-900 mt-1">{stats.totalMenusHoy}</p>
             </CardContent>
           </Card>
 
-          <Card className={selectedCafeteriaData?.aprobada ? '' : 'opacity-50'}>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Vendidos</p>
-                  <p className="text-3xl font-bold text-emerald-600 mt-1">{stats.menusVendidos}</p>
-                </div>
-                <TrendingUp className="w-10 h-10 text-emerald-500" />
-              </div>
+          <Card className={`hover:shadow-lg transition-all ${!selectedCafeteriaData?.aprobada && 'opacity-60'}`}>
+            <CardContent className="p-6 text-center">
+              <TrendingUp className="w-10 h-10 text-emerald-600 mx-auto mb-2" />
+              <p className="text-sm text-gray-600">Vendidos</p>
+              <p className="text-3xl font-black text-emerald-600 mt-1">{stats.menusVendidos}</p>
             </CardContent>
           </Card>
 
-          <Card className={selectedCafeteriaData?.aprobada ? '' : 'opacity-50'}>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Ingresos Hoy</p>
-                  <p className="text-3xl font-bold text-amber-600 mt-1">€{stats.ingresosHoy.toFixed(2)}</p>
-                </div>
-                <Euro className="w-10 h-10 text-amber-500" />
-              </div>
+          <Card className={`hover:shadow-lg transition-all ${!selectedCafeteriaData?.aprobada && 'opacity-60'}`}>
+            <CardContent className="p-6 text-center">
+              <Euro className="w-10 h-10 text-amber-600 mx-auto mb-2" />
+              <p className="text-sm text-gray-600">Ingresos Hoy</p>
+              <p className="text-3xl font-black text-amber-600 mt-1">€{stats.ingresosHoy.toFixed(2)}</p>
             </CardContent>
           </Card>
 
-          <Card className={selectedCafeteriaData?.aprobada ? '' : 'opacity-50'}>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Pendientes</p>
-                  <p className="text-3xl font-bold text-orange-600 mt-1">{stats.pedidosPendientes}</p>
-                </div>
-                <Clock className="w-10 h-10 text-orange-500" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className={selectedCafeteriaData?.aprobada ? '' : 'opacity-50'}>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Rating</p>
-                  <p className="text-3xl font-bold text-purple-600 mt-1">{stats.ratingPromedio}⭐</p>
-                  <p className="text-xs text-gray-500">{stats.totalReviews} reviews</p>
-                </div>
-                <Star className="w-10 h-10 text-purple-500" />
-              </div>
+          <Card className={`hover:shadow-lg transition-all ${!selectedCafeteriaData?.aprobada && 'opacity-60'}`}>
+            <CardContent className="p-6 text-center">
+              <Clock className="w-10 h-10 text-orange-600 mx-auto mb-2" />
+              <p className="text-sm text-gray-600">Pendientes</p>
+              <p className="text-3xl font-black text-orange-600 mt-1">{stats.pedidosPendientes}</p>
             </CardContent>
           </Card>
         </div>
 
-        {/* BOTONES DE ACCIÓN */}
+        {/* BOTONES */}
         <div className="flex flex-wrap gap-3">
-          <Link to={createPageUrl("MenuTemplates")}>
-            <Button variant="outline" disabled={!selectedCafeteriaData?.aprobada}>
-              <Sparkles className="w-4 h-4 mr-2" />
-              Plantillas
-            </Button>
-          </Link>
           <Link to={createPageUrl("PickupPanel")}>
             <Button variant="outline" disabled={!selectedCafeteriaData?.aprobada}>
               <QrCode className="w-4 h-4 mr-2" />
@@ -643,27 +566,22 @@ function CafeteriaDashboard({ user }) {
           <Dialog open={showPublishModal} onOpenChange={setShowPublishModal}>
             <DialogTrigger asChild>
               <Button
-                className="bg-gradient-to-r from-emerald-600 to-amber-500"
+                className="bg-gradient-to-r from-emerald-600 to-amber-500 shadow-lg"
                 disabled={!selectedCafeteriaData?.aprobada}
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Publicar Menú Rápido
+                Publicar Menú
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-xl">
               <DialogHeader>
-                <DialogTitle>⚡ Publicación Rápida</DialogTitle>
-                <DialogDescription>
-                  Publica un menú en segundos
-                </DialogDescription>
+                <DialogTitle>⚡ Publicar Menú Rápido</DialogTitle>
+                <DialogDescription>Publica en segundos</DialogDescription>
               </DialogHeader>
 
               <form onSubmit={handleQuickPublish} className="space-y-4 mt-4">
-                <div className="flex items-center justify-between p-3 bg-purple-50 rounded-xl border border-purple-200">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-purple-600" />
-                    <Label className="font-medium text-purple-900">Plato Sorpresa</Label>
-                  </div>
+                <div className="flex items-center justify-between p-3 bg-purple-50 rounded-xl">
+                  <Label className="font-semibold">Plato Sorpresa</Label>
                   <Switch
                     checked={publishFormData.es_sorpresa}
                     onCheckedChange={(checked) => setPublishFormData(prev => ({ ...prev, es_sorpresa: checked }))}
@@ -677,7 +595,7 @@ function CafeteriaDashboard({ user }) {
                       <Input
                         value={publishFormData.plato_principal}
                         onChange={(e) => setPublishFormData(prev => ({ ...prev, plato_principal: e.target.value }))}
-                        placeholder="Ej: Pollo asado"
+                        placeholder="Ej: Pollo"
                         required
                       />
                     </div>
@@ -706,27 +624,40 @@ function CafeteriaDashboard({ user }) {
                   </div>
                   <div>
                     <Label>Precio PlatPal</Label>
-                    <div className="h-10 flex items-center justify-center bg-emerald-50 rounded-xl border-2 border-emerald-200">
+                    <div className="h-10 flex items-center justify-center bg-emerald-50 rounded-lg border-2 border-emerald-200">
                       <span className="text-lg font-bold text-emerald-600">€2.99</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex gap-3 pt-2">
                   <Button type="button" variant="outline" onClick={() => setShowPublishModal(false)} className="flex-1">
                     Cancelar
                   </Button>
                   <Button type="submit" disabled={isPublishing} className="flex-1 bg-emerald-600">
-                    {isPublishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4 mr-2" />}
-                    Publicar
+                    {isPublishing ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <>
+                        <Check className="w-4 h-4 mr-2" />
+                        Publicar
+                      </>
+                    )}
                   </Button>
                 </div>
               </form>
             </DialogContent>
           </Dialog>
+
+          <Link to={createPageUrl("PublishMenu")}>
+            <Button variant="outline" disabled={!selectedCafeteriaData?.aprobada}>
+              <Sparkles className="w-4 h-4 mr-2" />
+              Formulario Completo
+            </Button>
+          </Link>
         </div>
 
-        {/* MENÚS DE HOY */}
+        {/* MENÚS */}
         <Card>
           <CardHeader>
             <CardTitle>Menús de Hoy</CardTitle>
@@ -735,24 +666,24 @@ function CafeteriaDashboard({ user }) {
             {menus.length > 0 ? (
               <div className="space-y-3">
                 {menus.map((menu) => (
-                  <div key={menu.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border">
+                  <div key={menu.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border-2 hover:shadow-md transition-all">
                     <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900">{menu.plato_principal}</h3>
+                      <h3 className="font-bold text-gray-900">{menu.plato_principal}</h3>
                       <p className="text-sm text-gray-600">+ {menu.plato_secundario}</p>
                       <Badge variant="outline" className="mt-2">
                         Stock: {menu.stock_disponible}/{menu.stock_total}
                       </Badge>
                     </div>
                     <div className="flex gap-2">
-                      <Button size="sm" variant="outline" onClick={() => handleDuplicateMenu(menu)} disabled={!selectedCafeteriaData?.aprobada}>
+                      <Button size="sm" variant="outline" onClick={() => handleDuplicateMenu(menu)} disabled={!selectedCafeteriaData?.aprobada} title="Duplicar">
                         <Copy className="w-4 h-4" />
                       </Button>
                       <Link to={createPageUrl("EditMenu")} state={{ menu }}>
-                        <Button size="sm" variant="outline" disabled={!selectedCafeteriaData?.aprobada}>
+                        <Button size="sm" variant="outline" disabled={!selectedCafeteriaData?.aprobada} title="Editar">
                           <Edit className="w-4 h-4" />
                         </Button>
                       </Link>
-                      <Button size="sm" variant="outline" onClick={() => handleDeleteMenu(menu.id)} disabled={!selectedCafeteriaData?.aprobada}>
+                      <Button size="sm" variant="outline" onClick={() => handleDeleteMenu(menu.id)} disabled={!selectedCafeteriaData?.aprobada} title="Eliminar">
                         <Trash2 className="w-4 h-4 text-red-600" />
                       </Button>
                     </div>
@@ -760,11 +691,12 @@ function CafeteriaDashboard({ user }) {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12">
-                <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-600 mb-4">No hay menús para hoy</p>
+              <div className="text-center py-16">
+                <Package className="w-20 h-20 text-gray-300 mx-auto mb-4" />
+                <p className="text-xl font-semibold text-gray-900 mb-2">No hay menús hoy</p>
+                <p className="text-gray-600 mb-6">Empieza publicando tu primer menú</p>
                 {selectedCafeteriaData?.aprobada && (
-                  <Button onClick={() => setShowPublishModal(true)}>
+                  <Button onClick={() => setShowPublishModal(true)} className="bg-emerald-600">
                     <Plus className="w-4 h-4 mr-2" />
                     Publicar Menú
                   </Button>
