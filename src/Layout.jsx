@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Home, MapPin, UtensilsCrossed, HelpCircle, User, ChefHat, Target, UserCircle, Settings, UserCheck, BarChart3, Gift, Bug, Building2 } from "lucide-react";
+import { Home, MapPin, UtensilsCrossed, HelpCircle, User, ChefHat, Target, UserCircle, Settings, UserCheck, BarChart3, Gift, Bug, Building2, Plus } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import {
   Sidebar,
@@ -47,6 +48,7 @@ const cafeteriaNav = [
 
 const adminNav = [
     { title: "Admin Dashboard", url: createPageUrl("AdminDashboard"), icon: Settings },
+    { title: "Crear Cafetería", url: createPageUrl("CrearCafeteria"), icon: Plus },
     { title: "Aprobar Cafeterías", url: createPageUrl("AdminCafeteriaApproval"), icon: Building2 }
 ];
 
