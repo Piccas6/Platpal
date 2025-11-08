@@ -34,6 +34,7 @@ export default function Home() {
         title: "Come increíble por solo 2,99€",
         subtitle: "Rescata deliciosos menús de las cafeterías de tu campus antes de que se desperdicien.",
         cta: "Ver menús disponibles",
+        cafeteriaCta: "¿Tienes una cafetería?", // Added this line
         investorLink: "¿Eres inversor? Descubre nuestro potencial"
       },
       stats: {
@@ -104,6 +105,7 @@ export default function Home() {
         title: "Eat amazing for just €2.99",
         subtitle: "Rescue delicious meals from your campus cafeterias before they're wasted.",
         cta: "See available menus",
+        cafeteriaCta: "Do you have a cafeteria?", // Added this line
         investorLink: "Are you an investor? Discover our potential"
       },
       stats: {
@@ -299,10 +301,10 @@ export default function Home() {
             </Link>
             
             {/* NUEVO: CTA para Cafeterías */}
-            <Link to={createPageUrl("CafeteriaOnboarding")}>
+            <Link to={createPageUrl("SolicitarCafeteria")}> {/* Changed from "CafeteriaOnboarding" to "SolicitarCafeteria" */}
               <Button size="lg" variant="outline" className="border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-50 px-10 sm:px-14 py-6 sm:py-7 rounded-full text-base sm:text-lg font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all group">
                 <UtensilsCrossed className="mr-2 w-5 h-5" />
-                ¿Tienes una cafetería?
+                {t.hero.cafeteriaCta} {/* Using the new text key */}
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
