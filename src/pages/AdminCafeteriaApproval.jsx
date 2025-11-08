@@ -15,10 +15,8 @@ import {
   MapPin,
   Phone,
   Calendar,
-  Mail,
   RefreshCw,
-  Search,
-  Filter
+  Search
 } from "lucide-react";
 
 function AdminCafeteriaApproval() {
@@ -40,10 +38,16 @@ function AdminCafeteriaApproval() {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      console.log('🔄 Cargando cafeterías...');
+      console.log('🔄 [ADMIN APPROVAL] Cargando cafeterías...');
       
       const allCafeterias = await base44.entities.Cafeteria.list('-created_date');
-      console.log('📊 Total cafeterías:', allCafeterias.length);
+      console.log('📊 [ADMIN APPROVAL] Total cafeterías:', allCafeterias.length);
+      console.log('📋 [ADMIN APPROVAL] Cafeterías:', allCafeterias.map(c => ({
+        id: c.id,
+        nombre: c.nombre,
+        aprobada: c.aprobada,
+        estado: c.estado_onboarding
+      })));
       
       setCafeterias(allCafeterias);
 
@@ -53,9 +57,9 @@ function AdminCafeteriaApproval() {
       const aprobadas = allCafeterias.filter(c => c.aprobada === true);
       const rechazadas = allCafeterias.filter(c => c.estado_onboarding === 'rechazada');
 
-      console.log('⏳ Pendientes:', pendientes.length);
-      console.log('✅ Aprobadas:', aprobadas.length);
-      console.log('❌ Rechazadas:', rechazadas.length);
+      console.log('⏳ [ADMIN APPROVAL] Pendientes:', pendientes.length);
+      console.log('✅ [ADMIN APPROVAL] Aprobadas:', aprobadas.length);
+      console.log('❌ [ADMIN APPROVAL] Rechazadas:', rechazadas.length);
 
       setStats({
         pendientes: pendientes.length,
@@ -65,7 +69,7 @@ function AdminCafeteriaApproval() {
       });
 
     } catch (error) {
-      console.error("❌ Error loading data:", error);
+      console.error("❌ [ADMIN APPROVAL] Error loading data:", error);
     } finally {
       setIsLoading(false);
     }
@@ -79,7 +83,7 @@ function AdminCafeteriaApproval() {
     if (!confirm(`¿Aprobar "${cafeteriaName}" para que aparezca en la plataforma?`)) return;
     
     try {
-      console.log('✅ Aprobando cafetería:', cafeteriaId);
+      console.log('✅ [ADMIN APPROVAL] Aprobando cafetería:', cafeteriaId);
       
       await base44.entities.Cafeteria.update(cafeteriaId, {
         aprobada: true,
@@ -88,10 +92,11 @@ function AdminCafeteriaApproval() {
         fecha_aprobacion: new Date().toISOString()
       });
       
+      console.log('✅ [ADMIN APPROVAL] Cafetería aprobada correctamente');
       alert('✅ Cafetería aprobada correctamente');
       loadData();
     } catch (error) {
-      console.error("❌ Error aprobando:", error);
+      console.error("❌ [ADMIN APPROVAL] Error aprobando:", error);
       alert('❌ Error: ' + error.message);
     }
   };
@@ -101,7 +106,7 @@ function AdminCafeteriaApproval() {
     if (motivo === null) return;
     
     try {
-      console.log('❌ Rechazando cafetería:', cafeteriaId);
+      console.log('❌ [ADMIN APPROVAL] Rechazando cafetería:', cafeteriaId);
       
       await base44.entities.Cafeteria.update(cafeteriaId, {
         aprobada: false,
@@ -110,10 +115,11 @@ function AdminCafeteriaApproval() {
         notas_admin: motivo || 'Rechazada sin motivo especificado'
       });
       
+      console.log('❌ [ADMIN APPROVAL] Cafetería rechazada');
       alert('Cafetería rechazada');
       loadData();
     } catch (error) {
-      console.error("❌ Error rechazando:", error);
+      console.error("❌ [ADMIN APPROVAL] Error rechazando:", error);
       alert('❌ Error: ' + error.message);
     }
   };
