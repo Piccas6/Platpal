@@ -51,9 +51,9 @@ export default function AdminProfile({ user }) {
       setAllUsers(users);
       setCafeterias(allCafeterias);
       
-      // Filtrar pendientes
+      // Filtrar pendientes (solo las que tienen estado_onboarding)
       const pendientes = allCafeterias.filter(c => 
-        c.estado_onboarding === 'en_revision' && !c.aprobada
+        c.estado_onboarding === 'en_revision' && c.aprobada === false
       );
       setCafeteriasPendientes(pendientes);
       
@@ -157,6 +157,9 @@ export default function AdminProfile({ user }) {
       u.email?.toLowerCase().includes(filterSearch.toLowerCase());
     return roleMatch && searchMatch;
   });
+
+  // FIXED: Mostrar todas las cafeterías activas (sin importar si tienen aprobada o no)
+  const cafeteriasParaAsignar = cafeterias.filter(c => c.activa !== false);
 
   if (isLoading) {
     return (
@@ -300,24 +303,41 @@ export default function AdminProfile({ user }) {
 
                     {editData.app_role === 'cafeteria' && (
                       <div className="p-4 bg-amber-50 rounded-xl space-y-3">
-                        <h4 className="font-semibold text-amber-900">Asignar Cafeterías</h4>
+                        <h4 className="font-semibold text-amber-900 flex items-center gap-2">
+                          <Building2 className="w-5 h-5" />
+                          Asignar Cafeterías ({cafeteriasParaAsignar.length} disponibles)
+                        </h4>
                         <div className="space-y-2 max-h-60 overflow-y-auto">
-                          {cafeterias.filter(c => c.aprobada && c.activa).map(cafe => (
-                            <div key={cafe.id} className="flex items-center gap-2 p-2 bg-white rounded-lg">
+                          {cafeteriasParaAsignar.map(cafe => (
+                            <div key={cafe.id} className="flex items-center gap-2 p-3 bg-white rounded-lg border hover:border-amber-300 transition-colors">
                               <Checkbox
                                 id={`cafe-${cafe.id}`}
                                 checked={(editData.cafeterias_asignadas || []).includes(cafe.id)}
                                 onCheckedChange={() => handleCafeteriaAssignmentToggle(cafe.id)}
                               />
                               <label htmlFor={`cafe-${cafe.id}`} className="text-sm cursor-pointer flex-1">
-                                <strong>{cafe.nombre}</strong> - {campusOptions.find(c => c.id === cafe.campus)?.name}
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <strong>{cafe.nombre}</strong>
+                                    <span className="text-gray-600 ml-2">- {campusOptions.find(c => c.id === cafe.campus)?.name}</span>
+                                  </div>
+                                  {cafe.activa && (
+                                    <Badge className="bg-green-100 text-green-800 text-xs">Activa</Badge>
+                                  )}
+                                </div>
                               </label>
                             </div>
                           ))}
-                          {cafeterias.filter(c => c.aprobada && c.activa).length === 0 && (
-                            <p className="text-sm text-gray-500 text-center py-4">
-                              No hay cafeterías aprobadas aún
-                            </p>
+                          {cafeteriasParaAsignar.length === 0 && (
+                            <div className="text-center py-8">
+                              <Building2 className="w-12 h-12 text-gray-300 mx-auto mb-2" />
+                              <p className="text-sm text-gray-500">
+                                No hay cafeterías disponibles
+                              </p>
+                              <p className="text-xs text-gray-400 mt-1">
+                                Crea cafeterías desde "Gestionar Cafeterías"
+                              </p>
+                            </div>
                           )}
                         </div>
                       </div>
