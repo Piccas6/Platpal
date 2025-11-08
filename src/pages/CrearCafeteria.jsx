@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, Plus, CheckCircle, Building2, User, Lock, Phone, MapPin, Clock, Euro, Loader2 } from "lucide-react";
+import { ArrowLeft, Plus, CheckCircle, Building2, User, Zap, Loader2 } from "lucide-react";
 import withAuth from "../components/auth/withAuth";
 
 function CrearCafeteria() {
@@ -64,7 +64,7 @@ function CrearCafeteria() {
     setError('');
 
     try {
-      console.log('🚀 Iniciando creación de cafetería...');
+      console.log('🚀 Iniciando creación COMPLETA de cafetería + usuario...');
 
       // Validaciones
       if (!formData.email || !formData.password || !formData.full_name) {
@@ -80,7 +80,7 @@ function CrearCafeteria() {
       }
 
       // 1. Crear la cafetería
-      console.log('📝 Creando cafetería...');
+      console.log('📝 Paso 1/3: Creando cafetería...');
       const cafeteriaData = {
         nombre: formData.nombre,
         slug: formData.slug,
@@ -95,9 +95,26 @@ function CrearCafeteria() {
         activa: true
       };
 
-      console.log('Datos cafetería:', cafeteriaData);
       const nuevaCafeteria = await base44.entities.Cafeteria.create(cafeteriaData);
       console.log('✅ Cafetería creada:', nuevaCafeteria.id);
+
+      // 2. Buscar si el usuario ya existe
+      console.log('👤 Paso 2/3: Verificando usuario...');
+      const allUsers = await base44.entities.User.list();
+      let usuario = allUsers.find(u => u.email === formData.email);
+
+      if (usuario) {
+        console.log('✅ Usuario encontrado, actualizando...');
+        // Usuario existe, actualizar con rol cafeteria y asignar cafetería
+        await base44.entities.User.update(usuario.id, {
+          app_role: 'cafeteria',
+          cafeterias_asignadas: [nuevaCafeteria.id],
+          full_name: formData.full_name
+        });
+      } else {
+        console.log('⚠️ Usuario NO existe. Debe registrarse primero.');
+        // El usuario debe registrarse manualmente
+      }
 
       // Guardar datos para mostrar
       setCreatedData({
@@ -105,9 +122,12 @@ function CrearCafeteria() {
         usuario: {
           email: formData.email,
           password: formData.password,
-          full_name: formData.full_name
+          full_name: formData.full_name,
+          existe: !!usuario
         }
       });
+
+      console.log('🎉 PROCESO COMPLETADO');
 
     } catch (error) {
       console.error('❌ Error:', error);
@@ -151,7 +171,7 @@ function CrearCafeteria() {
                 </div>
               </div>
               <CardTitle className="text-center text-3xl font-black">
-                ¡Cafetería Creada Exitosamente!
+                ¡Cafetería Creada y Asignada!
               </CardTitle>
             </CardHeader>
             <CardContent className="p-8 space-y-6">
@@ -169,56 +189,84 @@ function CrearCafeteria() {
                 </div>
               </div>
 
-              {/* Credenciales */}
-              <div className="p-6 bg-blue-50 rounded-2xl border-2 border-blue-200">
-                <h3 className="text-xl font-bold text-blue-900 mb-4 flex items-center gap-2">
-                  <User className="w-6 h-6" />
-                  Credenciales del Usuario
-                </h3>
-                <div className="space-y-3">
-                  <div className="p-3 bg-white rounded-lg">
-                    <p className="text-sm text-blue-700 font-semibold mb-1">Email:</p>
-                    <p className="font-mono text-blue-900">{createdData.usuario.email}</p>
-                  </div>
-                  <div className="p-3 bg-white rounded-lg">
-                    <p className="text-sm text-blue-700 font-semibold mb-1">Contraseña:</p>
-                    <p className="font-mono text-blue-900">{createdData.usuario.password}</p>
-                  </div>
-                  <div className="p-3 bg-white rounded-lg">
-                    <p className="text-sm text-blue-700 font-semibold mb-1">Nombre:</p>
-                    <p className="font-mono text-blue-900">{createdData.usuario.full_name}</p>
+              {/* Estado del usuario */}
+              {createdData.usuario.existe ? (
+                <div className="p-6 bg-green-50 rounded-2xl border-2 border-green-400">
+                  <h3 className="text-xl font-bold text-green-900 mb-4 flex items-center gap-2">
+                    <Zap className="w-6 h-6" />
+                    Usuario Actualizado Automáticamente
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 p-3 bg-white rounded-lg">
+                      <CheckCircle className="w-5 h-5 text-green-600" />
+                      <span className="font-semibold">El usuario <strong>{createdData.usuario.email}</strong> ya existía</span>
+                    </div>
+                    <div className="flex items-center gap-2 p-3 bg-white rounded-lg">
+                      <CheckCircle className="w-5 h-5 text-green-600" />
+                      <span className="font-semibold">Rol actualizado a "cafeteria"</span>
+                    </div>
+                    <div className="flex items-center gap-2 p-3 bg-white rounded-lg">
+                      <CheckCircle className="w-5 h-5 text-green-600" />
+                      <span className="font-semibold">Cafetería asignada automáticamente</span>
+                    </div>
+                    <div className="mt-4 p-4 bg-green-100 rounded-xl border-2 border-green-300">
+                      <p className="text-green-900 font-bold text-center">
+                        ✅ El usuario ya puede acceder a su panel con sus credenciales existentes
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div className="p-6 bg-blue-50 rounded-2xl border-2 border-blue-200">
+                  <h3 className="text-xl font-bold text-blue-900 mb-4 flex items-center gap-2">
+                    <User className="w-6 h-6" />
+                    Usuario Nuevo - Requiere Registro
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="p-3 bg-white rounded-lg">
+                      <p className="text-sm text-blue-700 font-semibold mb-1">Email:</p>
+                      <p className="font-mono text-blue-900">{createdData.usuario.email}</p>
+                    </div>
+                    <div className="p-3 bg-white rounded-lg">
+                      <p className="text-sm text-blue-700 font-semibold mb-1">Contraseña (para registro):</p>
+                      <p className="font-mono text-blue-900">{createdData.usuario.password}</p>
+                    </div>
+                    <div className="p-3 bg-white rounded-lg">
+                      <p className="text-sm text-blue-700 font-semibold mb-1">Nombre:</p>
+                      <p className="font-mono text-blue-900">{createdData.usuario.full_name}</p>
+                    </div>
+                  </div>
 
-              {/* Instrucciones */}
-              <div className="p-6 bg-amber-50 rounded-2xl border-2 border-amber-200">
-                <h3 className="text-xl font-bold text-amber-900 mb-4">📋 Próximos Pasos</h3>
-                <ol className="space-y-3 text-amber-800">
-                  <li className="flex gap-3">
-                    <span className="flex-shrink-0 w-8 h-8 bg-amber-600 text-white rounded-full flex items-center justify-center font-bold">1</span>
-                    <div>
-                      <strong>Registrar el usuario:</strong> El usuario debe ir a <strong>Home → Acceso Cafeterías → Registrarse</strong> usando estas credenciales.
-                    </div>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="flex-shrink-0 w-8 h-8 bg-amber-600 text-white rounded-full flex items-center justify-center font-bold">2</span>
-                    <div>
-                      <strong>Asignar rol (Admin):</strong> Ve a <strong>Dashboard → Data → User</strong>, busca el email y edita:
-                      <ul className="mt-2 ml-4 space-y-1 text-sm">
-                        <li>• <code className="bg-white px-1 rounded">app_role: "cafeteria"</code></li>
-                        <li>• <code className="bg-white px-1 rounded">cafeterias_asignadas: ["{createdData.cafeteria.id}"]</code></li>
-                      </ul>
-                    </div>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="flex-shrink-0 w-8 h-8 bg-amber-600 text-white rounded-full flex items-center justify-center font-bold">3</span>
-                    <div>
-                      <strong>Listo:</strong> El usuario puede iniciar sesión y acceder a su panel.
-                    </div>
-                  </li>
-                </ol>
-              </div>
+                  {/* Instrucciones */}
+                  <div className="mt-4 p-4 bg-amber-50 rounded-xl border-2 border-amber-200">
+                    <h4 className="text-lg font-bold text-amber-900 mb-3">📋 Próximos Pasos</h4>
+                    <ol className="space-y-2 text-amber-800 text-sm">
+                      <li className="flex gap-2">
+                        <span className="flex-shrink-0 w-6 h-6 bg-amber-600 text-white rounded-full flex items-center justify-center font-bold text-xs">1</span>
+                        <div>
+                          El usuario debe <strong>registrarse</strong> en: <strong>Home → Acceso Cafeterías → Registrarse</strong>
+                        </div>
+                      </li>
+                      <li className="flex gap-2">
+                        <span className="flex-shrink-0 w-6 h-6 bg-amber-600 text-white rounded-full flex items-center justify-center font-bold text-xs">2</span>
+                        <div>
+                          Usar estas credenciales en el registro
+                        </div>
+                      </li>
+                      <li className="flex gap-2">
+                        <span className="flex-shrink-0 w-6 h-6 bg-amber-600 text-white rounded-full flex items-center justify-center font-bold text-xs">3</span>
+                        <div>
+                          <strong>Admin:</strong> Ir a <strong>Dashboard → Data → User</strong>, buscar el email y editar:
+                          <ul className="mt-2 ml-4 space-y-1">
+                            <li>• <code className="bg-white px-1 rounded">app_role: "cafeteria"</code></li>
+                            <li>• <code className="bg-white px-1 rounded">cafeterias_asignadas: ["{createdData.cafeteria.id}"]</code></li>
+                          </ul>
+                        </div>
+                      </li>
+                    </ol>
+                  </div>
+                </div>
+              )}
 
               {/* Botones */}
               <div className="flex gap-3 pt-4">
@@ -255,10 +303,34 @@ function CrearCafeteria() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-4xl font-black text-gray-900">Crear Nueva Cafetería</h1>
-            <p className="text-gray-600 mt-2">Registra un nuevo establecimiento en el sistema</p>
+            <h1 className="text-4xl font-black text-gray-900">Crear Cafetería + Usuario</h1>
+            <p className="text-gray-600 mt-2">Todo en un solo paso - Automático</p>
           </div>
         </div>
+
+        {/* Info */}
+        <Card className="mb-6 border-2 border-purple-400 bg-gradient-to-r from-purple-50 to-pink-50">
+          <CardContent className="p-6">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                <Zap className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="font-bold text-purple-900 text-lg mb-2">🚀 Sistema Automático</h3>
+                <ul className="space-y-2 text-purple-800">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5 text-purple-600" />
+                    <span>Si el usuario <strong>YA EXISTE</strong>: Se asigna automáticamente el rol y la cafetería</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5 text-purple-600" />
+                    <span>Si el usuario <strong>NO EXISTE</strong>: Se guardan las credenciales para que se registre</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Error */}
         {error && (
@@ -402,8 +474,7 @@ function CrearCafeteria() {
           <Card className="border-2 border-amber-200">
             <CardHeader className="bg-amber-50 border-b">
               <CardTitle className="flex items-center gap-2 text-xl">
-                <Clock className="w-6 h-6 text-amber-600" />
-                Configuración Operativa
+                ⚙️ Configuración Operativa
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6 space-y-4">
@@ -456,17 +527,17 @@ function CrearCafeteria() {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 py-6 text-lg font-bold"
+              className="flex-1 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 py-6 text-lg font-bold shadow-xl"
             >
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  Creando cafetería...
+                  Creando y asignando...
                 </>
               ) : (
                 <>
-                  <Plus className="w-5 h-5 mr-2" />
-                  Crear Cafetería
+                  <Zap className="w-5 h-5 mr-2" />
+                  Crear y Asignar Automáticamente
                 </>
               )}
             </Button>
