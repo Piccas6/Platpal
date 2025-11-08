@@ -29,6 +29,7 @@ const navigationItems = [
   { title: "Campus", url: createPageUrl("Campus"), icon: MapPin },
   { title: "Menús", url: createPageUrl("Menus"), icon: UtensilsCrossed },
   { title: "Bonos", url: createPageUrl("Bonos"), icon: Gift },
+  { title: "Panel Cafetería", url: createPageUrl("CafeteriaDashboard"), icon: ChefHat, requiresAuth: true },
   { title: "Impacto", url: createPageUrl("Impact"), icon: Target },
   { title: "FAQ", url: createPageUrl("FAQ"), icon: HelpCircle },
 ];
@@ -39,10 +40,6 @@ const analyticsNav = [
 
 const managerNav = [
     { title: "Mi Dashboard", url: createPageUrl("ManagerDashboard"), icon: UserCheck }
-];
-
-const cafeteriaNav = [
-    { title: "Mi Panel", url: createPageUrl("CafeteriaDashboard"), icon: ChefHat }
 ];
 
 const adminNav = [
@@ -154,9 +151,13 @@ export default function Layout({ children, currentPageName }) {
                         <Link 
                           to={item.url} 
                           className="flex items-center gap-4 px-4 py-3"
-                          onClick={() => {
+                          onClick={(e) => {
                             if (item.title === "Menús") {
                               localStorage.removeItem('selectedCampus');
+                            }
+                            if (item.requiresAuth && !isLoggedIn) {
+                              e.preventDefault();
+                              handleLogin();
                             }
                           }}
                         >
@@ -178,14 +179,6 @@ export default function Layout({ children, currentPageName }) {
                   {isLoggedIn && (effectiveRole === 'manager' || effectiveRole === 'admin') && analyticsNav.map((item) => (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild className={`group hover:bg-blue-50 hover:text-blue-700 transition-all duration-300 rounded-2xl mb-2 text-gray-700 font-medium ${location.pathname === item.url ? 'bg-blue-50 text-blue-700 shadow-sm' : ''}`}>
-                        <Link to={item.url} className="flex items-center gap-4 px-4 py-3"><item.icon className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" /><span>{item.title}</span></Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                  
-                  {isLoggedIn && (effectiveRole === 'cafeteria' || effectiveRole === 'admin') && cafeteriaNav.map((item) => (
-                    <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton asChild className={`group hover:bg-emerald-50 hover:text-emerald-700 transition-all duration-300 rounded-2xl mb-2 text-gray-700 font-medium ${location.pathname === item.url ? 'bg-emerald-50 text-emerald-700 shadow-sm' : ''}`}>
                         <Link to={item.url} className="flex items-center gap-4 px-4 py-3"><item.icon className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" /><span>{item.title}</span></Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -244,8 +237,8 @@ export default function Layout({ children, currentPageName }) {
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 bg-emerald-200 rounded-full flex items-center justify-center"><User className="w-4 h-4 text-emerald-700" /></div>
                     <div className="flex-1">
-                      <p className="font-medium text-emerald-900 text-sm">Navegando como Estudiante</p>
-                      <p className="text-xs text-emerald-700">Inicia sesión para reservar</p>
+                      <p className="font-medium text-emerald-900 text-sm">Navegando como Invitado</p>
+                      <p className="text-xs text-emerald-700">Inicia sesión</p>
                     </div>
                   </div>
                 </div>
