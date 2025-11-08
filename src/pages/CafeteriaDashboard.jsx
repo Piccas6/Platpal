@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
@@ -20,14 +21,14 @@ import {
   Trash2,
   QrCode,
   Sparkles,
-  Star,
   Loader2,
   Check,
   Building2,
   MapPin,
   Phone,
   XCircle,
-  RefreshCw
+  RefreshCw,
+  Lock // Added Lock icon
 } from "lucide-react";
 import {
   Select,
@@ -82,7 +83,7 @@ function CafeteriaDashboard({ user }) {
     const loadCafeterias = async () => {
       setIsLoading(true);
       try {
-        console.log('🔄 Cargando cafeterías del usuario...');
+        console.log('🔄 [DASHBOARD] Cargando cafeterías del usuario...'); // Updated log message
         console.log('👤 Usuario:', user?.email);
         console.log('🏪 Cafeterías asignadas:', user?.cafeterias_asignadas);
 
@@ -92,7 +93,6 @@ function CafeteriaDashboard({ user }) {
         let userCafeterias = [];
 
         if (user?.cafeterias_asignadas && user.cafeterias_asignadas.length > 0) {
-          // Mostrar TODAS las cafeterías asignadas (aprobadas o no)
           userCafeterias = allCafeterias.filter(c =>
             user.cafeterias_asignadas.includes(c.id)
           );
@@ -100,7 +100,9 @@ function CafeteriaDashboard({ user }) {
           console.log('📋 Lista:', userCafeterias.map(c => ({
             id: c.id,
             nombre: c.nombre,
+            id_temporal: c.cafeteria_id_temporal, // Added id_temporal
             aprobada: c.aprobada,
+            puede_publicar: c.puede_publicar_menus, // Added puede_publicar
             estado: c.estado_onboarding
           })));
         } else if (user?.app_role === 'admin') {
@@ -113,6 +115,9 @@ function CafeteriaDashboard({ user }) {
         if (userCafeterias.length > 0) {
           const firstCafe = userCafeterias[0];
           console.log('🎯 Seleccionando cafetería:', firstCafe.nombre);
+          console.log('🆔 ID Temporal:', firstCafe.cafeteria_id_temporal); // Added ID Temporal log
+          console.log('🔒 Puede publicar:', firstCafe.puede_publicar_menus); // Added Puede publicar log
+          
           setSelectedCafeteriaId(firstCafe.id);
           setSelectedCafeteriaData(firstCafe);
           setPublishFormData(prev => ({
@@ -237,8 +242,9 @@ function CafeteriaDashboard({ user }) {
   const handleQuickPublish = async (e) => {
     e.preventDefault();
 
-    if (!selectedCafeteriaData?.aprobada) {
-      alert("⚠️ Tu cafetería debe estar aprobada para publicar menús");
+    // Changed condition to check for `puede_publicar_menus`
+    if (!selectedCafeteriaData?.puede_publicar_menus) {
+      alert("⚠️ Tu cafetería debe estar aprobada para publicar menús.\n\nEstado actual: En Revisión");
       return;
     }
 
@@ -308,6 +314,7 @@ function CafeteriaDashboard({ user }) {
   const handleCafeteriaChange = (id) => {
     const cafe = availableCafeterias.find(c => c.id === id);
     console.log('🔄 Cambiando a cafetería:', cafe?.nombre);
+    console.log('🆔 ID Temporal:', cafe?.cafeteria_id_temporal); // Added ID Temporal log
     setSelectedCafeteriaId(id);
     setSelectedCafeteriaData(cafe);
     setPublishFormData(prev => ({
@@ -384,6 +391,9 @@ function CafeteriaDashboard({ user }) {
     );
   }
 
+  // Variable para controlar si puede publicar, based on the new field `puede_publicar_menus`
+  const canPublish = selectedCafeteriaData?.puede_publicar_menus === true;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-amber-50 p-6">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -396,9 +406,9 @@ function CafeteriaDashboard({ user }) {
             </h1>
             <p className="text-gray-600 mt-1">Gestiona tus menús y pedidos</p>
 
-            {/* Selector de Cafetería */}
+            {/* Selector de Cafetería + ID Temporal */}
             {availableCafeterias.length > 0 && (
-              <div className="mt-4">
+              <div className="mt-4 space-y-2"> {/* Added space-y-2 for spacing */}
                 {availableCafeterias.length > 1 ? (
                   <Select value={selectedCafeteriaId} onValueChange={handleCafeteriaChange}>
                     <SelectTrigger className="w-full md:w-96 bg-white border-2 border-emerald-200 hover:border-emerald-300">
@@ -427,6 +437,15 @@ function CafeteriaDashboard({ user }) {
                     </div>
                   </div>
                 )}
+                
+                {/* Display Temporary ID */}
+                {selectedCafeteriaData?.cafeteria_id_temporal && (
+                  <div className="inline-flex items-center gap-2 px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-xs">
+                    <span className="font-mono text-gray-700">
+                      🆔 ID Temporal: {selectedCafeteriaData.cafeteria_id_temporal}
+                    </span>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -448,23 +467,23 @@ function CafeteriaDashboard({ user }) {
         </div>
 
         {/* ALERT - NO APROBADA */}
-        {selectedCafeteriaData && !selectedCafeteriaData.aprobada && (
+        {selectedCafeteriaData && !canPublish && ( // Changed condition to !canPublish
           <Card className="border-4 border-orange-400 bg-gradient-to-r from-orange-50 to-amber-50 shadow-2xl">
             <CardContent className="p-8">
               <div className="flex items-start gap-6">
                 <div className="w-20 h-20 bg-orange-600 rounded-3xl flex items-center justify-center shadow-lg animate-pulse flex-shrink-0">
-                  <Clock className="w-10 h-10 text-white" />
+                  <Lock className="w-10 h-10 text-white" /> {/* Changed icon to Lock */}
                 </div>
                 <div className="flex-1 space-y-4">
                   <div>
                     <h2 className="text-3xl font-black text-orange-900 mb-2">
-                      ⏳ Cafetería en Revisión
+                      🔒 Panel Temporal - En Revisión {/* Updated title */}
                     </h2>
                     <p className="text-lg text-orange-800">
                       <strong>{selectedCafeteriaData.nombre}</strong> está siendo revisada
                     </p>
                     <p className="text-orange-700 mt-1">
-                      Te notificaremos por email (24-48h)
+                      Puedes explorar el panel pero NO podrás publicar menús hasta la aprobación {/* Updated description */}
                     </p>
                   </div>
 
@@ -488,7 +507,7 @@ function CafeteriaDashboard({ user }) {
 
                   <div className="bg-amber-100 border border-amber-300 rounded-xl p-3">
                     <p className="text-sm text-amber-900">
-                      💡 <strong>Explora el panel</strong> pero no podrás publicar hasta la aprobación
+                      💡 <strong>Te notificaremos por email</strong> (24-48h) {/* Updated text */}
                     </p>
                   </div>
                 </div>
@@ -500,7 +519,7 @@ function CafeteriaDashboard({ user }) {
         {/* BADGE ESTADO */}
         {selectedCafeteriaData && (
           <div className="flex items-center gap-3">
-            {selectedCafeteriaData.aprobada ? (
+            {canPublish ? ( // Changed condition to canPublish
               <Badge className="bg-green-600 text-white px-4 py-2 shadow-md">
                 <CheckCircle2 className="w-4 h-4 mr-2" />
                 ✅ Aprobada - Puedes publicar
@@ -512,8 +531,8 @@ function CafeteriaDashboard({ user }) {
               </Badge>
             ) : (
               <Badge className="bg-orange-600 text-white px-4 py-2 shadow-md">
-                <Clock className="w-4 h-4 mr-2" />
-                ⏳ En Revisión
+                <Lock className="w-4 h-4 mr-2" /> {/* Changed icon to Lock */}
+                🔒 Panel Temporal - En Revisión {/* Updated text */}
               </Badge>
             )}
           </div>
@@ -521,7 +540,7 @@ function CafeteriaDashboard({ user }) {
 
         {/* STATS */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className={`hover:shadow-lg transition-all ${!selectedCafeteriaData?.aprobada && 'opacity-60'}`}>
+          <Card className={`hover:shadow-lg transition-all ${!canPublish && 'opacity-60'}`}> {/* Added opacity based on canPublish */}
             <CardContent className="p-6 text-center">
               <Package className="w-10 h-10 text-blue-600 mx-auto mb-2" />
               <p className="text-sm text-gray-600">Menús Hoy</p>
@@ -529,7 +548,7 @@ function CafeteriaDashboard({ user }) {
             </CardContent>
           </Card>
 
-          <Card className={`hover:shadow-lg transition-all ${!selectedCafeteriaData?.aprobada && 'opacity-60'}`}>
+          <Card className={`hover:shadow-lg transition-all ${!canPublish && 'opacity-60'}`}> {/* Added opacity based on canPublish */}
             <CardContent className="p-6 text-center">
               <TrendingUp className="w-10 h-10 text-emerald-600 mx-auto mb-2" />
               <p className="text-sm text-gray-600">Vendidos</p>
@@ -537,7 +556,7 @@ function CafeteriaDashboard({ user }) {
             </CardContent>
           </Card>
 
-          <Card className={`hover:shadow-lg transition-all ${!selectedCafeteriaData?.aprobada && 'opacity-60'}`}>
+          <Card className={`hover:shadow-lg transition-all ${!canPublish && 'opacity-60'}`}> {/* Added opacity based on canPublish */}
             <CardContent className="p-6 text-center">
               <Euro className="w-10 h-10 text-amber-600 mx-auto mb-2" />
               <p className="text-sm text-gray-600">Ingresos Hoy</p>
@@ -545,7 +564,7 @@ function CafeteriaDashboard({ user }) {
             </CardContent>
           </Card>
 
-          <Card className={`hover:shadow-lg transition-all ${!selectedCafeteriaData?.aprobada && 'opacity-60'}`}>
+          <Card className={`hover:shadow-lg transition-all ${!canPublish && 'opacity-60'}`}> {/* Added opacity based on canPublish */}
             <CardContent className="p-6 text-center">
               <Clock className="w-10 h-10 text-orange-600 mx-auto mb-2" />
               <p className="text-sm text-gray-600">Pendientes</p>
@@ -557,7 +576,7 @@ function CafeteriaDashboard({ user }) {
         {/* BOTONES */}
         <div className="flex flex-wrap gap-3">
           <Link to={createPageUrl("PickupPanel")}>
-            <Button variant="outline" disabled={!selectedCafeteriaData?.aprobada}>
+            <Button variant="outline" disabled={!canPublish}> {/* Disabled based on canPublish */}
               <QrCode className="w-4 h-4 mr-2" />
               Panel Recogida
             </Button>
@@ -567,10 +586,19 @@ function CafeteriaDashboard({ user }) {
             <DialogTrigger asChild>
               <Button
                 className="bg-gradient-to-r from-emerald-600 to-amber-500 shadow-lg"
-                disabled={!selectedCafeteriaData?.aprobada}
+                disabled={!canPublish} // Disabled based on canPublish
               >
-                <Plus className="w-4 h-4 mr-2" />
-                Publicar Menú
+                {canPublish ? ( // Conditional button content
+                  <>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Publicar Menú
+                  </>
+                ) : (
+                  <>
+                    <Lock className="w-4 h-4 mr-2" />
+                    Bloqueado hasta aprobación
+                  </>
+                )}
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-xl">
@@ -650,7 +678,7 @@ function CafeteriaDashboard({ user }) {
           </Dialog>
 
           <Link to={createPageUrl("PublishMenu")}>
-            <Button variant="outline" disabled={!selectedCafeteriaData?.aprobada}>
+            <Button variant="outline" disabled={!canPublish}> {/* Disabled based on canPublish */}
               <Sparkles className="w-4 h-4 mr-2" />
               Formulario Completo
             </Button>
@@ -675,15 +703,15 @@ function CafeteriaDashboard({ user }) {
                       </Badge>
                     </div>
                     <div className="flex gap-2">
-                      <Button size="sm" variant="outline" onClick={() => handleDuplicateMenu(menu)} disabled={!selectedCafeteriaData?.aprobada} title="Duplicar">
+                      <Button size="sm" variant="outline" onClick={() => handleDuplicateMenu(menu)} disabled={!canPublish} title="Duplicar"> {/* Disabled based on canPublish */}
                         <Copy className="w-4 h-4" />
                       </Button>
                       <Link to={createPageUrl("EditMenu")} state={{ menu }}>
-                        <Button size="sm" variant="outline" disabled={!selectedCafeteriaData?.aprobada} title="Editar">
+                        <Button size="sm" variant="outline" disabled={!canPublish} title="Editar"> {/* Disabled based on canPublish */}
                           <Edit className="w-4 h-4" />
                         </Button>
                       </Link>
-                      <Button size="sm" variant="outline" onClick={() => handleDeleteMenu(menu.id)} disabled={!selectedCafeteriaData?.aprobada} title="Eliminar">
+                      <Button size="sm" variant="outline" onClick={() => handleDeleteMenu(menu.id)} disabled={!canPublish} title="Eliminar"> {/* Disabled based on canPublish */}
                         <Trash2 className="w-4 h-4 text-red-600" />
                       </Button>
                     </div>
@@ -694,8 +722,10 @@ function CafeteriaDashboard({ user }) {
               <div className="text-center py-16">
                 <Package className="w-20 h-20 text-gray-300 mx-auto mb-4" />
                 <p className="text-xl font-semibold text-gray-900 mb-2">No hay menús hoy</p>
-                <p className="text-gray-600 mb-6">Empieza publicando tu primer menú</p>
-                {selectedCafeteriaData?.aprobada && (
+                <p className="text-gray-600 mb-6">
+                  {canPublish ? 'Empieza publicando tu primer menú' : 'Podrás publicar cuando tu cafetería sea aprobada'} {/* Conditional text */}
+                </p>
+                {canPublish && ( // Show button only if canPublish
                   <Button onClick={() => setShowPublishModal(true)} className="bg-emerald-600">
                     <Plus className="w-4 h-4 mr-2" />
                     Publicar Menú

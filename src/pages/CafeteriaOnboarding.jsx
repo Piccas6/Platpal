@@ -9,8 +9,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { ChefHat, CheckCircle2, Building2, Clock, Euro, Sparkles, ArrowRight, ArrowLeft, Plus } from "lucide-react";
+import { ChefHat, CheckCircle2, Building2, Clock, Euro, ArrowRight, ArrowLeft, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+
+// Función para generar ID temporal único
+const generateTemporalId = (nombre, campus) => {
+  const timestamp = Date.now().toString(36);
+  const random = Math.random().toString(36).substring(2, 6);
+  const cleanName = nombre.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 8);
+  return `tmp-${cleanName}-${campus}-${timestamp}${random}`;
+};
 
 export default function CafeteriaOnboarding() {
   const navigate = useNavigate();
@@ -20,14 +28,11 @@ export default function CafeteriaOnboarding() {
   const [isAddingAnother, setIsAddingAnother] = useState(false);
 
   const [formData, setFormData] = useState({
-    // Paso 1: Datos básicos
     nombre: "",
     campus: "",
     contacto: "",
     descripcion: "",
     ubicacion_exacta: "",
-    
-    // Paso 2: Configuración operativa
     horario_apertura: "08:00",
     hora_fin_reserva: "16:00",
     hora_fin_recogida: "18:00",
@@ -40,7 +45,6 @@ export default function CafeteriaOnboarding() {
         const user = await base44.auth.me();
         setCurrentUser(user);
         
-        // Pre-rellenar contacto con el email del usuario
         if (user.email && !formData.contacto) {
           setFormData(prev => ({ ...prev, contacto: user.email }));
         }
@@ -79,10 +83,16 @@ export default function CafeteriaOnboarding() {
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '');
 
-      // Crear la cafetería
+      // Generar ID temporal único
+      const cafeteriaIdTemporal = generateTemporalId(formData.nombre, formData.campus);
+
+      console.log('🆔 ID Temporal generado:', cafeteriaIdTemporal);
+
+      // Crear la cafetería con ID temporal
       const cafeteriaData = {
         nombre: formData.nombre,
-        slug: `${slug}-${formData.campus}-${Date.now()}`, // Añadir timestamp para uniqueness
+        slug: `${slug}-${formData.campus}-${Date.now()}`,
+        cafeteria_id_temporal: cafeteriaIdTemporal, // ID temporal
         campus: formData.campus,
         contacto: formData.contacto,
         descripcion: formData.descripcion,
@@ -95,13 +105,15 @@ export default function CafeteriaOnboarding() {
         aprobada: false,
         estado_onboarding: "en_revision",
         activa: false,
+        puede_publicar_menus: false, // No puede publicar hasta aprobación
         fecha_solicitud: new Date().toISOString()
       };
 
-      console.log('📝 Creando cafetería:', cafeteriaData);
+      console.log('📝 Creando cafetería con datos:', cafeteriaData);
       const nuevaCafeteria = await base44.entities.Cafeteria.create(cafeteriaData);
       
       console.log('✅ Cafetería creada:', nuevaCafeteria.id);
+      console.log('🆔 ID Temporal:', nuevaCafeteria.cafeteria_id_temporal);
 
       // Actualizar el usuario para añadir esta cafetería a su lista
       const cafeteriasActuales = user.cafeterias_asignadas || [];
@@ -119,7 +131,7 @@ export default function CafeteriaOnboarding() {
       setCurrentStep(4);
 
     } catch (error) {
-      console.error("Error durante onboarding:", error);
+      console.error("❌ Error durante onboarding:", error);
       
       let errorMessage = "Error al registrar la cafetería.\n\n";
       
@@ -138,7 +150,6 @@ export default function CafeteriaOnboarding() {
   };
 
   const handleAddAnother = () => {
-    // Reset form y volver al paso 1
     setFormData({
       nombre: "",
       campus: "",
@@ -154,7 +165,6 @@ export default function CafeteriaOnboarding() {
     setIsAddingAnother(true);
   };
 
-  // Paso 1: Datos Básicos
   if (currentStep === 1) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-amber-50 flex items-center justify-center p-6">
@@ -252,7 +262,6 @@ export default function CafeteriaOnboarding() {
     );
   }
 
-  // Paso 2: Configuración Operativa
   if (currentStep === 2) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-amber-50 flex items-center justify-center p-6">
@@ -359,7 +368,6 @@ export default function CafeteriaOnboarding() {
     );
   }
 
-  // Paso 3: Confirmación y Envío
   if (currentStep === 3) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-amber-50 flex items-center justify-center p-6">
@@ -471,7 +479,6 @@ export default function CafeteriaOnboarding() {
     );
   }
 
-  // Paso 4: Confirmación Final
   if (currentStep === 4) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-amber-50 flex items-center justify-center p-6">
@@ -493,22 +500,26 @@ export default function CafeteriaOnboarding() {
               <ol className="space-y-2 text-sm text-blue-800">
                 <li className="flex items-start gap-2">
                   <span className="font-bold">1.</span>
-                  <span>Nuestro equipo revisará tu solicitud en las próximas 24-48 horas</span>
+                  <span>Tu cafetería tiene un ID temporal y puedes acceder a tu panel</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="font-bold">2.</span>
-                  <span>Recibirás un email cuando tu cafetería sea aprobada</span>
+                  <span>Nuestro equipo revisará tu solicitud en 24-48 horas</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="font-bold">3.</span>
-                  <span>Podrás empezar a publicar menús y recibir pedidos</span>
+                  <span>Recibirás un email cuando tu cafetería sea aprobada</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="font-bold">4.</span>
+                  <span>Entonces podrás publicar menús y recibir pedidos</span>
                 </li>
               </ol>
             </div>
 
-            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
-              <p className="text-sm text-emerald-900">
-                💡 <strong>Mientras tanto:</strong> Puedes explorar la plataforma y familiarizarte con el panel de control.
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+              <p className="text-sm text-amber-900">
+                ⚠️ <strong>Importante:</strong> Puedes explorar tu panel pero NO podrás publicar menús hasta que seamos aprobados.
               </p>
             </div>
 
@@ -526,7 +537,7 @@ export default function CafeteriaOnboarding() {
                 onClick={() => navigate(createPageUrl("CafeteriaDashboard"))}
                 className="w-full bg-gradient-to-r from-emerald-600 to-green-600 py-6 text-lg"
               >
-                Ir a Mi Panel
+                Ir a Mi Panel Temporal
               </Button>
             </div>
           </CardContent>
