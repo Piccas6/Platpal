@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,12 +8,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, Plus, CheckCircle, Building2, User, Zap, Loader2 } from "lucide-react";
+import { ArrowLeft, Plus, CheckCircle, Building2, User, Zap, Loader2, Search } from "lucide-react";
 import withAuth from "../components/auth/withAuth";
 
 function CrearCafeteria() {
+  const [allUsers, setAllUsers] = useState([]);
+  const [selectedUserId, setSelectedUserId] = useState('new');
+  const [searchUser, setSearchUser] = useState('');
+  
   const [formData, setFormData] = useState({
-    // Credenciales usuario
+    // Credenciales usuario (solo si es nuevo)
     email: '',
     password: '',
     full_name: '',
@@ -43,6 +47,18 @@ function CrearCafeteria() {
     { id: 'algeciras', name: 'Algeciras' }
   ];
 
+  useEffect(() => {
+    const loadUsers = async () => {
+      try {
+        const users = await base44.entities.User.list();
+        setAllUsers(users);
+      } catch (error) {
+        console.error('Error loading users:', error);
+      }
+    };
+    loadUsers();
+  }, []);
+
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     
@@ -58,29 +74,62 @@ function CrearCafeteria() {
     }
   };
 
+  const handleUserSelect = (userId) => {
+    setSelectedUserId(userId);
+    
+    if (userId !== 'new') {
+      const user = allUsers.find(u => u.id === userId);
+      if (user) {
+        setFormData(prev => ({
+          ...prev,
+          email: user.email,
+          full_name: user.full_name || '',
+          password: '' // No mostrar la contraseña existente
+        }));
+      }
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        email: '',
+        full_name: '',
+        password: ''
+      }));
+    }
+  };
+
+  const filteredUsers = allUsers.filter(u =>
+    u.email?.toLowerCase().includes(searchUser.toLowerCase()) ||
+    u.full_name?.toLowerCase().includes(searchUser.toLowerCase())
+  );
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError('');
 
     try {
-      console.log('🚀 Iniciando creación COMPLETA de cafetería + usuario...');
+      console.log('🚀 Iniciando creación de cafetería + asignación...');
 
       // Validaciones
-      if (!formData.email || !formData.password || !formData.full_name) {
-        throw new Error('Complete todos los datos del usuario');
+      if (selectedUserId === 'new') {
+        if (!formData.email || !formData.password || !formData.full_name) {
+          throw new Error('Complete todos los datos del nuevo usuario');
+        }
+        if (formData.password.length < 6) {
+          throw new Error('La contraseña debe tener mínimo 6 caracteres');
+        }
+      } else {
+        if (!selectedUserId) {
+          throw new Error('Seleccione un usuario');
+        }
       }
 
       if (!formData.nombre || !formData.campus) {
         throw new Error('Complete todos los datos de la cafetería');
       }
 
-      if (formData.password.length < 6) {
-        throw new Error('La contraseña debe tener mínimo 6 caracteres');
-      }
-
       // 1. Crear la cafetería
-      console.log('📝 Paso 1/3: Creando cafetería...');
+      console.log('📝 Paso 1/2: Creando cafetería...');
       const cafeteriaData = {
         nombre: formData.nombre,
         slug: formData.slug,
@@ -98,22 +147,34 @@ function CrearCafeteria() {
       const nuevaCafeteria = await base44.entities.Cafeteria.create(cafeteriaData);
       console.log('✅ Cafetería creada:', nuevaCafeteria.id);
 
-      // 2. Buscar si el usuario ya existe
-      console.log('👤 Paso 2/3: Verificando usuario...');
-      const allUsers = await base44.entities.User.list();
-      let usuario = allUsers.find(u => u.email === formData.email);
+      // 2. Asignar usuario
+      console.log('👤 Paso 2/2: Asignando usuario...');
+      
+      let usuarioAsignado = null;
+      let usuarioEraExistente = true;
 
-      if (usuario) {
-        console.log('✅ Usuario encontrado, actualizando...');
-        // Usuario existe, actualizar con rol cafeteria y asignar cafetería
-        await base44.entities.User.update(usuario.id, {
-          app_role: 'cafeteria',
-          cafeterias_asignadas: [nuevaCafeteria.id],
-          full_name: formData.full_name
-        });
+      if (selectedUserId === 'new') {
+        // Usuario nuevo - guardar info para que se registre
+        console.log('⚠️ Usuario nuevo, debe registrarse primero');
+        usuarioEraExistente = false;
       } else {
-        console.log('⚠️ Usuario NO existe. Debe registrarse primero.');
-        // El usuario debe registrarse manualmente
+        // Usuario existente - asignar directamente
+        const usuario = allUsers.find(u => u.id === selectedUserId);
+        
+        if (usuario) {
+          console.log('✅ Usuario encontrado, actualizando...');
+          
+          // Obtener cafeterías existentes y agregar la nueva
+          const cafeteriasActuales = usuario.cafeterias_asignadas || [];
+          const nuevasCafeterias = [...cafeteriasActuales, nuevaCafeteria.id];
+          
+          await base44.entities.User.update(usuario.id, {
+            app_role: 'cafeteria',
+            cafeterias_asignadas: nuevasCafeterias
+          });
+          
+          usuarioAsignado = usuario;
+        }
       }
 
       // Guardar datos para mostrar
@@ -123,7 +184,8 @@ function CrearCafeteria() {
           email: formData.email,
           password: formData.password,
           full_name: formData.full_name,
-          existe: !!usuario
+          existe: usuarioEraExistente,
+          id: selectedUserId !== 'new' ? selectedUserId : null
         }
       });
 
@@ -139,6 +201,8 @@ function CrearCafeteria() {
 
   const handleCreateAnother = () => {
     setCreatedData(null);
+    setSelectedUserId('new');
+    setSearchUser('');
     setFormData({
       email: '',
       password: '',
@@ -194,12 +258,12 @@ function CrearCafeteria() {
                 <div className="p-6 bg-green-50 rounded-2xl border-2 border-green-400">
                   <h3 className="text-xl font-bold text-green-900 mb-4 flex items-center gap-2">
                     <Zap className="w-6 h-6" />
-                    Usuario Actualizado Automáticamente
+                    Usuario Asignado Automáticamente
                   </h3>
                   <div className="space-y-3">
                     <div className="flex items-center gap-2 p-3 bg-white rounded-lg">
                       <CheckCircle className="w-5 h-5 text-green-600" />
-                      <span className="font-semibold">El usuario <strong>{createdData.usuario.email}</strong> ya existía</span>
+                      <span className="font-semibold">Usuario <strong>{createdData.usuario.email}</strong> encontrado</span>
                     </div>
                     <div className="flex items-center gap-2 p-3 bg-white rounded-lg">
                       <CheckCircle className="w-5 h-5 text-green-600" />
@@ -207,11 +271,11 @@ function CrearCafeteria() {
                     </div>
                     <div className="flex items-center gap-2 p-3 bg-white rounded-lg">
                       <CheckCircle className="w-5 h-5 text-green-600" />
-                      <span className="font-semibold">Cafetería asignada automáticamente</span>
+                      <span className="font-semibold">Cafetería asignada a sus cafeterías</span>
                     </div>
                     <div className="mt-4 p-4 bg-green-100 rounded-xl border-2 border-green-300">
                       <p className="text-green-900 font-bold text-center">
-                        ✅ El usuario ya puede acceder a su panel con sus credenciales existentes
+                        ✅ El usuario ya puede acceder y seleccionar esta cafetería en su panel
                       </p>
                     </div>
                   </div>
@@ -244,23 +308,13 @@ function CrearCafeteria() {
                       <li className="flex gap-2">
                         <span className="flex-shrink-0 w-6 h-6 bg-amber-600 text-white rounded-full flex items-center justify-center font-bold text-xs">1</span>
                         <div>
-                          El usuario debe <strong>registrarse</strong> en: <strong>Home → Acceso Cafeterías → Registrarse</strong>
+                          El usuario debe <strong>registrarse</strong> en la plataforma
                         </div>
                       </li>
                       <li className="flex gap-2">
                         <span className="flex-shrink-0 w-6 h-6 bg-amber-600 text-white rounded-full flex items-center justify-center font-bold text-xs">2</span>
                         <div>
-                          Usar estas credenciales en el registro
-                        </div>
-                      </li>
-                      <li className="flex gap-2">
-                        <span className="flex-shrink-0 w-6 h-6 bg-amber-600 text-white rounded-full flex items-center justify-center font-bold text-xs">3</span>
-                        <div>
-                          <strong>Admin:</strong> Ir a <strong>Dashboard → Data → User</strong>, buscar el email y editar:
-                          <ul className="mt-2 ml-4 space-y-1">
-                            <li>• <code className="bg-white px-1 rounded">app_role: "cafeteria"</code></li>
-                            <li>• <code className="bg-white px-1 rounded">cafeterias_asignadas: ["{createdData.cafeteria.id}"]</code></li>
-                          </ul>
+                          Una vez registrado, vuelve aquí y selecciona su usuario para asignar esta cafetería
                         </div>
                       </li>
                     </ol>
@@ -303,8 +357,8 @@ function CrearCafeteria() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-4xl font-black text-gray-900">Crear Cafetería + Usuario</h1>
-            <p className="text-gray-600 mt-2">Todo en un solo paso - Automático</p>
+            <h1 className="text-4xl font-black text-gray-900">Crear y Asignar Cafetería</h1>
+            <p className="text-gray-600 mt-2">Asigna cafeterías a usuarios existentes o crea nuevos</p>
           </div>
         </div>
 
@@ -316,15 +370,15 @@ function CrearCafeteria() {
                 <Zap className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="font-bold text-purple-900 text-lg mb-2">🚀 Sistema Automático</h3>
+                <h3 className="font-bold text-purple-900 text-lg mb-2">🚀 Sistema Inteligente</h3>
                 <ul className="space-y-2 text-purple-800">
                   <li className="flex items-center gap-2">
                     <CheckCircle className="w-5 h-5 text-purple-600" />
-                    <span>Si el usuario <strong>YA EXISTE</strong>: Se asigna automáticamente el rol y la cafetería</span>
+                    <span><strong>Usuario existente:</strong> Se asigna automáticamente (puede tener varias cafeterías)</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="w-5 h-5 text-purple-600" />
-                    <span>Si el usuario <strong>NO EXISTE</strong>: Se guardan las credenciales para que se registre</span>
+                    <span><strong>Usuario nuevo:</strong> Se guardan credenciales para que se registre primero</span>
                   </li>
                 </ul>
               </div>
@@ -340,7 +394,7 @@ function CrearCafeteria() {
                 <span className="text-white text-xl font-bold">!</span>
               </div>
               <div>
-                <h3 className="font-bold text-red-900">Error al crear cafetería</h3>
+                <h3 className="font-bold text-red-900">Error</h3>
                 <p className="text-red-800">{error}</p>
               </div>
             </CardContent>
@@ -350,47 +404,107 @@ function CrearCafeteria() {
         {/* Formulario */}
         <form onSubmit={handleSubmit} className="space-y-6">
           
-          {/* CREDENCIALES USUARIO */}
+          {/* SELECCIÓN USUARIO */}
           <Card className="border-2 border-blue-200">
             <CardHeader className="bg-blue-50 border-b">
               <CardTitle className="flex items-center gap-2 text-xl">
                 <User className="w-6 h-6 text-blue-600" />
-                Credenciales del Usuario
+                Asignar a Usuario
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6 space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <Label>Email *</Label>
-                  <Input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleChange('email', e.target.value)}
-                    placeholder="usuario@ejemplo.com"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label>Contraseña *</Label>
-                  <Input
-                    type="password"
-                    value={formData.password}
-                    onChange={(e) => handleChange('password', e.target.value)}
-                    placeholder="Mínimo 6 caracteres"
-                    minLength={6}
-                    required
-                  />
-                </div>
-              </div>
               <div>
-                <Label>Nombre Completo *</Label>
-                <Input
-                  value={formData.full_name}
-                  onChange={(e) => handleChange('full_name', e.target.value)}
-                  placeholder="Juan Pérez"
-                  required
-                />
+                <Label>Selecciona Usuario *</Label>
+                <Select value={selectedUserId} onValueChange={handleUserSelect}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <div className="p-2">
+                      <div className="relative mb-2">
+                        <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <Input
+                          placeholder="Buscar usuario..."
+                          value={searchUser}
+                          onChange={(e) => setSearchUser(e.target.value)}
+                          className="pl-8"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </div>
+                    </div>
+                    <SelectItem value="new">
+                      <div className="flex items-center gap-2 py-1">
+                        <Plus className="w-4 h-4 text-emerald-600" />
+                        <span className="font-semibold text-emerald-600">Crear Nuevo Usuario</span>
+                      </div>
+                    </SelectItem>
+                    {filteredUsers.map(u => (
+                      <SelectItem key={u.id} value={u.id}>
+                        <div className="py-1">
+                          <p className="font-semibold">{u.full_name || 'Sin nombre'}</p>
+                          <p className="text-xs text-gray-500">{u.email}</p>
+                          {u.app_role === 'cafeteria' && (
+                            <p className="text-xs text-emerald-600">
+                              {u.cafeterias_asignadas?.length || 0} cafetería(s) actual(es)
+                            </p>
+                          )}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
+
+              {/* Datos usuario nuevo */}
+              {selectedUserId === 'new' && (
+                <div className="space-y-4 p-4 bg-blue-50 rounded-xl border-2 border-blue-200">
+                  <h4 className="font-bold text-blue-900">Datos del Nuevo Usuario</h4>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <Label>Email *</Label>
+                      <Input
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => handleChange('email', e.target.value)}
+                        placeholder="usuario@ejemplo.com"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label>Contraseña *</Label>
+                      <Input
+                        type="password"
+                        value={formData.password}
+                        onChange={(e) => handleChange('password', e.target.value)}
+                        placeholder="Mínimo 6 caracteres"
+                        minLength={6}
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label>Nombre Completo *</Label>
+                    <Input
+                      value={formData.full_name}
+                      onChange={(e) => handleChange('full_name', e.target.value)}
+                      placeholder="Juan Pérez"
+                      required
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Info usuario existente */}
+              {selectedUserId !== 'new' && selectedUserId && (
+                <div className="p-4 bg-green-50 rounded-xl border-2 border-green-200">
+                  <p className="text-green-900">
+                    ✅ <strong>{formData.full_name || 'Usuario'}</strong> - {formData.email}
+                  </p>
+                  <p className="text-sm text-green-700 mt-1">
+                    Esta cafetería se añadirá a sus cafeterías asignadas
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -537,7 +651,7 @@ function CrearCafeteria() {
               ) : (
                 <>
                   <Zap className="w-5 h-5 mr-2" />
-                  Crear y Asignar Automáticamente
+                  Crear y Asignar Cafetería
                 </>
               )}
             </Button>
