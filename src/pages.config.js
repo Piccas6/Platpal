@@ -22,12 +22,8 @@ import MenuTemplates from './pages/MenuTemplates';
 import Bonos from './pages/Bonos';
 import BonoSuccess from './pages/BonoSuccess';
 import CafeteriaDetails from './pages/CafeteriaDetails';
-import SystemCheck from './pages/SystemCheck';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
-import CafeteriaOnboarding from './pages/CafeteriaOnboarding';
-import AdminCafeteriaApproval from './pages/AdminCafeteriaApproval';
-import SolicitarCafeteria from './pages/SolicitarCafeteria';
 import CrearCafeteria from './pages/CrearCafeteria';
 import Layout from './Layout.jsx';
 
@@ -57,12 +53,8 @@ export const PAGES = {
     "Bonos": Bonos,
     "BonoSuccess": BonoSuccess,
     "CafeteriaDetails": CafeteriaDetails,
-    "SystemCheck": SystemCheck,
     "PrivacyPolicy": PrivacyPolicy,
     "TermsOfService": TermsOfService,
-    "CafeteriaOnboarding": CafeteriaOnboarding,
-    "AdminCafeteriaApproval": AdminCafeteriaApproval,
-    "SolicitarCafeteria": SolicitarCafeteria,
     "CrearCafeteria": CrearCafeteria,
 }
 

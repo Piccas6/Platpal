@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Home, MapPin, UtensilsCrossed, HelpCircle, User, ChefHat, Target, UserCircle, Settings, UserCheck, BarChart3, Gift, Bug, Building2, Plus } from "lucide-react";
+import { Home, MapPin, UtensilsCrossed, HelpCircle, User, ChefHat, Target, Settings, UserCheck, BarChart3, Gift, Plus } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import {
   Sidebar,
@@ -48,12 +47,7 @@ const cafeteriaNav = [
 
 const adminNav = [
     { title: "Admin Dashboard", url: createPageUrl("AdminDashboard"), icon: Settings },
-    { title: "Crear Cafetería", url: createPageUrl("CrearCafeteria"), icon: Plus },
-    { title: "Aprobar Cafeterías", url: createPageUrl("AdminCafeteriaApproval"), icon: Building2 }
-];
-
-const debugNav = [
-    { title: "🔧 Diagnóstico", url: createPageUrl("SystemCheck"), icon: Bug }
+    { title: "Crear Cafetería", url: createPageUrl("CrearCafeteria"), icon: Plus }
 ];
 
 export default function Layout({ children, currentPageName }) {
@@ -68,11 +62,6 @@ export default function Layout({ children, currentPageName }) {
   const [language, setLanguage] = useState(() => {
     return localStorage.getItem('platpal_language') || 'es';
   });
-  const [pageVisibility, setPageVisibility] = useState({
-    systemCheck: false
-  });
-
-  const [shouldRedirectToOnboarding, setShouldRedirectToOnboarding] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -84,22 +73,6 @@ export default function Layout({ children, currentPageName }) {
         }
         setCurrentUser(user);
         setIsLoggedIn(true);
-
-        // FIXED: Nueva lógica de redirección al onboarding
-        // Solo redirigir si:
-        // 1. Es rol cafeteria
-        // 2. NO ha completado onboarding
-        // 3. NO tiene cafeterías asignadas
-        // 4. NO está ya en la página de onboarding
-        if (
-          user.app_role === 'cafeteria' && 
-          !user.onboarding_completado &&
-          (!user.cafeterias_asignadas || user.cafeterias_asignadas.length === 0) &&
-          location.pathname !== createPageUrl("CafeteriaOnboarding")
-        ) {
-          console.log('🔄 Redirigiendo a onboarding - usuario sin cafeterías');
-          setShouldRedirectToOnboarding(true);
-        }
       } catch (error) {
         setCurrentUser({ 
           app_role: 'user', 
@@ -112,45 +85,10 @@ export default function Layout({ children, currentPageName }) {
     fetchUser();
   }, [location.pathname]);
 
-  // Fetch page visibility settings solo una vez, no en cada cambio de ruta
-  useEffect(() => {
-    const fetchPageVisibility = async () => {
-      try {
-        const cached = sessionStorage.getItem('platpal_page_visibility');
-        if (cached) {
-          setPageVisibility(JSON.parse(cached));
-          return;
-        }
-
-        const settings = await base44.entities.AppSettings.list();
-        const visibilitySetting = settings.find(s => s.setting_key === 'page_visibility');
-        const visibility = {
-          systemCheck: visibilitySetting?.setting_value?.systemCheck || false
-        };
-        
-        setPageVisibility(visibility);
-        sessionStorage.setItem('platpal_page_visibility', JSON.stringify(visibility));
-      } catch (error) {
-        if (!error.message?.includes('Rate limit')) {
-          console.error('Error fetching page visibility:', error);
-        }
-        setPageVisibility({ systemCheck: false });
-      }
-    };
-    fetchPageVisibility();
-  }, []);
-
   useEffect(() => {
     localStorage.setItem('platpal_language', language);
     window.dispatchEvent(new CustomEvent('languageChange', { detail: language }));
   }, [language]);
-
-  useEffect(() => {
-    if (shouldRedirectToOnboarding) {
-      window.location.href = createPageUrl("CafeteriaOnboarding");
-      setShouldRedirectToOnboarding(false);
-    }
-  }, [shouldRedirectToOnboarding]);
 
   const handleLogin = async () => {
     try {
@@ -176,11 +114,6 @@ export default function Layout({ children, currentPageName }) {
   };
   
   const effectiveRole = testRole || currentUser?.app_role || 'user';
-
-  const visibleDebugNav = debugNav.filter(item => {
-    if (item.title === "🔧 Diagnóstico" && !pageVisibility.systemCheck) return false;
-    return true;
-  });
 
   return (
     <SidebarProvider>
@@ -261,14 +194,6 @@ export default function Layout({ children, currentPageName }) {
                   {isLoggedIn && effectiveRole === 'admin' && adminNav.map((item) => (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild className={`group hover:bg-purple-50 hover:text-purple-700 transition-all duration-300 rounded-2xl mb-2 text-gray-700 font-medium ${location.pathname === item.url ? 'bg-purple-50 text-purple-700 shadow-sm' : ''}`}>
-                        <Link to={item.url} className="flex items-center gap-4 px-4 py-3"><item.icon className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" /><span>{item.title}</span></Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-
-                  {isLoggedIn && visibleDebugNav.map((item) => (
-                    <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton asChild className={`group hover:bg-pink-50 hover:text-pink-700 transition-all duration-300 rounded-2xl mb-2 text-gray-700 font-medium ${location.pathname === item.url ? 'bg-pink-50 text-pink-700 shadow-sm' : ''}`}>
                         <Link to={item.url} className="flex items-center gap-4 px-4 py-3"><item.icon className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" /><span>{item.title}</span></Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
