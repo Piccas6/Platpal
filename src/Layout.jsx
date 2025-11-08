@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Home, MapPin, UtensilsCrossed, HelpCircle, User, ChefHat, Target, Settings, UserCheck, BarChart3, Gift, Plus } from "lucide-react";
+import { Home, MapPin, UtensilsCrossed, HelpCircle, User, ChefHat, Target, Settings, UserCheck, BarChart3, Gift, Plus, Building2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import {
   Sidebar,
@@ -44,6 +44,7 @@ const managerNav = [
 
 const adminNav = [
     { title: "Admin Dashboard", url: createPageUrl("AdminDashboard"), icon: Settings },
+    { title: "Gestionar Cafeterías", url: createPageUrl("GestionarCafeterias"), icon: Building2 },
     { title: "Crear Cafetería", url: createPageUrl("CrearCafeteria"), icon: Plus }
 ];
 
