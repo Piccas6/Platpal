@@ -16,7 +16,8 @@ import {
   Phone,
   Calendar,
   RefreshCw,
-  Search
+  Search,
+  Key
 } from "lucide-react";
 
 function AdminCafeteriaApproval() {
@@ -45,7 +46,9 @@ function AdminCafeteriaApproval() {
       console.log('📋 [ADMIN APPROVAL] Cafeterías:', allCafeterias.map(c => ({
         id: c.id,
         nombre: c.nombre,
+        id_temporal: c.cafeteria_id_temporal,
         aprobada: c.aprobada,
+        puede_publicar: c.puede_publicar_menus,
         estado: c.estado_onboarding
       })));
       
@@ -80,20 +83,22 @@ function AdminCafeteriaApproval() {
   }, []);
 
   const handleAprobar = async (cafeteriaId, cafeteriaName) => {
-    if (!confirm(`¿Aprobar "${cafeteriaName}" para que aparezca en la plataforma?`)) return;
+    if (!confirm(`¿Aprobar "${cafeteriaName}" para que pueda publicar menús en la plataforma?`)) return;
     
     try {
       console.log('✅ [ADMIN APPROVAL] Aprobando cafetería:', cafeteriaId);
       
+      // 🆕 ACTIVAR puede_publicar_menus al aprobar
       await base44.entities.Cafeteria.update(cafeteriaId, {
         aprobada: true,
         estado_onboarding: 'aprobada',
         activa: true,
+        puede_publicar_menus: true, // 🆕 PERMITIR PUBLICAR
         fecha_aprobacion: new Date().toISOString()
       });
       
-      console.log('✅ [ADMIN APPROVAL] Cafetería aprobada correctamente');
-      alert('✅ Cafetería aprobada correctamente');
+      console.log('✅ [ADMIN APPROVAL] Cafetería aprobada y habilitada para publicar');
+      alert('✅ Cafetería aprobada correctamente\n\n• Ahora es visible en la plataforma\n• Puede publicar menús\n• ID temporal convertido en permanente');
       loadData();
     } catch (error) {
       console.error("❌ [ADMIN APPROVAL] Error aprobando:", error);
@@ -112,11 +117,12 @@ function AdminCafeteriaApproval() {
         aprobada: false,
         estado_onboarding: 'rechazada',
         activa: false,
+        puede_publicar_menus: false, // 🆕 BLOQUEAR PUBLICACIÓN
         notas_admin: motivo || 'Rechazada sin motivo especificado'
       });
       
       console.log('❌ [ADMIN APPROVAL] Cafetería rechazada');
-      alert('Cafetería rechazada');
+      alert('Cafetería rechazada y notificada al propietario');
       loadData();
     } catch (error) {
       console.error("❌ [ADMIN APPROVAL] Error rechazando:", error);
@@ -134,7 +140,8 @@ function AdminCafeteriaApproval() {
     
     const searchMatch = !filters.search ||
       c.nombre?.toLowerCase().includes(filters.search.toLowerCase()) ||
-      c.contacto?.toLowerCase().includes(filters.search.toLowerCase());
+      c.contacto?.toLowerCase().includes(filters.search.toLowerCase()) ||
+      c.cafeteria_id_temporal?.toLowerCase().includes(filters.search.toLowerCase());
     
     return estadoMatch && campusMatch && searchMatch;
   });
@@ -186,6 +193,9 @@ function AdminCafeteriaApproval() {
                   <p className="text-lg text-orange-800">
                     Revisa las solicitudes y aprueba o rechaza según corresponda
                   </p>
+                  <p className="text-sm text-orange-700 mt-2">
+                    💡 Tienen ID temporal y acceso limitado a su panel
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -199,6 +209,7 @@ function AdminCafeteriaApproval() {
               <Clock className="w-12 h-12 text-orange-600 mx-auto mb-3" />
               <p className="text-sm text-gray-600 mb-1">Pendientes</p>
               <p className="text-5xl font-black text-orange-600">{stats.pendientes}</p>
+              <p className="text-xs text-gray-500 mt-2">Con ID temporal</p>
             </CardContent>
           </Card>
 
@@ -207,6 +218,7 @@ function AdminCafeteriaApproval() {
               <CheckCircle className="w-12 h-12 text-green-600 mx-auto mb-3" />
               <p className="text-sm text-gray-600 mb-1">Aprobadas</p>
               <p className="text-5xl font-black text-green-600">{stats.aprobadas}</p>
+              <p className="text-xs text-gray-500 mt-2">Pueden publicar</p>
             </CardContent>
           </Card>
 
@@ -215,6 +227,7 @@ function AdminCafeteriaApproval() {
               <XCircle className="w-12 h-12 text-red-600 mx-auto mb-3" />
               <p className="text-sm text-gray-600 mb-1">Rechazadas</p>
               <p className="text-5xl font-black text-red-600">{stats.rechazadas}</p>
+              <p className="text-xs text-gray-500 mt-2">Bloqueadas</p>
             </CardContent>
           </Card>
 
@@ -223,6 +236,7 @@ function AdminCafeteriaApproval() {
               <Building2 className="w-12 h-12 text-gray-600 mx-auto mb-3" />
               <p className="text-sm text-gray-600 mb-1">Total</p>
               <p className="text-5xl font-black text-gray-900">{stats.total}</p>
+              <p className="text-xs text-gray-500 mt-2">En sistema</p>
             </CardContent>
           </Card>
         </div>
@@ -234,7 +248,7 @@ function AdminCafeteriaApproval() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                 <Input
-                  placeholder="Buscar por nombre o contacto..."
+                  placeholder="Buscar por nombre, contacto o ID temporal..."
                   value={filters.search}
                   onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
                   className="pl-9 bg-white border-2"
@@ -293,7 +307,7 @@ function AdminCafeteriaApproval() {
                     <div className="flex-1 space-y-5">
                       
                       {/* Título y Badge */}
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-4 flex-wrap">
                         <h3 className="text-3xl font-black text-gray-900">{cafe.nombre}</h3>
                         {cafe.aprobada ? (
                           <Badge className="bg-green-500 text-white px-4 py-2 text-base">
@@ -311,7 +325,28 @@ function AdminCafeteriaApproval() {
                             RECHAZADA
                           </Badge>
                         )}
+
+                        {/* 🆕 Badge estado publicación */}
+                        {cafe.puede_publicar_menus ? (
+                          <Badge className="bg-emerald-100 text-emerald-800 px-3 py-1 text-sm">
+                            ✅ Puede publicar
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-gray-100 text-gray-700 px-3 py-1 text-sm">
+                            🔒 Publicación bloqueada
+                          </Badge>
+                        )}
                       </div>
+
+                      {/* 🆕 ID Temporal */}
+                      {cafe.cafeteria_id_temporal && (
+                        <div className="inline-flex items-center gap-2 px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg">
+                          <Key className="w-4 h-4 text-gray-600" />
+                          <span className="text-sm font-mono text-gray-700">
+                            ID Temporal: <strong>{cafe.cafeteria_id_temporal}</strong>
+                          </span>
+                        </div>
+                      )}
 
                       {/* Información */}
                       <div className="grid md:grid-cols-2 gap-4">
