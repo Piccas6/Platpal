@@ -28,6 +28,7 @@ import TermsOfService from './pages/TermsOfService';
 import CafeteriaOnboarding from './pages/CafeteriaOnboarding';
 import AdminCafeteriaApproval from './pages/AdminCafeteriaApproval';
 import SolicitarCafeteria from './pages/SolicitarCafeteria';
+import CrearCafeteria from './pages/CrearCafeteria';
 import Layout from './Layout.jsx';
 
 
@@ -62,6 +63,7 @@ export const PAGES = {
     "CafeteriaOnboarding": CafeteriaOnboarding,
     "AdminCafeteriaApproval": AdminCafeteriaApproval,
     "SolicitarCafeteria": SolicitarCafeteria,
+    "CrearCafeteria": CrearCafeteria,
 }
 
 export const pagesConfig = {

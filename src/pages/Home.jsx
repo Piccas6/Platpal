@@ -12,10 +12,10 @@ import {
   Sparkles,
   PartyPopper,
   Loader2,
-  TrendingUp,
   Users,
   Leaf,
-  ChevronRight
+  ChevronRight,
+  LogIn // Added LogIn icon
 } from "lucide-react";
 
 export default function Home() {
@@ -34,7 +34,7 @@ export default function Home() {
         title: "Come increíble por solo 2,99€",
         subtitle: "Rescata deliciosos menús de las cafeterías de tu campus antes de que se desperdicien.",
         cta: "Ver menús disponibles",
-        cafeteriaCta: "¿Tienes una cafetería?", // Added this line
+        cafeteriaLogin: "Acceso Cafeterías", // Modified this line
         investorLink: "¿Eres inversor? Descubre nuestro potencial"
       },
       stats: {
@@ -105,7 +105,7 @@ export default function Home() {
         title: "Eat amazing for just €2.99",
         subtitle: "Rescue delicious meals from your campus cafeterias before they're wasted.",
         cta: "See available menus",
-        cafeteriaCta: "Do you have a cafeteria?", // Added this line
+        cafeteriaLogin: "Cafeteria Access", // Modified this line
         investorLink: "Are you an investor? Discover our potential"
       },
       stats: {
@@ -257,6 +257,17 @@ export default function Home() {
     loadData();
   }, []);
 
+  const handleCafeteriaLogin = async () => {
+    try {
+      // Assuming base44.auth.redirectToLogin() handles the redirection to the login page
+      // and potentially back to a cafeteria dashboard after successful login.
+      await base44.auth.redirectToLogin();
+    } catch (error) {
+      console.error('Login error:', error);
+      // Optionally display an error message to the user
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
@@ -300,14 +311,17 @@ export default function Home() {
               </Button>
             </Link>
             
-            {/* NUEVO: CTA para Cafeterías */}
-            <Link to={createPageUrl("SolicitarCafeteria")}> {/* Changed from "CafeteriaOnboarding" to "SolicitarCafeteria" */}
-              <Button size="lg" variant="outline" className="border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-50 px-10 sm:px-14 py-6 sm:py-7 rounded-full text-base sm:text-lg font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all group">
-                <UtensilsCrossed className="mr-2 w-5 h-5" />
-                {t.hero.cafeteriaCta} {/* Using the new text key */}
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </Link>
+            {/* NEW: Cafeteria Login Button */}
+            <Button 
+              onClick={handleCafeteriaLogin}
+              size="lg" 
+              variant="outline" 
+              className="border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-50 px-10 sm:px-14 py-6 sm:py-7 rounded-full text-base sm:text-lg font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all group"
+            >
+              <LogIn className="mr-2 w-5 h-5" />
+              {t.hero.cafeteriaLogin}
+              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </Button>
           </div>
 
           {/* Investor Link */}
