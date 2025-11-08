@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Filter, Star, StarOff, Loader2, UtensilsCrossed } from "lucide-react";
+import { ArrowLeft, Filter, Star, StarOff, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import MenuCard from "../components/menus/MenuCard";
@@ -23,7 +22,7 @@ export default function Menus() {
   const [isReserving, setIsReserving] = useState(false);
   const [allMenus, setAllMenus] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
-  const [reservations, setReservations] = useState([]); // New state for all reservations
+  const [reservations, setReservations] = useState([]);
 
   const [filters, setFilters] = useState({
     tipo_cocina: 'all',
@@ -38,11 +37,10 @@ export default function Menus() {
     try {
       const fetchedMenus = await base44.entities.Menu.list('-created_date');
       setAllMenus(fetchedMenus);
-      // Fetch all reservations
       const fetchedReservations = await base44.entities.Reserva.list();
       setReservations(fetchedReservations);
     } catch (error) {
-      console.error("Error loading data (menus or reservations):", error);
+      console.error("Error loading data:", error);
     } finally {
       setIsLoading(false);
     }
@@ -109,8 +107,8 @@ export default function Menus() {
       const user = await base44.auth.me();
       setCurrentUser({
         ...user,
-        menus_favoritos: user.menus_favoritos || [], // Initialize if undefined
-        cafeterias_favoritas: user.cafeterias_favoritas || [] // Initialize if undefined
+        menus_favoritos: user.menus_favoritos || [],
+        cafeterias_favoritas: user.cafeterias_favoritas || []
       });
     } catch (error) {
       setCurrentUser({
@@ -123,7 +121,7 @@ export default function Menus() {
         achievements: [],
         cafeterias_favoritas: [],
         creditos_menu_bono: 0,
-        menus_favoritos: [] // Initialize for guest users too
+        menus_favoritos: []
       });
     }
   };
@@ -134,7 +132,7 @@ export default function Menus() {
   };
 
   const handleReservationSuccess = useCallback(() => {
-    console.log("Reservation successful! Refreshing menus if staying on page.");
+    console.log("Reservation successful! Refreshing menus.");
     loadMenus();
     setShowReservationModal(false);
     setSelectedMenu(null);
@@ -336,29 +334,7 @@ export default function Menus() {
           </div>
         </div>
 
-        {/* Maintenance Notice */}
-        <Card className="mb-6 border-2 border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50">
-          <CardContent className="p-6">
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0">
-                <UtensilsCrossed className="w-6 h-6 text-white" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-xl font-bold text-amber-900 mb-2">
-                  🚧 Plataforma en Mantenimiento
-                </h3>
-                <p className="text-amber-800 mb-3">
-                  Estamos preparando PlatPal para ofrecerte la mejor experiencia. Pronto podrás reservar deliciosos menús a precio reducido y ayudar al planeta.
-                </p>
-                <p className="text-sm text-amber-700">
-                  <strong>Próximamente:</strong> Menús sostenibles de las cafeterías de tu campus por solo €2.99
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* NUEVO: Recomendaciones personalizadas */}
+        {/* Recomendaciones personalizadas */}
         {currentUser && currentUser.id && !isLoading && (
           <RecommendedMenus
             currentUser={currentUser}
@@ -366,7 +342,6 @@ export default function Menus() {
             allReservations={reservations}
             onReservationSuccess={handleReservationSuccess}
             onFavoriteToggle={(menuId, isFavorite) => {
-              // Update local user state
               setCurrentUser(prev => ({
                 ...prev,
                 menus_favoritos: isFavorite 
@@ -377,6 +352,7 @@ export default function Menus() {
           />
         )}
 
+        {/* Filtros */}
         <Card className="mb-6 border-2">
             <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-4">
@@ -450,28 +426,37 @@ export default function Menus() {
             </CardContent>
         </Card>
 
+        {/* Lista de menús */}
         {isLoading ? (
           <div className="flex items-center justify-center h-64">
             <Loader2 className="w-12 h-12 animate-spin text-emerald-600" />
           </div>
+        ) : menus.length > 0 ? (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {menus.map((menu) => (
+              <MenuCard
+                key={menu.id}
+                menu={menu}
+                onReserve={openReservationModal}
+                isFavorite={isFavorite(menu.cafeteria)}
+                onToggleFavorite={toggleFavoriteCafeteria}
+              />
+            ))}
+          </div>
         ) : (
           <Card className="p-12 text-center border-2 border-dashed">
-            <UtensilsCrossed className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Estamos preparando los menús
-            </h3>
-            <p className="text-gray-600 mb-6">
-              La plataforma estará disponible muy pronto. Mientras tanto, puedes explorar nuestros campus y descubrir el impacto que generaremos juntos.
-            </p>
-            <div className="flex gap-3 justify-center">
+            <div className="text-center">
+              <p className="text-xl font-semibold text-gray-900 mb-2">
+                No hay menús disponibles
+              </p>
+              <p className="text-gray-600 mb-6">
+                {filters.tipo_cocina !== 'all' || filters.es_vegetariano || filters.es_vegano || filters.sin_gluten || filters.solo_favoritos
+                  ? 'Intenta ajustar los filtros para ver más opciones'
+                  : 'Vuelve más tarde para ver nuevas ofertas'}
+              </p>
               <Link to={createPageUrl("Campus")}>
-                <Button className="bg-gradient-to-r from-emerald-600 to-green-600">
-                  Explorar Campus
-                </Button>
-              </Link>
-              <Link to={createPageUrl("Impact")}>
                 <Button variant="outline">
-                  Ver Impacto
+                  Explorar Campus
                 </Button>
               </Link>
             </div>
