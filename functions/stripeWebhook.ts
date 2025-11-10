@@ -40,49 +40,84 @@ Deno.serve(async (req) => {
         // EVENTO: Checkout completado (primera vez o pago único)
         if (event.type === 'checkout.session.completed') {
             const session = event.data.object;
-            const tipoCompra = session.metadata?.tipo_compra;
+            const customerEmail = session.customer_email || session.customer_details?.email;
             
             console.log(`${logPrefix} 💳 CHECKOUT COMPLETADO`);
-            console.log(`${logPrefix} Tipo:`, tipoCompra);
+            console.log(`${logPrefix} Customer Email:`, customerEmail);
+            console.log(`${logPrefix} Mode:`, session.mode);
+            console.log(`${logPrefix} Metadata:`, session.metadata);
 
-            // CASO 1: Suscripción de Bono
-            if (tipoCompra === 'bono_subscripcion') {
+            // CASO 1: Suscripción de Bono (desde Payment Link o Checkout)
+            if (session.mode === 'subscription') {
                 console.log(`${logPrefix} 🔄 Procesando SUSCRIPCIÓN de bono...`);
                 
-                const bonoCompraId = session.client_reference_id;
-                const userEmail = session.metadata?.user_email;
-                const cantidadMenus = parseInt(session.metadata?.cantidad_menus || '0');
                 const subscriptionId = session.subscription;
                 const customerId = session.customer;
+
+                if (!subscriptionId || !customerEmail) {
+                    console.error(`${logPrefix} ❌ Faltan datos de suscripción`);
+                    return Response.json({ received: true, error: 'Missing subscription data' }, { status: 200 });
+                }
 
                 console.log(`${logPrefix} Subscription ID:`, subscriptionId);
                 console.log(`${logPrefix} Customer ID:`, customerId);
 
-                if (!bonoCompraId || !userEmail || !subscriptionId) {
-                    console.error(`${logPrefix} ❌ Faltan datos de suscripción`);
-                    return Response.json({ received: true, error: 'Missing data' }, { status: 200 });
-                }
-
                 try {
-                    // Actualizar BonoCompra con IDs de Stripe
-                    await base44.asServiceRole.entities.BonoCompra.update(bonoCompraId, {
-                        subscription_status: 'active',
-                        stripe_subscription_id: subscriptionId,
-                        stripe_customer_id: customerId,
-                        fecha_renovacion: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-                    });
+                    // Buscar el BonoPack activo (asumimos que hay solo uno)
+                    const allBonoPacks = await base44.asServiceRole.entities.BonoPack.list();
+                    const activePack = allBonoPacks.find(p => p.activo === true);
+
+                    if (!activePack) {
+                        console.error(`${logPrefix} ❌ No hay BonoPack activo`);
+                        return Response.json({ received: true, error: 'No active BonoPack' }, { status: 200 });
+                    }
+
+                    console.log(`${logPrefix} ✅ BonoPack encontrado:`, activePack.nombre);
+
+                    // Buscar si ya existe una BonoCompra para este subscription_id
+                    const allCompras = await base44.asServiceRole.entities.BonoCompra.list();
+                    let bonoCompra = allCompras.find(c => c.stripe_subscription_id === subscriptionId);
+
+                    if (!bonoCompra) {
+                        // Crear nueva BonoCompra
+                        console.log(`${logPrefix} 📝 Creando nueva BonoCompra...`);
+                        bonoCompra = await base44.asServiceRole.entities.BonoCompra.create({
+                            bono_pack_id: activePack.id,
+                            user_email: customerEmail,
+                            cantidad_menus: activePack.cantidad_menus,
+                            precio_pagado: activePack.precio_mensual,
+                            stripe_subscription_id: subscriptionId,
+                            stripe_customer_id: customerId,
+                            subscription_status: 'active',
+                            fecha_renovacion: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                            menus_usados_mes_actual: 0
+                        });
+                        console.log(`${logPrefix} ✅ BonoCompra creada:`, bonoCompra.id);
+                    } else {
+                        // Actualizar BonoCompra existente
+                        console.log(`${logPrefix} 🔄 Actualizando BonoCompra existente:`, bonoCompra.id);
+                        await base44.asServiceRole.entities.BonoCompra.update(bonoCompra.id, {
+                            subscription_status: 'active',
+                            stripe_subscription_id: subscriptionId,
+                            stripe_customer_id: customerId,
+                            fecha_renovacion: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+                        });
+                    }
 
                     // Dar créditos iniciales al usuario
                     const allUsers = await base44.asServiceRole.entities.User.list();
-                    const user = allUsers.find(u => u.email === userEmail);
+                    const user = allUsers.find(u => u.email === customerEmail);
 
                     if (user) {
+                        console.log(`${logPrefix} 👤 Usuario encontrado:`, user.email);
                         await base44.asServiceRole.entities.User.update(user.id, {
-                            creditos_menu_bono: cantidadMenus,
+                            creditos_menu_bono: activePack.cantidad_menus,
                             tiene_subscripcion_activa: true,
-                            subscripcion_id: bonoCompraId
+                            subscripcion_id: bonoCompra.id
                         });
-                        console.log(`${logPrefix} ✅ Usuario actualizado con suscripción activa`);
+                        console.log(`${logPrefix} ✅ Usuario actualizado con ${activePack.cantidad_menus} créditos`);
+                    } else {
+                        console.warn(`${logPrefix} ⚠️ Usuario no encontrado:`, customerEmail);
                     }
 
                     console.log(`${logPrefix} 🎉 Suscripción activada correctamente`);
@@ -94,9 +129,9 @@ Deno.serve(async (req) => {
                 }
             }
 
-            // CASO 2: Pago normal de menú
+            // CASO 2: Pago normal de menú (payment mode)
             const reservaId = session.client_reference_id;
-            if (reservaId && tipoCompra !== 'bono_subscripcion') {
+            if (reservaId && session.mode === 'payment') {
                 console.log(`${logPrefix} 🍽️ Procesando pago de menú...`);
                 
                 try {
@@ -108,7 +143,7 @@ Deno.serve(async (req) => {
                     
                     console.log(`${logPrefix} ✅ Reserva ${reservaId} actualizada`);
 
-                    // NUEVO: Enviar emails de confirmación después del pago
+                    // Enviar emails de confirmación después del pago
                     try {
                         console.log(`${logPrefix} 📧 Enviando emails de confirmación...`);
                         await base44.asServiceRole.functions.invoke('sendReservationEmails', {
