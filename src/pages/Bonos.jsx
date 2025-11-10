@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
@@ -36,6 +35,8 @@ export default function Bonos() {
   };
 
   const handlePurchaseBono = async (bonoPack) => {
+    console.log('🎁 Iniciando compra de bono...');
+    
     if (!currentUser) {
       alert('Debes iniciar sesión para suscribirte');
       await base44.auth.redirectToLogin(window.location.pathname);
@@ -48,8 +49,36 @@ export default function Bonos() {
       return;
     }
 
-    // Redirigir directamente al link de pago de Stripe
-    window.location.href = 'https://buy.stripe.com/8wM00kaeKaZ1gM23gD';
+    console.log('✅ Usuario autenticado:', currentUser.email);
+    console.log('📦 BonoPack:', bonoPack);
+
+    // FIXED: Usar el stripe_payment_link del BonoPack
+    if (bonoPack.stripe_payment_link) {
+      console.log('🔗 Redirigiendo a Stripe Payment Link:', bonoPack.stripe_payment_link);
+      
+      // Crear BonoCompra pendiente primero
+      try {
+        const bonoCompra = await base44.entities.BonoCompra.create({
+          bono_pack_id: bonoPack.id,
+          user_email: currentUser.email,
+          cantidad_menus: bonoPack.cantidad_menus,
+          precio_pagado: bonoPack.precio_mensual,
+          subscription_status: 'pending',
+          menus_usados_mes_actual: 0
+        });
+        
+        console.log('✅ BonoCompra creado:', bonoCompra.id);
+        
+        // Redirigir a Stripe Payment Link
+        window.location.href = bonoPack.stripe_payment_link;
+      } catch (error) {
+        console.error('❌ Error creando BonoCompra:', error);
+        alert('Error al procesar la compra: ' + error.message);
+      }
+    } else {
+      console.error('❌ No hay stripe_payment_link configurado');
+      alert('El plan no tiene configurado el enlace de pago. Contacta con soporte.');
+    }
   };
 
   const calculateSavings = (pack) => {
@@ -98,7 +127,7 @@ export default function Bonos() {
                   <div>
                     <p className="text-sm text-emerald-600 font-medium">✅ Suscripción Activa</p>
                     <p className="text-3xl font-bold text-emerald-700">
-                      {currentUser.creditos_menu_bono} {currentUser.creditos_menu_bono === 1 ? 'menú disponible' : 'menús disponibles'}
+                      {currentUser.creditos_menu_bono || 0} {currentUser.creditos_menu_bono === 1 ? 'menú disponible' : 'menús disponibles'}
                     </p>
                     <p className="text-sm text-gray-600 mt-1">Este mes • Se renuevan el próximo mes</p>
                   </div>
@@ -110,7 +139,7 @@ export default function Bonos() {
                     </Button>
                   </Link>
                   <a 
-                    href="https://billing.stripe.com/p/login/test_8wMdSq58Q3SV7Oo288" 
+                    href="https://billing.stripe.com/p/login/8wMdSq58Q3SV7Oo288" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="block"
@@ -246,12 +275,7 @@ export default function Bonos() {
                   disabled={!currentUser || currentUser.tiene_subscripcion_activa || isLoading}
                   className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white py-7 text-xl font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-all"
                 >
-                  {isLoading && currentUser?.tiene_subscripcion_activa === false ? ( // Only show spinner if not already subscribed and isLoading is true (from purchase attempt)
-                    <>
-                      <Loader2 className="w-6 h-6 mr-2 animate-spin" />
-                      Procesando...
-                    </>
-                  ) : currentUser?.tiene_subscripcion_activa ? (
+                  {currentUser?.tiene_subscripcion_activa ? (
                     'Ya tienes una suscripción'
                   ) : (
                     <>
@@ -292,7 +316,7 @@ export default function Bonos() {
             <div>
               <h4 className="font-semibold text-gray-900 mb-2">¿Puedo cancelar cuando quiera?</h4>
               <p className="text-sm text-gray-600">
-                Sí, puedes cancelar tu suscripción en cualquier momento desde tu perfil. Seguirás teniendo acceso a tus menús hasta el final del mes pagado.
+                Sí, puedes cancelar tu suscripción en cualquier momento desde el portal de Stripe. Seguirás teniendo acceso a tus menús hasta el final del mes pagado.
               </p>
             </div>
             <div>
