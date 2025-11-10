@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -114,7 +114,7 @@ function PublishMenu() {
     };
 
     loadUserAndCafeterias();
-  }, [location.state]);
+  }, [location.state]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleChange = (field, value) => {
     setFormData(prev => ({
@@ -155,11 +155,15 @@ function PublishMenu() {
     }));
   };
 
-  const handleGenerateImage = async () => {
-    if (!formData.es_sorpresa && (!formData.plato_principal || !formData.plato_secundario)) {
-      alert('⚠️ Completa los platos primero');
-      return;
+  // FIXED: Generar imagen automáticamente cuando se completan los platos
+  const handleGenerateImage = useCallback(async () => {
+    // If it's a surprise meal or plates are incomplete, just return silently.
+    if (formData.es_sorpresa || !formData.plato_principal || !formData.plato_secundario) {
+      return; // Silencioso, no molestar al usuario
     }
+
+    // Prevent regeneration if one is already in progress
+    if (isGenerating) return;
 
     setIsGenerating(true);
     try {
@@ -171,12 +175,35 @@ function PublishMenu() {
         setGeneratedImageUrl(result.url);
       }
     } catch (error) {
-      console.error('Error generating image:', error);
-      alert('Error al generar imagen: ' + error.message);
+      console.error('Error al generar imagen con IA:', error);
+      // No mostrar alert, fallo silencioso
     } finally {
       setIsGenerating(false);
     }
-  };
+  }, [formData.plato_principal, formData.plato_secundario, formData.es_sorpresa, isGenerating]);
+
+  // NUEVO: Auto-generar imagen cuando cambian los platos
+  useEffect(() => {
+    // Clear generated image if conditions for generation are not met
+    if (formData.es_sorpresa || !formData.plato_principal || !formData.plato_secundario) {
+      if (generatedImageUrl) {
+        setGeneratedImageUrl('');
+      }
+      return; // No need to attempt generation
+    }
+
+    // Debounce image generation if conditions are met and no image is currently generated
+    if (formData.plato_principal && formData.plato_secundario && !formData.es_sorpresa && !generatedImageUrl && !isGenerating) {
+      const timer = setTimeout(() => {
+        // Double check conditions inside the timeout, especially if state changed mid-debounce
+        if (formData.plato_principal && formData.plato_secundario && !formData.es_sorpresa && !generatedImageUrl && !isGenerating) {
+          handleGenerateImage();
+        }
+      }, 1000);
+      
+      return () => clearTimeout(timer); // Cleanup on unmount or dependency change
+    }
+  }, [formData.plato_principal, formData.plato_secundario, formData.es_sorpresa, generatedImageUrl, isGenerating, handleGenerateImage]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -381,12 +408,18 @@ function PublishMenu() {
             </CardContent>
           </Card>
 
-          {/* Imagen */}
+          {/* FIXED: Imagen auto-generada */}
           <Card className="border-2 border-blue-200">
             <CardHeader className="bg-blue-50">
               <CardTitle className="flex items-center gap-2">
                 <ImageIcon className="w-5 h-5" />
                 Imagen del Menú
+                {isGenerating && (
+                  <Badge className="ml-2 bg-blue-100 text-blue-800">
+                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                    Generando con IA...
+                  </Badge>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6 space-y-4">
@@ -403,20 +436,36 @@ function PublishMenu() {
                     Eliminar
                   </Button>
                 </div>
+              ) : isGenerating ? (
+                <div className="h-64 bg-gray-100 rounded-xl flex items-center justify-center">
+                  <div className="text-center">
+                    <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-2" />
+                    <p className="text-sm text-gray-600">Generando imagen con IA...</p>
+                  </div>
+                </div>
               ) : (
+                <div className="h-64 bg-gray-100 rounded-xl flex items-center justify-center border-2 border-dashed">
+                  <div className="text-center">
+                    <Sparkles className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                    <p className="text-sm text-gray-600">
+                      {formData.es_sorpresa 
+                        ? 'No se genera imagen para platos sorpresa' 
+                        : 'Completa los platos para generar imagen automáticamente'}
+                    </p>
+                  </div>
+                </div>
+              )}
+              
+              {!formData.es_sorpresa && !isGenerating && (
                 <Button
                   type="button"
                   onClick={handleGenerateImage}
-                  disabled={isGenerating || formData.es_sorpresa}
+                  disabled={!formData.plato_principal || !formData.plato_secundario}
                   variant="outline"
-                  className="w-full py-6"
+                  className="w-full"
                 >
-                  {isGenerating ? (
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  ) : (
-                    <Sparkles className="w-5 h-5 mr-2" />
-                  )}
-                  Generar Imagen con IA
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  {generatedImageUrl ? 'Regenerar Imagen' : 'Generar Imagen Manual'}
                 </Button>
               )}
             </CardContent>

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
@@ -52,29 +53,11 @@ export default function Bonos() {
     console.log('✅ Usuario autenticado:', currentUser.email);
     console.log('📦 BonoPack:', bonoPack);
 
-    // FIXED: Usar el stripe_payment_link del BonoPack
+    // FIXED: Redirigir directamente al Payment Link sin crear BonoCompra antes
+    // El webhook se encargará de crear/actualizar BonoCompra automáticamente
     if (bonoPack.stripe_payment_link) {
-      console.log('🔗 Redirigiendo a Stripe Payment Link:', bonoPack.stripe_payment_link);
-      
-      // Crear BonoCompra pendiente primero
-      try {
-        const bonoCompra = await base44.entities.BonoCompra.create({
-          bono_pack_id: bonoPack.id,
-          user_email: currentUser.email,
-          cantidad_menus: bonoPack.cantidad_menus,
-          precio_pagado: bonoPack.precio_mensual,
-          subscription_status: 'pending',
-          menus_usados_mes_actual: 0
-        });
-        
-        console.log('✅ BonoCompra creado:', bonoCompra.id);
-        
-        // Redirigir a Stripe Payment Link
-        window.location.href = bonoPack.stripe_payment_link;
-      } catch (error) {
-        console.error('❌ Error creando BonoCompra:', error);
-        alert('Error al procesar la compra: ' + error.message);
-      }
+      console.log('🔗 Redirigiendo directamente a Stripe Payment Link:', bonoPack.stripe_payment_link);
+      window.location.href = bonoPack.stripe_payment_link;
     } else {
       console.error('❌ No hay stripe_payment_link configurado');
       alert('El plan no tiene configurado el enlace de pago. Contacta con soporte.');
