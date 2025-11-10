@@ -3,16 +3,20 @@ import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Clock, MapPin, UtensilsCrossed, Sparkles, Leaf, AlertCircle, Heart } from 'lucide-react';
+import { Clock, MapPin, UtensilsCrossed, Sparkles, Leaf, AlertCircle, Heart, Loader2 } from 'lucide-react';
 import ReservationModal from './ReservationModal';
 import { base44 } from '@/api/base44Client';
+import { useNavigate } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 
 export default function MenuCard({ menu, onReservationSuccess, currentUser, onFavoriteToggle }) {
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFavorite, setIsFavorite] = useState(
     currentUser?.menus_favoritos?.includes(menu.id) || false
   );
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
+  const [isReserving, setIsReserving] = useState(false);
   
   const isPastDeadline = () => {
     // FIXED: Safety check for undefined hora_limite_reserva
@@ -76,6 +80,145 @@ export default function MenuCard({ menu, onReservationSuccess, currentUser, onFa
       setIsFavorite(!isFavorite);
     } finally {
       setIsTogglingFavorite(false);
+    }
+  };
+
+  const handleReserveMenu = async (reservaData) => {
+    setIsReserving(true);
+    
+    try {
+      const userResp = await base44.auth.me();
+      
+      if (reservaData.usar_bono) {
+        console.log('🎁 Usando bono para reserva...');
+        
+        if (!userResp.creditos_menu_bono || userResp.creditos_menu_bono <= 0) {
+          alert('❌ No tienes bonos disponibles');
+          setIsReserving(false);
+          return;
+        }
+
+        const nuevaReserva = await base44.entities.Reserva.create({
+          ...reservaData,
+          student_email: userResp.email,
+          student_name: userResp.full_name || userResp.email,
+          estado: 'pagado',
+          payment_status: 'completed',
+          pagado_con_bono: true
+        });
+
+        console.log('✅ Reserva creada con bono:', nuevaReserva.id);
+
+        if (menu && menu.stock_disponible > 0) {
+          await base44.entities.Menu.update(menu.id, {
+            stock_disponible: menu.stock_disponible - 1
+          });
+        }
+
+        await base44.auth.updateMe({
+          creditos_menu_bono: userResp.creditos_menu_bono - 1
+        });
+
+        console.log('✅ Bono descontado, nuevo saldo:', userResp.creditos_menu_bono - 1);
+
+        try {
+          const platos = reservaData.menus_detalle.split(' + ');
+          await base44.entities.AnalyticsEvent.create({
+            event_type: 'sale',
+            cafeteria_name: reservaData.cafeteria,
+            plato_principal: platos[0] || 'Menú',
+            plato_secundario: platos[1] || '',
+            is_surprise: reservaData.menus_detalle.includes('Sorpresa'),
+            precio: 0,
+            pagado_con_bono: true
+          });
+        } catch (analyticsErr) {
+          console.log('⚠️ Error guardando analíticas:', analyticsErr);
+        }
+
+        try {
+          console.log('📧 Enviando emails de confirmación...');
+          await base44.functions.invoke('sendReservationEmails', {
+            reserva_id: nuevaReserva.id
+          });
+          console.log('✅ Emails enviados correctamente');
+        } catch (emailError) {
+          console.warn('⚠️ Error enviando emails (no crítico):', emailError);
+        }
+
+        navigate(createPageUrl('Confirmation'), {
+          state: {
+            reserva: nuevaReserva,
+            menu: menu,
+            usoBono: true
+          }
+        });
+
+        if (onReservationSuccess) {
+          onReservationSuccess();
+        }
+
+        return;
+      }
+
+      console.log('🚀 Iniciando proceso de reserva con Stripe...');
+
+      const nuevaReserva = await base44.entities.Reserva.create({
+        ...reservaData,
+        student_email: userResp.email,
+        student_name: userResp.full_name || userResp.email,
+        estado: 'pendiente',
+        payment_status: 'pending'
+      });
+      console.log('✅ Reserva inicial creada para Stripe:', nuevaReserva.id);
+
+      if (menu && menu.stock_disponible > 0) {
+        await base44.entities.Menu.update(menu.id, {
+          stock_disponible: menu.stock_disponible - 1
+        });
+      }
+
+      const { data } = await base44.functions.invoke('createCheckoutSession', {
+        reserva_id: nuevaReserva.id,
+        menus_detalle: reservaData.menus_detalle,
+        cafeteria: reservaData.cafeteria,
+        campus: reservaData.campus,
+        precio_total: reservaData.precio_total,
+        codigo_recogida: reservaData.codigo_recogida,
+        envase_propio: reservaData.envase_propio
+      });
+
+      if (data.checkout_url) {
+        console.log('Redirecting to Stripe:', data.checkout_url);
+        window.location.href = data.checkout_url;
+      } else {
+        throw new Error('No se recibió URL de pago de Stripe.');
+      }
+
+    } catch (error) {
+      console.error("❌ Error completo en handleReserveMenu:", error);
+      
+      let errorMessage = 'Error al procesar la reserva. ';
+      
+      if (error.response?.data?.error) {
+        errorMessage += error.response.data.error;
+        if (error.response.data.details) {
+          errorMessage += ` (${error.response.data.details})`;
+        }
+      } else if (error.message) {
+        errorMessage += error.message;
+      } else {
+        errorMessage += 'Inténtalo de nuevo.';
+      }
+      
+      alert(errorMessage);
+      
+      if (onReservationSuccess) {
+        onReservationSuccess(); // Call success to re-fetch menus or update UI after potential stock changes even if payment failed
+      }
+    } finally {
+      setIsReserving(false);
+      setIsModalOpen(false);
     }
   };
 
@@ -209,10 +352,12 @@ export default function MenuCard({ menu, onReservationSuccess, currentUser, onFa
       </Card>
 
       <ReservationModal
-        menu={menu}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSuccess={onReservationSuccess}
+        menu={menu}
+        campus={{ id: menu.campus }} // Assuming menu.campus holds the ID
+        onConfirm={handleReserveMenu}
+        isLoading={isReserving}
         currentUser={currentUser}
       />
     </>
