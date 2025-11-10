@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
@@ -125,6 +126,7 @@ function PublishMenu() {
     if (field === 'cafeteria_id') {
       const cafe = cafeterias.find(c => c.id === value);
       if (cafe) {
+        console.log('✅ Cafetería seleccionada:', cafe.nombre, 'Campus:', cafe.campus);
         setFormData(prev => ({
           ...prev,
           precio_original: cafe.precio_original_default || 8.5,
@@ -154,7 +156,7 @@ function PublishMenu() {
   };
 
   const handleGenerateImage = async () => {
-    if (!formData.plato_principal || !formData.plato_secundario) {
+    if (!formData.es_sorpresa && (!formData.plato_principal || !formData.plato_secundario)) {
       alert('⚠️ Completa los platos primero');
       return;
     }
@@ -202,12 +204,16 @@ function PublishMenu() {
     const cafe = cafeterias.find(c => c.id === formData.cafeteria_id);
     if (!cafe) {
       alert('⚠️ Cafetería no encontrada');
+      console.error('Cafeterías disponibles:', cafeterias);
+      console.error('ID buscado:', formData.cafeteria_id);
       return;
     }
 
+    console.log('✅ Cafetería encontrada:', cafe.nombre, 'Campus:', cafe.campus);
+
     const confirmText = formData.es_recurrente
-      ? `¿Crear ${formData.dias_semana.length} menús recurrentes para los días seleccionados?`
-      : '¿Confirmar publicación de este menú?';
+      ? `¿Crear ${formData.dias_semana.length} menús recurrentes para los días seleccionados en ${cafe.nombre}?`
+      : `¿Confirmar publicación de este menú en ${cafe.nombre}?`;
 
     if (!confirm(confirmText)) return;
 
@@ -221,8 +227,8 @@ function PublishMenu() {
         precio_descuento: 2.99,
         stock_total: parseInt(formData.stock_total),
         stock_disponible: parseInt(formData.stock_total),
-        campus: cafe.campus,
-        cafeteria: cafe.nombre,
+        campus: cafe.campus, 
+        cafeteria: cafe.nombre, 
         hora_limite_reserva: formData.hora_limite_reserva,
         hora_limite: formData.hora_limite,
         es_recurrente: formData.es_recurrente,
@@ -237,6 +243,8 @@ function PublishMenu() {
         imagen_url: generatedImageUrl || undefined
       };
 
+      console.log('📝 Creando menú(s) con datos:', menuBase);
+
       if (formData.es_recurrente) {
         // Crear múltiples menús
         const menusToCreate = formData.dias_semana.map(dia => ({
@@ -246,7 +254,7 @@ function PublishMenu() {
         }));
 
         await Promise.all(menusToCreate.map(m => base44.entities.Menu.create(m)));
-        alert(`✅ ${menusToCreate.length} menús recurrentes creados`);
+        alert(`✅ ${menusToCreate.length} menús recurrentes creados para ${cafe.nombre}`);
       } else {
         // Crear un menú
         const menu = {
@@ -256,12 +264,12 @@ function PublishMenu() {
         };
 
         await base44.entities.Menu.create(menu);
-        alert('✅ Menú publicado');
+        alert(`✅ Menú publicado en ${cafe.nombre}`);
       }
 
       navigate(createPageUrl("CafeteriaDashboard"), { state: { refresh: true } });
     } catch (error) {
-      console.error('Error publishing:', error);
+      console.error('❌ Error publishing:', error);
       alert('❌ Error: ' + error.message);
     } finally {
       setIsPublishing(false);

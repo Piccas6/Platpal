@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
@@ -118,8 +119,11 @@ export default function CafeteriaDashboard() {
     if (!selectedCafeteriaData) return;
 
     try {
+      const cafeteriaId = selectedCafeteriaData.id;
       const cafeteriaName = selectedCafeteriaData.nombre;
       const today = new Date().toISOString().split('T')[0];
+
+      console.log('🔍 Cargando datos para cafetería:', cafeteriaName, 'ID:', cafeteriaId);
 
       const [allMenus, allReservations] = await Promise.all([
         base44.entities.Menu.list('-created_date', 50),
@@ -203,9 +207,16 @@ export default function CafeteriaDashboard() {
       return;
     }
 
+    if (!selectedCafeteriaData) {
+      alert("⚠️ No hay cafetería seleccionada");
+      return;
+    }
+
     setIsPublishing(true);
 
     try {
+      console.log('📝 Publicando menú para:', selectedCafeteriaData.nombre);
+      
       const menuData = {
         plato_principal: publishFormData.es_sorpresa ? "Plato Sorpresa" : publishFormData.plato_principal,
         plato_secundario: publishFormData.es_sorpresa ? "2º Plato Sorpresa" : publishFormData.plato_secundario,
@@ -229,6 +240,7 @@ export default function CafeteriaDashboard() {
         alergenos: ['ninguno']
       };
 
+      console.log('✅ Creando menú con datos:', menuData);
       await base44.entities.Menu.create(menuData);
 
       setPublishFormData({
@@ -246,7 +258,7 @@ export default function CafeteriaDashboard() {
       loadData();
       alert('✅ Menú publicado correctamente');
     } catch (error) {
-      console.error('Error publicando:', error);
+      console.error('❌ Error publicando:', error);
       alert('❌ Error: ' + error.message);
     } finally {
       setIsPublishing(false);
@@ -254,7 +266,14 @@ export default function CafeteriaDashboard() {
   };
 
   const handleCafeteriaChange = (id) => {
+    console.log('🔄 Cambiando a cafetería ID:', id);
     const cafe = availableCafeterias.find(c => c.id === id);
+    if (!cafe) {
+      console.error('❌ Cafetería no encontrada:', id);
+      return;
+    }
+    
+    console.log('✅ Cafetería encontrada:', cafe.nombre);
     setSelectedCafeteriaId(id);
     setSelectedCafeteriaData(cafe);
     setPublishFormData(prev => ({
