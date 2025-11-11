@@ -73,7 +73,7 @@ export default function TermsOfService() {
               </p>
               <ul className="list-disc list-inside text-gray-700 space-y-2 ml-2">
                 <li>Tienes al menos 18 años de edad</li>
-                <li>Eres estudiante o personal de un campus universitario participante</li>
+                <li>Eres estudiante o personal de un campus universitario participante, o una persona que pasa cerca de la uni</li>
                 <li>Aceptas cumplir con estos términos y condiciones</li>
                 <li>Proporcionarás información veraz y actualizada</li>
               </ul>
