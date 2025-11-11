@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import { 
@@ -15,10 +15,11 @@ import {
   Users,
   Leaf,
   ChevronRight,
-  LogIn // Added LogIn icon
+  LogIn
 } from "lucide-react";
 
 export default function Home() {
+  const navigate = useNavigate();
   const [language, setLanguage] = useState('es');
   const [displayMenus, setDisplayMenus] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -34,7 +35,7 @@ export default function Home() {
         title: "Come increíble por solo 2,99€",
         subtitle: "Rescata deliciosos menús de las cafeterías de tu campus antes de que se desperdicien.",
         cta: "Ver menús disponibles",
-        cafeteriaLogin: "Acceso Cafeterías", // Modified this line
+        cafeteriaLogin: "Acceso Cafeterías",
         investorLink: "¿Eres inversor? Descubre nuestro potencial"
       },
       stats: {
@@ -105,7 +106,7 @@ export default function Home() {
         title: "Eat amazing for just €2.99",
         subtitle: "Rescue delicious meals from your campus cafeterias before they're wasted.",
         cta: "See available menus",
-        cafeteriaLogin: "Cafeteria Access", // Modified this line
+        cafeteriaLogin: "Cafeteria Access",
         investorLink: "Are you an investor? Discover our potential"
       },
       stats: {
@@ -259,12 +260,23 @@ export default function Home() {
 
   const handleCafeteriaLogin = async () => {
     try {
-      // Assuming base44.auth.redirectToLogin() handles the redirection to the login page
-      // and potentially back to a cafeteria dashboard after successful login.
-      await base44.auth.redirectToLogin();
+      const isAuthenticated = await base44.auth.isAuthenticated();
+      
+      if (isAuthenticated) {
+        const user = await base44.auth.me();
+        
+        if (user.app_role === 'cafeteria' || user.app_role === 'admin' || user.app_role === 'manager') {
+          navigate(createPageUrl("CafeteriaDashboard"));
+        } else {
+          alert('No tienes permisos para acceder al panel de cafeterías. Si eres administrador de una cafetería, contacta con soporte.');
+        }
+      } else {
+        await base44.auth.redirectToLogin(window.location.pathname);
+      }
     } catch (error) {
-      console.error('Login error:', error);
-      // Optionally display an error message to the user
+      console.error('Error en acceso cafeterías:', error);
+      // If there's an error (e.g., fetching user data), redirect to login as a fallback
+      await base44.auth.redirectToLogin(window.location.pathname);
     }
   };
 
