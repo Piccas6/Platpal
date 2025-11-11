@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
@@ -8,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, ChefHat, Calendar, Clock, Euro, Image as ImageIcon, Sparkles, Plus, Check, ArrowLeft } from "lucide-react";
+import { Loader2, ChefHat, Calendar, Clock, Euro, Image as ImageIcon, Sparkles, Plus, Check, ArrowLeft, X, RefreshCw } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import withAuth from "../components/auth/withAuth";
@@ -82,7 +81,6 @@ function PublishMenu() {
 
         setCafeterias(userCafeterias);
 
-        // Auto-seleccionar primera cafetería
         if (userCafeterias.length > 0 && !formData.cafeteria_id) {
           const firstCafe = userCafeterias[0];
           setFormData(prev => ({
@@ -94,7 +92,6 @@ function PublishMenu() {
           }));
         }
 
-        // Cargar datos de duplicación si existen
         if (location.state?.duplicateFrom) {
           const menu = location.state.duplicateFrom;
           setFormData(prev => ({
@@ -122,7 +119,6 @@ function PublishMenu() {
       [field]: value
     }));
 
-    // Actualizar config cuando cambia cafetería
     if (field === 'cafeteria_id') {
       const cafe = cafeterias.find(c => c.id === value);
       if (cafe) {
@@ -155,14 +151,11 @@ function PublishMenu() {
     }));
   };
 
-  // FIXED: Generar imagen automáticamente cuando se completan los platos
   const handleGenerateImage = useCallback(async () => {
-    // If it's a surprise meal or plates are incomplete, just return silently.
     if (formData.es_sorpresa || !formData.plato_principal || !formData.plato_secundario) {
-      return; // Silencioso, no molestar al usuario
+      return;
     }
 
-    // Prevent regeneration if one is already in progress
     if (isGenerating) return;
 
     setIsGenerating(true);
@@ -176,32 +169,27 @@ function PublishMenu() {
       }
     } catch (error) {
       console.error('Error al generar imagen con IA:', error);
-      // No mostrar alert, fallo silencioso
     } finally {
       setIsGenerating(false);
     }
   }, [formData.plato_principal, formData.plato_secundario, formData.es_sorpresa, isGenerating]);
 
-  // NUEVO: Auto-generar imagen cuando cambian los platos
   useEffect(() => {
-    // Clear generated image if conditions for generation are not met
     if (formData.es_sorpresa || !formData.plato_principal || !formData.plato_secundario) {
       if (generatedImageUrl) {
         setGeneratedImageUrl('');
       }
-      return; // No need to attempt generation
+      return;
     }
 
-    // Debounce image generation if conditions are met and no image is currently generated
     if (formData.plato_principal && formData.plato_secundario && !formData.es_sorpresa && !generatedImageUrl && !isGenerating) {
       const timer = setTimeout(() => {
-        // Double check conditions inside the timeout, especially if state changed mid-debounce
         if (formData.plato_principal && formData.plato_secundario && !formData.es_sorpresa && !generatedImageUrl && !isGenerating) {
           handleGenerateImage();
         }
       }, 1000);
       
-      return () => clearTimeout(timer); // Cleanup on unmount or dependency change
+      return () => clearTimeout(timer);
     }
   }, [formData.plato_principal, formData.plato_secundario, formData.es_sorpresa, generatedImageUrl, isGenerating, handleGenerateImage]);
 
@@ -273,7 +261,6 @@ function PublishMenu() {
       console.log('📝 Creando menú(s) con datos:', menuBase);
 
       if (formData.es_recurrente) {
-        // Crear múltiples menús
         const menusToCreate = formData.dias_semana.map(dia => ({
           ...menuBase,
           fecha: formData.fecha,
@@ -283,7 +270,6 @@ function PublishMenu() {
         await Promise.all(menusToCreate.map(m => base44.entities.Menu.create(m)));
         alert(`✅ ${menusToCreate.length} menús recurrentes creados para ${cafe.nombre}`);
       } else {
-        // Crear un menú
         const menu = {
           ...menuBase,
           fecha: formData.fecha,
@@ -324,7 +310,6 @@ function PublishMenu() {
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-amber-50 p-6">
       <div className="max-w-5xl mx-auto">
         
-        {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <Link to={createPageUrl("CafeteriaDashboard")}>
             <Button variant="outline" size="icon" className="rounded-2xl">
@@ -333,13 +318,12 @@ function PublishMenu() {
           </Link>
           <div>
             <h1 className="text-4xl font-black text-gray-900">Publicar Menú</h1>
-            <p className="text-gray-600 mt-2">Crea un nuevo menú para tu cafetería</p>
+            <p className="text-gray-600 mt-2">Crea un nuevo menú con imagen IA automática</p>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           
-          {/* Selección Cafetería */}
           {cafeterias.length > 1 && (
             <Card className="border-2 border-purple-200">
               <CardHeader className="bg-purple-50">
@@ -362,7 +346,6 @@ function PublishMenu() {
             </Card>
           )}
 
-          {/* Platos */}
           <Card className="border-2 border-emerald-200">
             <CardHeader className="bg-emerald-50">
               <div className="flex items-center justify-between">
@@ -408,7 +391,6 @@ function PublishMenu() {
             </CardContent>
           </Card>
 
-          {/* FIXED: Imagen auto-generada */}
           <Card className="border-2 border-blue-200">
             <CardHeader className="bg-blue-50">
               <CardTitle className="flex items-center gap-2">
@@ -424,17 +406,28 @@ function PublishMenu() {
             </CardHeader>
             <CardContent className="p-6 space-y-4">
               {generatedImageUrl ? (
-                <div className="relative">
+                <div className="relative group">
                   <img src={generatedImageUrl} alt="Menu" className="w-full h-64 object-cover rounded-xl" />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setGeneratedImageUrl('')}
-                    className="absolute top-2 right-2"
-                  >
-                    Eliminar
-                  </Button>
+                  <div className="absolute top-2 right-2 flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleGenerateImage}
+                      disabled={isGenerating}
+                      className="bg-white/90 backdrop-blur-sm"
+                    >
+                      <RefreshCw className="w-4 h-4 mr-1" />
+                      Regenerar
+                    </Button>
+                    <button
+                      type="button"
+                      onClick={() => setGeneratedImageUrl('')}
+                      className="w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               ) : isGenerating ? (
                 <div className="h-64 bg-gray-100 rounded-xl flex items-center justify-center">
@@ -456,22 +449,20 @@ function PublishMenu() {
                 </div>
               )}
               
-              {!formData.es_sorpresa && !isGenerating && (
+              {!formData.es_sorpresa && !isGenerating && (formData.plato_principal && formData.plato_secundario) && (
                 <Button
                   type="button"
                   onClick={handleGenerateImage}
-                  disabled={!formData.plato_principal || !formData.plato_secundario}
                   variant="outline"
                   className="w-full"
                 >
                   <Sparkles className="w-4 h-4 mr-2" />
-                  {generatedImageUrl ? 'Regenerar Imagen' : 'Generar Imagen Manual'}
+                  {generatedImageUrl ? 'Regenerar Imagen' : 'Generar Imagen Manualmente'}
                 </Button>
               )}
             </CardContent>
           </Card>
 
-          {/* Configuración */}
           <Card className="border-2 border-amber-200">
             <CardHeader className="bg-amber-50">
               <CardTitle>⚙️ Configuración</CardTitle>
@@ -538,7 +529,6 @@ function PublishMenu() {
             </CardContent>
           </Card>
 
-          {/* Propiedades Nutricionales */}
           <Card className="border-2 border-green-200">
             <CardHeader className="bg-green-50">
               <CardTitle>🥗 Propiedades</CardTitle>
@@ -601,7 +591,6 @@ function PublishMenu() {
             </CardContent>
           </Card>
 
-          {/* Botones */}
           <div className="flex gap-3">
             <Link to={createPageUrl("CafeteriaDashboard")} className="flex-1">
               <Button type="button" variant="outline" className="w-full py-6">

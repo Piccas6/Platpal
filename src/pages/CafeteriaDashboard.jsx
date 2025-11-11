@@ -20,7 +20,10 @@ import {
   AlertCircle,
   Building2,
   CreditCard,
-  ExternalLink
+  ExternalLink,
+  Sparkles,
+  Image as ImageIcon,
+  X
 } from "lucide-react";
 import {
   Select,
@@ -70,6 +73,8 @@ export default function CafeteriaDashboard() {
     es_sorpresa: false
   });
   const [isPublishing, setIsPublishing] = useState(false);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [generatedImageUrl, setGeneratedImageUrl] = useState('');
 
   // Cargar usuario y cafeterías
   useEffect(() => {
@@ -141,7 +146,7 @@ export default function CafeteriaDashboard() {
       setReservations(cafeteriaReservations);
 
       const totalMenusHoy = todayMenus.reduce((sum, m) => sum + m.stock_total, 0);
-      const menusVendidos = cafeteriaReservations.filter(r => 
+      const menusVendidos = cafeteriaReservations.filter(r =>
         r.payment_status === 'completed' && r.created_date?.startsWith(today)
       ).length;
       const ingresosHoy = cafeteriaReservations
@@ -194,6 +199,49 @@ export default function CafeteriaDashboard() {
     }
   };
 
+  const handleGenerateQuickImage = useCallback(async () => {
+    if (publishFormData.es_sorpresa || !publishFormData.plato_principal || !publishFormData.plato_secundario) {
+      // Don't generate for surprise menu or if plates are not filled
+      return;
+    }
+
+    if (isGeneratingImage) return;
+
+    setIsGeneratingImage(true);
+    try {
+      const prompt = `Foto profesional de comida: ${publishFormData.plato_principal} con ${publishFormData.plato_secundario}. Plato apetitoso, bien iluminado, presentación de restaurante, fondo neutro, alta calidad`;
+
+      const result = await base44.integrations.Core.GenerateImage({ prompt });
+
+      if (result.url) {
+        setGeneratedImageUrl(result.url);
+      }
+    } catch (error) {
+      console.error('Error al generar imagen con IA:', error);
+    } finally {
+      setIsGeneratingImage(false);
+    }
+  }, [publishFormData.plato_principal, publishFormData.plato_secundario, publishFormData.es_sorpresa, isGeneratingImage]);
+
+  useEffect(() => {
+    // Clear generated image if it's a surprise menu or plates are empty
+    if (publishFormData.es_sorpresa || !publishFormData.plato_principal || !publishFormData.plato_secundario) {
+      if (generatedImageUrl) {
+        setGeneratedImageUrl('');
+      }
+      return;
+    }
+
+    // Debounce image generation when principal/secondary dishes change
+    if (publishFormData.plato_principal && publishFormData.plato_secundario && !publishFormData.es_sorpresa && !generatedImageUrl && !isGeneratingImage) {
+      const timer = setTimeout(() => {
+        handleGenerateQuickImage();
+      }, 1000); // 1 second debounce
+
+      return () => clearTimeout(timer);
+    }
+  }, [publishFormData.plato_principal, publishFormData.plato_secundario, publishFormData.es_sorpresa, generatedImageUrl, isGeneratingImage, handleGenerateQuickImage]);
+
   const handleQuickPublish = async (e) => {
     e.preventDefault();
 
@@ -216,7 +264,7 @@ export default function CafeteriaDashboard() {
 
     try {
       console.log('📝 Publicando menú para:', selectedCafeteriaData.nombre);
-      
+
       const menuData = {
         plato_principal: publishFormData.es_sorpresa ? "Plato Sorpresa" : publishFormData.plato_principal,
         plato_secundario: publishFormData.es_sorpresa ? "2º Plato Sorpresa" : publishFormData.plato_secundario,
@@ -237,7 +285,8 @@ export default function CafeteriaDashboard() {
         es_vegetariano: false,
         es_vegano: false,
         sin_gluten: false,
-        alergenos: ['ninguno']
+        alergenos: ['ninguno'],
+        imagen_url: generatedImageUrl || undefined // Include generated image URL
       };
 
       console.log('✅ Creando menú con datos:', menuData);
@@ -253,6 +302,7 @@ export default function CafeteriaDashboard() {
         hora_limite: selectedCafeteriaData.hora_fin_recogida || "18:00",
         es_sorpresa: false
       });
+      setGeneratedImageUrl(''); // Clear generated image after publishing
 
       setShowPublishModal(false);
       loadData();
@@ -272,7 +322,7 @@ export default function CafeteriaDashboard() {
       console.error('❌ Cafetería no encontrada:', id);
       return;
     }
-    
+
     console.log('✅ Cafetería encontrada:', cafe.nombre);
     setSelectedCafeteriaId(id);
     setSelectedCafeteriaData(cafe);
@@ -282,6 +332,7 @@ export default function CafeteriaDashboard() {
       hora_limite_reserva: cafe.hora_fin_reserva || "16:00",
       hora_limite: cafe.hora_fin_recogida || "18:00"
     }));
+    setGeneratedImageUrl(''); // Clear generated image when cafeteria changes
   };
 
   if (isLoading) {
@@ -329,7 +380,7 @@ export default function CafeteriaDashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-amber-50 p-6">
       <div className="max-w-7xl mx-auto space-y-6">
-        
+
         {/* HEADER */}
         <div className="flex flex-col md:flex-row justify-between items-start gap-4">
           <div className="flex-1">
@@ -420,9 +471,9 @@ export default function CafeteriaDashboard() {
                 <h3 className="font-bold text-purple-900 text-lg">Pagos con Stripe</h3>
                 <p className="text-purple-700 text-sm">Los pagos se procesan automáticamente. El dinero llega a tu cuenta cada 2-7 días.</p>
               </div>
-              <a 
-                href="https://dashboard.stripe.com" 
-                target="_blank" 
+              <a
+                href="https://dashboard.stripe.com"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors"
               >
@@ -449,10 +500,10 @@ export default function CafeteriaDashboard() {
                 Publicar Menú Rápido
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-xl">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>⚡ Publicar Menú Rápido</DialogTitle>
-                <DialogDescription>Publica en segundos</DialogDescription>
+                <DialogDescription>Publica en segundos con imagen IA automática</DialogDescription>
               </DialogHeader>
 
               <form onSubmit={handleQuickPublish} className="space-y-4 mt-4">
@@ -484,6 +535,71 @@ export default function CafeteriaDashboard() {
                         required
                       />
                     </div>
+                  </div>
+                )}
+
+                {/* Imagen con IA */}
+                {!publishFormData.es_sorpresa && (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label className="flex items-center gap-2">
+                        <ImageIcon className="w-4 h-4" />
+                        Imagen del Menú
+                      </Label>
+                      {isGeneratingImage && (
+                        <Badge className="bg-blue-100 text-blue-800">
+                          <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                          Generando...
+                        </Badge>
+                      )}
+                    </div>
+
+                    {generatedImageUrl ? (
+                      <div className="relative">
+                        <img src={generatedImageUrl} alt="Menu preview" className="w-full h-48 object-cover rounded-xl border-2" />
+                        <button
+                          type="button"
+                          onClick={() => setGeneratedImageUrl('')}
+                          className="absolute top-2 right-2 w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : isGeneratingImage ? (
+                      <div className="h-48 bg-gray-100 rounded-xl flex items-center justify-center border-2 border-dashed">
+                        <div className="text-center">
+                          <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-2" />
+                          <p className="text-sm text-gray-600">Generando imagen con IA...</p>
+                        </div>
+                      </div>
+                    ) : (publishFormData.plato_principal && publishFormData.plato_secundario) ? (
+                      <div className="h-48 bg-gray-100 rounded-xl flex items-center justify-center border-2 border-dashed">
+                        <div className="text-center">
+                          <Sparkles className="w-10 h-10 text-gray-400 mx-auto mb-2" />
+                          <p className="text-sm text-gray-600">Haz click para generar la imagen con IA</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="h-48 bg-gray-100 rounded-xl flex items-center justify-center border-2 border-dashed">
+                        <div className="text-center">
+                          <ImageIcon className="w-10 h-10 text-gray-400 mx-auto mb-2" />
+                          <p className="text-sm text-gray-600">Completa los platos para generar la imagen</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {!isGeneratingImage && (publishFormData.plato_principal && publishFormData.plato_secundario) && (
+                      <Button
+                        type="button"
+                        onClick={handleGenerateQuickImage}
+                        variant="outline"
+                        size="sm"
+                        className="w-full"
+                      >
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        {generatedImageUrl ? 'Regenerar Imagen' : 'Generar Imagen Manualmente'}
+                      </Button>
+                    )}
                   </div>
                 )}
 
