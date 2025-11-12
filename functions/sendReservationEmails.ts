@@ -1,10 +1,16 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.7.1';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
 
 Deno.serve(async (req) => {
     console.log('📧 sendReservationEmails iniciado');
     
     try {
         const base44 = createClientFromRequest(req);
+        
+        // Verificar autenticación
+        const user = await base44.auth.me();
+        if (!user) {
+            return Response.json({ error: 'No autorizado' }, { status: 401 });
+        }
         
         const body = await req.json();
         const { reserva_id } = body;
@@ -15,8 +21,9 @@ Deno.serve(async (req) => {
 
         console.log('📋 Buscando reserva:', reserva_id);
 
-        // Obtener la reserva
-        const reserva = await base44.asServiceRole.entities.Reserva.get(reserva_id);
+        // Obtener la reserva con privilegios de servicio
+        const allReservas = await base44.asServiceRole.entities.Reserva.list();
+        const reserva = allReservas.find(r => r.id === reserva_id);
         
         if (!reserva) {
             return Response.json({ error: 'Reserva no encontrada' }, { status: 404 });
@@ -29,11 +36,33 @@ Deno.serve(async (req) => {
         });
 
         // Buscar el email de la cafetería
-        const allUsers = await base44.asServiceRole.entities.User.list();
-        const cafeteriaUser = allUsers.find(u => 
-            u.app_role === 'cafeteria' && 
-            u.cafeteria_info?.nombre_cafeteria === reserva.cafeteria
-        );
+        // Primero buscar en la entidad Cafeteria para obtener el nombre exacto
+        const allCafeterias = await base44.asServiceRole.entities.Cafeteria.list();
+        const cafeteriaEntity = allCafeterias.find(c => c.nombre === reserva.cafeteria);
+        
+        let cafeteriaEmail = null;
+        
+        // Buscar usuario administrador de la cafetería
+        if (cafeteriaEntity) {
+            const allUsers = await base44.asServiceRole.entities.User.list();
+            
+            // Buscar por cafeterias_asignadas (array de IDs)
+            const cafeteriaUser = allUsers.find(u => 
+                (u.app_role === 'cafeteria' || u.app_role === 'manager' || u.app_role === 'admin') &&
+                u.cafeterias_asignadas && 
+                Array.isArray(u.cafeterias_asignadas) &&
+                u.cafeterias_asignadas.includes(cafeteriaEntity.id)
+            );
+            
+            if (cafeteriaUser) {
+                cafeteriaEmail = cafeteriaUser.email;
+                console.log('✅ Email de cafetería encontrado:', cafeteriaEmail);
+            } else {
+                console.warn('⚠️ No se encontró usuario asignado a cafetería:', reserva.cafeteria, 'ID:', cafeteriaEntity.id);
+            }
+        } else {
+            console.warn('⚠️ No se encontró entidad Cafeteria para:', reserva.cafeteria);
+        }
 
         const metodoPago = reserva.pagado_con_bono ? 'Bono PlatPal' : 'Tarjeta';
         const precioTexto = reserva.pagado_con_bono ? 'GRATIS (Bono)' : `€${reserva.precio_total.toFixed(2)}`;
@@ -47,7 +76,7 @@ Deno.serve(async (req) => {
             
             <div style="background: white; padding: 30px; border-radius: 0 0 20px 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                 <p style="font-size: 16px; color: #374151; margin-bottom: 20px;">
-                    Hola <strong>${reserva.student_name}</strong>,
+                    Hola <strong>${reserva.student_name || 'Estudiante'}</strong>,
                 </p>
                 
                 <p style="font-size: 16px; color: #374151; margin-bottom: 30px;">
@@ -110,6 +139,12 @@ Deno.serve(async (req) => {
         </div>
         `;
 
+        let emailsSent = {
+            student: false,
+            cafeteria: false
+        };
+
+        // Enviar email al estudiante
         try {
             await base44.integrations.Core.SendEmail({
                 from_name: 'PlatPal',
@@ -118,12 +153,13 @@ Deno.serve(async (req) => {
                 body: emailEstudiante
             });
             console.log('✅ Email enviado al estudiante:', reserva.student_email);
+            emailsSent.student = true;
         } catch (emailError) {
             console.error('❌ Error enviando email al estudiante:', emailError.message);
         }
 
         // EMAIL A LA CAFETERÍA
-        if (cafeteriaUser?.email) {
+        if (cafeteriaEmail) {
             const emailCafeteria = `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9fafb;">
                 <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 30px; border-radius: 20px 20px 0 0; text-align: center;">
@@ -143,7 +179,10 @@ Deno.serve(async (req) => {
                         <h2 style="color: #d97706; margin: 0 0 15px 0; font-size: 20px;">📋 Detalles del Pedido</h2>
                         
                         <p style="margin: 8px 0; color: #374151;">
-                            <strong>👤 Cliente:</strong> ${reserva.student_name}
+                            <strong>👤 Cliente:</strong> ${reserva.student_name || reserva.student_email}
+                        </p>
+                        <p style="margin: 8px 0; color: #374151;">
+                            <strong>📧 Email:</strong> ${reserva.student_email}
                         </p>
                         <p style="margin: 8px 0; color: #374151;">
                             <strong>🍽️ Menú:</strong> ${reserva.menus_detalle}
@@ -191,11 +230,12 @@ Deno.serve(async (req) => {
             try {
                 await base44.integrations.Core.SendEmail({
                     from_name: 'PlatPal',
-                    to: cafeteriaUser.email,
-                    subject: `🔔 Nuevo Pedido - ${reserva.student_name} - ${reserva.codigo_recogida}`,
+                    to: cafeteriaEmail,
+                    subject: `🔔 Nuevo Pedido - ${reserva.student_name || reserva.student_email} - ${reserva.codigo_recogida}`,
                     body: emailCafeteria
                 });
-                console.log('✅ Email enviado a la cafetería:', cafeteriaUser.email);
+                console.log('✅ Email enviado a la cafetería:', cafeteriaEmail);
+                emailsSent.cafeteria = true;
             } catch (emailError) {
                 console.error('❌ Error enviando email a cafetería:', emailError.message);
             }
@@ -205,10 +245,8 @@ Deno.serve(async (req) => {
 
         return Response.json({ 
             success: true,
-            emails_sent: {
-                student: true,
-                cafeteria: !!cafeteriaUser?.email
-            }
+            emails_sent: emailsSent,
+            cafeteria_email: cafeteriaEmail || 'no encontrado'
         });
 
     } catch (error) {
