@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
@@ -19,8 +18,6 @@ import {
   Loader2,
   AlertCircle,
   Building2,
-  CreditCard,
-  ExternalLink,
   Sparkles,
   Image as ImageIcon,
   X
@@ -459,30 +456,6 @@ export default function CafeteriaDashboard() {
             </CardContent>
           </Card>
         </div>
-
-        {/* STRIPE INFO */}
-        <Card className="border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-purple-600 rounded-xl flex items-center justify-center">
-                <CreditCard className="w-6 h-6 text-white" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-bold text-purple-900 text-lg">Pagos con Stripe</h3>
-                <p className="text-purple-700 text-sm">Los pagos se procesan automáticamente. El dinero llega a tu cuenta cada 2-7 días.</p>
-              </div>
-              <a
-                href="https://dashboard.stripe.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors"
-              >
-                Ver Dashboard
-                <ExternalLink className="w-4 h-4" />
-              </a>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* BOTONES */}
         <div className="flex flex-wrap gap-3">

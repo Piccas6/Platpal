@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -192,20 +191,10 @@ export default function Home() {
     const loadData = async () => {
       setIsLoading(true);
       try {
-        // Cargar métricas globales sin necesidad de autenticación
-        const allMenus = await base44.entities.Menu.list('-created_date', 20); // Limitar a 20
+        // Cargar datos públicos sin autenticación
         const today = new Date().toISOString().split('T')[0];
         
-        const todaysMenus = allMenus.filter(menu => 
-          menu.fecha === today && 
-          menu.stock_disponible > 0 && 
-          menu.imagen_url
-        );
-
-        const shuffled = todaysMenus.sort(() => 0.5 - Math.random());
-        setDisplayMenus(shuffled.slice(0, 3));
-
-        // Cargar estadísticas globales (sin autenticación)
+        // Cargar estadísticas globales desde caché o API
         const cachedStats = sessionStorage.getItem('platpal_home_stats');
         const cachedTime = sessionStorage.getItem('platpal_home_stats_time');
         
@@ -214,9 +203,10 @@ export default function Home() {
           setStats(JSON.parse(cachedStats));
         } else {
           // Cargar datos públicos (no requieren autenticación)
-          const [allReservations, allUsers] = await Promise.all([
-            base44.entities.Reserva.list('-created_date', 200), // Limitar a 200
-            base44.entities.User.list()
+          const [allReservations, allUsers, allMenus] = await Promise.all([
+            base44.entities.Reserva.list('-created_date', 200),
+            base44.entities.User.list(),
+            base44.entities.Menu.list('-created_date', 20)
           ]);
 
           const completedReservations = allReservations.filter(r => r.payment_status === 'completed');
@@ -234,13 +224,22 @@ export default function Home() {
           // Guardar en caché
           sessionStorage.setItem('platpal_home_stats', JSON.stringify(newStats));
           sessionStorage.setItem('platpal_home_stats_time', Date.now().toString());
+
+          // Cargar menús destacados
+          const todaysMenus = allMenus.filter(menu => 
+            menu.fecha === today && 
+            menu.stock_disponible > 0 && 
+            menu.imagen_url
+          );
+
+          const shuffled = todaysMenus.sort(() => 0.5 - Math.random());
+          setDisplayMenus(shuffled.slice(0, 3));
         }
 
       } catch (error) {
         // Mostrar valores por defecto en caso de error
         if (error.message?.includes('Rate limit')) {
           console.warn('⚠️ Rate limit alcanzado en Home, usando valores por defecto');
-          // Mantener los stats en 0 si hay rate limit
         } else {
           console.error("Error loading data:", error);
         }
@@ -275,7 +274,6 @@ export default function Home() {
       }
     } catch (error) {
       console.error('Error en acceso cafeterías:', error);
-      // If there's an error (e.g., fetching user data), redirect to login as a fallback
       await base44.auth.redirectToLogin(window.location.pathname);
     }
   };
