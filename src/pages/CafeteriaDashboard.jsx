@@ -16,10 +16,8 @@ import {
   Trash2,
   QrCode,
   Loader2,
-  AlertCircle,
   Building2,
   Sparkles,
-  Image as ImageIcon,
   X
 } from "lucide-react";
 import {
@@ -123,11 +121,8 @@ export default function CafeteriaDashboard() {
     if (!selectedCafeteriaData) return;
 
     try {
-      const cafeteriaId = selectedCafeteriaData.id;
       const cafeteriaName = selectedCafeteriaData.nombre;
       const today = new Date().toISOString().split('T')[0];
-
-      console.log('🔍 Cargando datos para cafetería:', cafeteriaName, 'ID:', cafeteriaId);
 
       const [allMenus, allReservations] = await Promise.all([
         base44.entities.Menu.list('-created_date', 50),
@@ -201,14 +196,19 @@ export default function CafeteriaDashboard() {
   const handleGenerateImage = async (platoNum) => {
     const plato = platoNum === 1 ? publishFormData.plato_principal : publishFormData.plato_secundario;
     
-    if (!plato || publishFormData.es_sorpresa) return;
+    if (!plato && !publishFormData.es_sorpresa) return;
 
     const setIsGenerating = platoNum === 1 ? setIsGeneratingImage1 : setIsGeneratingImage2;
     const setImageUrl = platoNum === 1 ? setGeneratedImageUrl1 : setGeneratedImageUrl2;
     
     setIsGenerating(true);
     try {
-      const prompt = `Foto profesional de comida: ${plato}. Plato apetitoso, bien iluminado, presentación de restaurante, fondo neutro, alta calidad`;
+      let prompt;
+      if (publishFormData.es_sorpresa) {
+        prompt = `Comida universitaria para llevar en envase eco-friendly. Presentación apetitosa de menú del día universitario, plato equilibrado y nutritivo, estilo cafetería universitaria moderna, iluminación natural, fondo neutro profesional`;
+      } else {
+        prompt = `${plato} - comida universitaria para llevar en envase eco-friendly. Presentación apetitosa de cafetería universitaria, plato equilibrado, iluminación natural, fondo neutro profesional, comida recién preparada`;
+      }
       
       const result = await base44.integrations.Core.GenerateImage({ prompt });
       
@@ -243,8 +243,6 @@ export default function CafeteriaDashboard() {
     setIsPublishing(true);
 
     try {
-      console.log('📝 Publicando menú para:', selectedCafeteriaData.nombre);
-
       const menuData = {
         plato_principal: publishFormData.es_sorpresa ? "Plato Sorpresa" : publishFormData.plato_principal,
         plato_secundario: publishFormData.es_sorpresa ? "Plato Sorpresa" : publishFormData.plato_secundario,
@@ -270,7 +268,6 @@ export default function CafeteriaDashboard() {
         imagen_url_secundaria: generatedImageUrl2 || undefined
       };
 
-      console.log('✅ Creando menú con datos:', menuData);
       await base44.entities.Menu.create(menuData);
 
       setPublishFormData({
@@ -298,14 +295,9 @@ export default function CafeteriaDashboard() {
   };
 
   const handleCafeteriaChange = (id) => {
-    console.log('🔄 Cambiando a cafetería ID:', id);
     const cafe = availableCafeterias.find(c => c.id === id);
-    if (!cafe) {
-      console.error('❌ Cafetería no encontrada:', id);
-      return;
-    }
+    if (!cafe) return;
 
-    console.log('✅ Cafetería encontrada:', cafe.nombre);
     setSelectedCafeteriaId(id);
     setSelectedCafeteriaData(cafe);
     setPublishFormData(prev => ({
@@ -329,7 +321,6 @@ export default function CafeteriaDashboard() {
     );
   }
 
-  // Sin cafeterías asignadas
   if (availableCafeterias.length === 0) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-amber-50 flex items-center justify-center p-6">
@@ -347,11 +338,7 @@ export default function CafeteriaDashboard() {
               <p className="text-blue-800 mb-4">Contacta con el equipo de PlatPal para registrar tu establecimiento y empezar a vender menús sostenibles.</p>
               <p className="text-sm text-blue-700">📧 Email: contacto@platpal.com</p>
             </div>
-            <Button
-              onClick={() => navigate(createPageUrl("Home"))}
-              variant="outline"
-              className="w-full"
-            >
+            <Button onClick={() => navigate(createPageUrl("Home"))} variant="outline" className="w-full">
               Volver al Inicio
             </Button>
           </CardContent>
@@ -363,8 +350,6 @@ export default function CafeteriaDashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-amber-50 p-6">
       <div className="max-w-7xl mx-auto space-y-6">
-
-        {/* HEADER */}
         <div className="flex flex-col md:flex-row justify-between items-start gap-4">
           <div className="flex-1">
             <h1 className="text-4xl font-black text-gray-900">
@@ -372,7 +357,6 @@ export default function CafeteriaDashboard() {
             </h1>
             <p className="text-gray-600 mt-1">Gestiona tus menús y pedidos</p>
 
-            {/* Selector de Cafetería */}
             {availableCafeterias.length > 0 && (
               <div className="mt-4">
                 {availableCafeterias.length > 1 ? (
@@ -408,7 +392,6 @@ export default function CafeteriaDashboard() {
           </div>
         </div>
 
-        {/* STATS */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card className="hover:shadow-lg transition-all">
             <CardContent className="p-6 text-center">
@@ -443,7 +426,6 @@ export default function CafeteriaDashboard() {
           </Card>
         </div>
 
-        {/* BOTONES */}
         <div className="flex flex-wrap gap-3">
           <Link to={createPageUrl("PickupPanel")}>
             <Button variant="outline">
@@ -474,9 +456,48 @@ export default function CafeteriaDashboard() {
                   />
                 </div>
 
-                {!publishFormData.es_sorpresa && (
+                {publishFormData.es_sorpresa ? (
+                  <div className="space-y-3">
+                    <p className="text-sm text-purple-700 bg-purple-50 p-3 rounded-xl">
+                      🎁 Generando imágenes de menú sorpresa universitario
+                    </p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <Label>Primer Plato Sorpresa</Label>
+                        {generatedImageUrl1 ? (
+                          <div className="relative">
+                            <img src={generatedImageUrl1} alt="Sorpresa 1" className="w-full h-32 object-cover rounded-xl" />
+                            <button type="button" onClick={() => setGeneratedImageUrl1('')} className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center">
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ) : (
+                          <Button type="button" onClick={() => handleGenerateImage(1)} disabled={isGeneratingImage1} variant="outline" size="sm" className="w-full">
+                            {isGeneratingImage1 ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
+                            Generar imagen
+                          </Button>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Segundo Plato Sorpresa</Label>
+                        {generatedImageUrl2 ? (
+                          <div className="relative">
+                            <img src={generatedImageUrl2} alt="Sorpresa 2" className="w-full h-32 object-cover rounded-xl" />
+                            <button type="button" onClick={() => setGeneratedImageUrl2('')} className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center">
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ) : (
+                          <Button type="button" onClick={() => handleGenerateImage(2)} disabled={isGeneratingImage2} variant="outline" size="sm" className="w-full">
+                            {isGeneratingImage2 ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
+                            Generar imagen
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
                   <>
-                    {/* PRIMER PLATO */}
                     <div className="space-y-3 p-4 border-2 border-emerald-200 rounded-xl bg-emerald-50/30">
                       <Label className="text-base font-bold">🍽️ Primer Plato</Label>
                       <Input
@@ -489,34 +510,18 @@ export default function CafeteriaDashboard() {
                       {generatedImageUrl1 ? (
                         <div className="relative">
                           <img src={generatedImageUrl1} alt="Primer plato" className="w-full h-32 object-cover rounded-xl border-2" />
-                          <button
-                            type="button"
-                            onClick={() => setGeneratedImageUrl1('')}
-                            className="absolute top-2 right-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center"
-                          >
+                          <button type="button" onClick={() => setGeneratedImageUrl1('')} className="absolute top-2 right-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center">
                             <X className="w-3 h-3" />
                           </button>
                         </div>
                       ) : (
-                        <Button
-                          type="button"
-                          onClick={() => handleGenerateImage(1)}
-                          disabled={isGeneratingImage1 || !publishFormData.plato_principal}
-                          variant="outline"
-                          size="sm"
-                          className="w-full"
-                        >
-                          {isGeneratingImage1 ? (
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          ) : (
-                            <Sparkles className="w-4 h-4 mr-2" />
-                          )}
-                          Generar imagen del primer plato
+                        <Button type="button" onClick={() => handleGenerateImage(1)} disabled={isGeneratingImage1 || !publishFormData.plato_principal} variant="outline" size="sm" className="w-full">
+                          {isGeneratingImage1 ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
+                          Generar imagen
                         </Button>
                       )}
                     </div>
 
-                    {/* SEGUNDO PLATO */}
                     <div className="space-y-3 p-4 border-2 border-blue-200 rounded-xl bg-blue-50/30">
                       <Label className="text-base font-bold">🍽️ Segundo Plato</Label>
                       <Input
@@ -529,29 +534,14 @@ export default function CafeteriaDashboard() {
                       {generatedImageUrl2 ? (
                         <div className="relative">
                           <img src={generatedImageUrl2} alt="Segundo plato" className="w-full h-32 object-cover rounded-xl border-2" />
-                          <button
-                            type="button"
-                            onClick={() => setGeneratedImageUrl2('')}
-                            className="absolute top-2 right-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center"
-                          >
+                          <button type="button" onClick={() => setGeneratedImageUrl2('')} className="absolute top-2 right-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center">
                             <X className="w-3 h-3" />
                           </button>
                         </div>
                       ) : (
-                        <Button
-                          type="button"
-                          onClick={() => handleGenerateImage(2)}
-                          disabled={isGeneratingImage2 || !publishFormData.plato_secundario}
-                          variant="outline"
-                          size="sm"
-                          className="w-full"
-                        >
-                          {isGeneratingImage2 ? (
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          ) : (
-                            <Sparkles className="w-4 h-4 mr-2" />
-                          )}
-                          Generar imagen del segundo plato
+                        <Button type="button" onClick={() => handleGenerateImage(2)} disabled={isGeneratingImage2 || !publishFormData.plato_secundario} variant="outline" size="sm" className="w-full">
+                          {isGeneratingImage2 ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
+                          Generar imagen
                         </Button>
                       )}
                     </div>
@@ -561,13 +551,7 @@ export default function CafeteriaDashboard() {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <Label>Cantidad *</Label>
-                    <Input
-                      type="number"
-                      value={publishFormData.stock_total}
-                      onChange={(e) => setPublishFormData(prev => ({ ...prev, stock_total: e.target.value }))}
-                      min="1"
-                      required
-                    />
+                    <Input type="number" value={publishFormData.stock_total} onChange={(e) => setPublishFormData(prev => ({ ...prev, stock_total: e.target.value }))} min="1" required />
                   </div>
                   <div>
                     <Label>Precio PlatPal</Label>
@@ -578,15 +562,9 @@ export default function CafeteriaDashboard() {
                 </div>
 
                 <div className="flex gap-3 pt-2">
-                  <Button type="button" variant="outline" onClick={() => setShowPublishModal(false)} className="flex-1">
-                    Cancelar
-                  </Button>
+                  <Button type="button" variant="outline" onClick={() => setShowPublishModal(false)} className="flex-1">Cancelar</Button>
                   <Button type="submit" disabled={isPublishing} className="flex-1 bg-emerald-600">
-                    {isPublishing ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      'Publicar'
-                    )}
+                    {isPublishing ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Publicar'}
                   </Button>
                 </div>
               </form>
@@ -601,7 +579,6 @@ export default function CafeteriaDashboard() {
           </Link>
         </div>
 
-        {/* MENÚS */}
         <Card>
           <CardHeader>
             <CardTitle>Menús de Hoy</CardTitle>
@@ -614,22 +591,12 @@ export default function CafeteriaDashboard() {
                     <div className="flex-1">
                       <h3 className="font-bold text-gray-900">{menu.plato_principal}</h3>
                       <p className="text-sm text-gray-600">+ {menu.plato_secundario}</p>
-                      <Badge variant="outline" className="mt-2">
-                        Stock: {menu.stock_disponible}/{menu.stock_total}
-                      </Badge>
+                      <Badge variant="outline" className="mt-2">Stock: {menu.stock_disponible}/{menu.stock_total}</Badge>
                     </div>
                     <div className="flex gap-2">
-                      <Button size="sm" variant="outline" onClick={() => handleDuplicateMenu(menu)} title="Duplicar">
-                        <Copy className="w-4 h-4" />
-                      </Button>
-                      <Link to={createPageUrl("EditMenu")} state={{ menu }}>
-                        <Button size="sm" variant="outline" title="Editar">
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                      </Link>
-                      <Button size="sm" variant="outline" onClick={() => handleDeleteMenu(menu.id)} title="Eliminar">
-                        <Trash2 className="w-4 h-4 text-red-600" />
-                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => handleDuplicateMenu(menu)} title="Duplicar"><Copy className="w-4 h-4" /></Button>
+                      <Link to={createPageUrl("EditMenu")} state={{ menu }}><Button size="sm" variant="outline" title="Editar"><Edit className="w-4 h-4" /></Button></Link>
+                      <Button size="sm" variant="outline" onClick={() => handleDeleteMenu(menu.id)} title="Eliminar"><Trash2 className="w-4 h-4 text-red-600" /></Button>
                     </div>
                   </div>
                 ))}
@@ -639,10 +606,7 @@ export default function CafeteriaDashboard() {
                 <Package className="w-20 h-20 text-gray-300 mx-auto mb-4" />
                 <p className="text-xl font-semibold text-gray-900 mb-2">No hay menús hoy</p>
                 <p className="text-gray-600 mb-6">Empieza publicando tu primer menú</p>
-                <Button onClick={() => setShowPublishModal(true)} className="bg-emerald-600">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Publicar Menú
-                </Button>
+                <Button onClick={() => setShowPublishModal(true)} className="bg-emerald-600"><Plus className="w-4 h-4 mr-2" />Publicar Menú</Button>
               </div>
             )}
           </CardContent>

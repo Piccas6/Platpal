@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,9 +18,8 @@ export default function MenuCard({ menu, onReservationSuccess, currentUser, onFa
   const [isReserving, setIsReserving] = useState(false);
   
   const isPastDeadline = () => {
-    // FIXED: Safety check for undefined hora_limite_reserva
     if (!menu.hora_limite_reserva) {
-      return false; // Si no tiene hora límite, considerarlo disponible
+      return false;
     }
 
     try {
@@ -32,7 +30,7 @@ export default function MenuCard({ menu, onReservationSuccess, currentUser, onFa
       return now > deadline;
     } catch (error) {
       console.error('Error parsing hora_limite_reserva:', menu.hora_limite_reserva, error);
-      return false; // En caso de error, considerarlo disponible
+      return false;
     }
   };
 
@@ -214,7 +212,7 @@ export default function MenuCard({ menu, onReservationSuccess, currentUser, onFa
       alert(errorMessage);
       
       if (onReservationSuccess) {
-        onReservationSuccess(); // Call success to re-fetch menus or update UI after potential stock changes even if payment failed
+        onReservationSuccess();
       }
     } finally {
       setIsReserving(false);
@@ -224,20 +222,49 @@ export default function MenuCard({ menu, onReservationSuccess, currentUser, onFa
 
   const typeLabel = getTypeLabel();
 
+  // Verificar si hay ambas imágenes
+  const hasImages = menu.imagen_url && menu.imagen_url_secundaria;
+
   return (
     <>
       <Card className={`overflow-hidden transition-all duration-300 hover:shadow-2xl group border-2 ${
         isUnavailable ? 'opacity-60 border-gray-200' : 'border-emerald-100 hover:border-emerald-300'
       }`}>
-        {/* Imagen */}
+        {/* Imagen(es) */}
         <div className="relative h-56 overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
-          {menu.imagen_url ? (
+          {hasImages ? (
+            // Mostrar ambas imágenes lado a lado
+            <div className="flex h-full">
+              <div className="w-1/2 relative overflow-hidden">
+                <img 
+                  src={menu.imagen_url} 
+                  alt={menu.plato_principal}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                />
+                <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded-lg">
+                  1er Plato
+                </div>
+              </div>
+              <div className="w-1/2 relative overflow-hidden border-l-2 border-white">
+                <img 
+                  src={menu.imagen_url_secundaria} 
+                  alt={menu.plato_secundario}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                />
+                <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded-lg">
+                  2do Plato
+                </div>
+              </div>
+            </div>
+          ) : menu.imagen_url ? (
+            // Solo imagen principal
             <img 
               src={menu.imagen_url} 
               alt={menu.plato_principal}
               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
             />
           ) : (
+            // Sin imágenes - icono por defecto
             <div className="w-full h-full flex items-center justify-center">
               <UtensilsCrossed className="w-20 h-20 text-gray-300" />
             </div>
@@ -301,7 +328,6 @@ export default function MenuCard({ menu, onReservationSuccess, currentUser, onFa
             </h3>
             <p className="text-gray-600 text-sm mb-3">{menu.plato_secundario}</p>
             
-            {/* Nombre de cafetería sin enlace */}
             <div className="flex items-center gap-2 text-gray-600">
               <MapPin className="w-4 h-4" />
               <span className="font-medium">{menu.cafeteria}</span>
@@ -355,7 +381,7 @@ export default function MenuCard({ menu, onReservationSuccess, currentUser, onFa
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         menu={menu}
-        campus={{ id: menu.campus }} // Assuming menu.campus holds the ID
+        campus={{ id: menu.campus }}
         onConfirm={handleReserveMenu}
         isLoading={isReserving}
         currentUser={currentUser}
