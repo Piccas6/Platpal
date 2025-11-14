@@ -70,8 +70,10 @@ export default function CafeteriaDashboard() {
     es_sorpresa: false
   });
   const [isPublishing, setIsPublishing] = useState(false);
-  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
-  const [generatedImageUrl, setGeneratedImageUrl] = useState('');
+  const [isGeneratingImage1, setIsGeneratingImage1] = useState(false);
+  const [isGeneratingImage2, setIsGeneratingImage2] = useState(false);
+  const [generatedImageUrl1, setGeneratedImageUrl1] = useState('');
+  const [generatedImageUrl2, setGeneratedImageUrl2] = useState('');
 
   // Cargar usuario y cafeterías
   useEffect(() => {
@@ -196,48 +198,29 @@ export default function CafeteriaDashboard() {
     }
   };
 
-  const handleGenerateQuickImage = useCallback(async () => {
-    if (publishFormData.es_sorpresa || !publishFormData.plato_principal || !publishFormData.plato_secundario) {
-      // Don't generate for surprise menu or if plates are not filled
-      return;
-    }
+  const handleGenerateImage = async (platoNum) => {
+    const plato = platoNum === 1 ? publishFormData.plato_principal : publishFormData.plato_secundario;
+    
+    if (!plato || publishFormData.es_sorpresa) return;
 
-    if (isGeneratingImage) return;
-
-    setIsGeneratingImage(true);
+    const setIsGenerating = platoNum === 1 ? setIsGeneratingImage1 : setIsGeneratingImage2;
+    const setImageUrl = platoNum === 1 ? setGeneratedImageUrl1 : setGeneratedImageUrl2;
+    
+    setIsGenerating(true);
     try {
-      const prompt = `Foto profesional de comida: ${publishFormData.plato_principal} con ${publishFormData.plato_secundario}. Plato apetitoso, bien iluminado, presentación de restaurante, fondo neutro, alta calidad`;
-
+      const prompt = `Foto profesional de comida: ${plato}. Plato apetitoso, bien iluminado, presentación de restaurante, fondo neutro, alta calidad`;
+      
       const result = await base44.integrations.Core.GenerateImage({ prompt });
-
+      
       if (result.url) {
-        setGeneratedImageUrl(result.url);
+        setImageUrl(result.url);
       }
     } catch (error) {
-      console.error('Error al generar imagen con IA:', error);
+      console.error('Error al generar imagen:', error);
     } finally {
-      setIsGeneratingImage(false);
+      setIsGenerating(false);
     }
-  }, [publishFormData.plato_principal, publishFormData.plato_secundario, publishFormData.es_sorpresa, isGeneratingImage]);
-
-  useEffect(() => {
-    // Clear generated image if it's a surprise menu or plates are empty
-    if (publishFormData.es_sorpresa || !publishFormData.plato_principal || !publishFormData.plato_secundario) {
-      if (generatedImageUrl) {
-        setGeneratedImageUrl('');
-      }
-      return;
-    }
-
-    // Debounce image generation when principal/secondary dishes change
-    if (publishFormData.plato_principal && publishFormData.plato_secundario && !publishFormData.es_sorpresa && !generatedImageUrl && !isGeneratingImage) {
-      const timer = setTimeout(() => {
-        handleGenerateQuickImage();
-      }, 1000); // 1 second debounce
-
-      return () => clearTimeout(timer);
-    }
-  }, [publishFormData.plato_principal, publishFormData.plato_secundario, publishFormData.es_sorpresa, generatedImageUrl, isGeneratingImage, handleGenerateQuickImage]);
+  };
 
   const handleQuickPublish = async (e) => {
     e.preventDefault();
@@ -264,7 +247,7 @@ export default function CafeteriaDashboard() {
 
       const menuData = {
         plato_principal: publishFormData.es_sorpresa ? "Plato Sorpresa" : publishFormData.plato_principal,
-        plato_secundario: publishFormData.es_sorpresa ? "2º Plato Sorpresa" : publishFormData.plato_secundario,
+        plato_secundario: publishFormData.es_sorpresa ? "Plato Sorpresa" : publishFormData.plato_secundario,
         precio_original: parseFloat(publishFormData.precio_original),
         precio_descuento: 2.99,
         stock_total: parseInt(publishFormData.stock_total),
@@ -283,7 +266,8 @@ export default function CafeteriaDashboard() {
         es_vegano: false,
         sin_gluten: false,
         alergenos: ['ninguno'],
-        imagen_url: generatedImageUrl || undefined // Include generated image URL
+        imagen_url: generatedImageUrl1 || undefined,
+        imagen_url_secundaria: generatedImageUrl2 || undefined
       };
 
       console.log('✅ Creando menú con datos:', menuData);
@@ -299,7 +283,8 @@ export default function CafeteriaDashboard() {
         hora_limite: selectedCafeteriaData.hora_fin_recogida || "18:00",
         es_sorpresa: false
       });
-      setGeneratedImageUrl(''); // Clear generated image after publishing
+      setGeneratedImageUrl1('');
+      setGeneratedImageUrl2('');
 
       setShowPublishModal(false);
       loadData();
@@ -329,7 +314,8 @@ export default function CafeteriaDashboard() {
       hora_limite_reserva: cafe.hora_fin_reserva || "16:00",
       hora_limite: cafe.hora_fin_recogida || "18:00"
     }));
-    setGeneratedImageUrl(''); // Clear generated image when cafeteria changes
+    setGeneratedImageUrl1('');
+    setGeneratedImageUrl2('');
   };
 
   if (isLoading) {
@@ -473,10 +459,10 @@ export default function CafeteriaDashboard() {
                 Publicar Menú Rápido
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>⚡ Publicar Menú Rápido</DialogTitle>
-                <DialogDescription>Publica en segundos con imagen IA automática</DialogDescription>
+                <DialogDescription>Publica en segundos con imágenes IA automáticas</DialogDescription>
               </DialogHeader>
 
               <form onSubmit={handleQuickPublish} className="space-y-4 mt-4">
@@ -489,91 +475,87 @@ export default function CafeteriaDashboard() {
                 </div>
 
                 {!publishFormData.es_sorpresa && (
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label>Plato Principal *</Label>
+                  <>
+                    {/* PRIMER PLATO */}
+                    <div className="space-y-3 p-4 border-2 border-emerald-200 rounded-xl bg-emerald-50/30">
+                      <Label className="text-base font-bold">🍽️ Primer Plato</Label>
                       <Input
                         value={publishFormData.plato_principal}
                         onChange={(e) => setPublishFormData(prev => ({ ...prev, plato_principal: e.target.value }))}
-                        placeholder="Ej: Pollo"
+                        placeholder="Ej: Pollo al horno"
                         required
                       />
-                    </div>
-                    <div>
-                      <Label>2º Plato *</Label>
-                      <Input
-                        value={publishFormData.plato_secundario}
-                        onChange={(e) => setPublishFormData(prev => ({ ...prev, plato_secundario: e.target.value }))}
-                        placeholder="Ej: Patatas"
-                        required
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* Imagen con IA */}
-                {!publishFormData.es_sorpresa && (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <Label className="flex items-center gap-2">
-                        <ImageIcon className="w-4 h-4" />
-                        Imagen del Menú
-                      </Label>
-                      {isGeneratingImage && (
-                        <Badge className="bg-blue-100 text-blue-800">
-                          <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                          Generando...
-                        </Badge>
+                      
+                      {generatedImageUrl1 ? (
+                        <div className="relative">
+                          <img src={generatedImageUrl1} alt="Primer plato" className="w-full h-32 object-cover rounded-xl border-2" />
+                          <button
+                            type="button"
+                            onClick={() => setGeneratedImageUrl1('')}
+                            className="absolute top-2 right-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ) : (
+                        <Button
+                          type="button"
+                          onClick={() => handleGenerateImage(1)}
+                          disabled={isGeneratingImage1 || !publishFormData.plato_principal}
+                          variant="outline"
+                          size="sm"
+                          className="w-full"
+                        >
+                          {isGeneratingImage1 ? (
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          ) : (
+                            <Sparkles className="w-4 h-4 mr-2" />
+                          )}
+                          Generar imagen del primer plato
+                        </Button>
                       )}
                     </div>
 
-                    {generatedImageUrl ? (
-                      <div className="relative">
-                        <img src={generatedImageUrl} alt="Menu preview" className="w-full h-48 object-cover rounded-xl border-2" />
-                        <button
+                    {/* SEGUNDO PLATO */}
+                    <div className="space-y-3 p-4 border-2 border-blue-200 rounded-xl bg-blue-50/30">
+                      <Label className="text-base font-bold">🍽️ Segundo Plato</Label>
+                      <Input
+                        value={publishFormData.plato_secundario}
+                        onChange={(e) => setPublishFormData(prev => ({ ...prev, plato_secundario: e.target.value }))}
+                        placeholder="Ej: Patatas fritas"
+                        required
+                      />
+                      
+                      {generatedImageUrl2 ? (
+                        <div className="relative">
+                          <img src={generatedImageUrl2} alt="Segundo plato" className="w-full h-32 object-cover rounded-xl border-2" />
+                          <button
+                            type="button"
+                            onClick={() => setGeneratedImageUrl2('')}
+                            className="absolute top-2 right-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ) : (
+                        <Button
                           type="button"
-                          onClick={() => setGeneratedImageUrl('')}
-                          className="absolute top-2 right-2 w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg"
+                          onClick={() => handleGenerateImage(2)}
+                          disabled={isGeneratingImage2 || !publishFormData.plato_secundario}
+                          variant="outline"
+                          size="sm"
+                          className="w-full"
                         >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ) : isGeneratingImage ? (
-                      <div className="h-48 bg-gray-100 rounded-xl flex items-center justify-center border-2 border-dashed">
-                        <div className="text-center">
-                          <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-2" />
-                          <p className="text-sm text-gray-600">Generando imagen con IA...</p>
-                        </div>
-                      </div>
-                    ) : (publishFormData.plato_principal && publishFormData.plato_secundario) ? (
-                      <div className="h-48 bg-gray-100 rounded-xl flex items-center justify-center border-2 border-dashed">
-                        <div className="text-center">
-                          <Sparkles className="w-10 h-10 text-gray-400 mx-auto mb-2" />
-                          <p className="text-sm text-gray-600">Haz click para generar la imagen con IA</p>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="h-48 bg-gray-100 rounded-xl flex items-center justify-center border-2 border-dashed">
-                        <div className="text-center">
-                          <ImageIcon className="w-10 h-10 text-gray-400 mx-auto mb-2" />
-                          <p className="text-sm text-gray-600">Completa los platos para generar la imagen</p>
-                        </div>
-                      </div>
-                    )}
-
-                    {!isGeneratingImage && (publishFormData.plato_principal && publishFormData.plato_secundario) && (
-                      <Button
-                        type="button"
-                        onClick={handleGenerateQuickImage}
-                        variant="outline"
-                        size="sm"
-                        className="w-full"
-                      >
-                        <Sparkles className="w-4 h-4 mr-2" />
-                        {generatedImageUrl ? 'Regenerar Imagen' : 'Generar Imagen Manualmente'}
-                      </Button>
-                    )}
-                  </div>
+                          {isGeneratingImage2 ? (
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          ) : (
+                            <Sparkles className="w-4 h-4 mr-2" />
+                          )}
+                          Generar imagen del segundo plato
+                        </Button>
+                      )}
+                    </div>
+                  </>
                 )}
 
                 <div className="grid grid-cols-2 gap-3">
