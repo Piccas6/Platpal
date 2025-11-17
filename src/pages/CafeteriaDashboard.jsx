@@ -18,7 +18,8 @@ import {
   Loader2,
   Building2,
   Sparkles,
-  X
+  X,
+  Recycle
 } from "lucide-react";
 import {
   Select,
@@ -63,9 +64,10 @@ export default function CafeteriaDashboard() {
     precio_original: 8.50,
     stock_total: "",
     fecha: new Date().toISOString().split('T')[0],
-    hora_limite_reserva: "16:00",
+    hora_limite_reserva: "16:30",
     hora_limite: "18:00",
-    es_sorpresa: false
+    es_sorpresa: false,
+    permite_llevar_envase: true
   });
   const [isPublishing, setIsPublishing] = useState(false);
   const [isGeneratingImage1, setIsGeneratingImage1] = useState(false);
@@ -101,8 +103,8 @@ export default function CafeteriaDashboard() {
           setPublishFormData(prev => ({
             ...prev,
             precio_original: firstCafe.precio_original_default || 8.50,
-            hora_limite_reserva: firstCafe.hora_fin_reserva || "16:00",
-            hora_limite: firstCafe.hora_fin_recogida || "18:00"
+            hora_limite_reserva: "16:30",
+            hora_limite: "18:00"
           }));
         }
       } catch (error) {
@@ -253,11 +255,12 @@ export default function CafeteriaDashboard() {
         campus: selectedCafeteriaData.campus,
         cafeteria: selectedCafeteriaData.nombre,
         fecha: publishFormData.fecha,
-        hora_limite_reserva: publishFormData.hora_limite_reserva,
-        hora_limite: publishFormData.hora_limite,
+        hora_limite_reserva: "16:30",
+        hora_limite: "18:00",
         es_recurrente: false,
         es_sorpresa: publishFormData.es_sorpresa,
-        permite_envase_propio: true,
+        permite_llevar_envase: publishFormData.permite_llevar_envase,
+        permite_envase_propio: publishFormData.permite_llevar_envase,
         descuento_envase_propio: 0.15,
         tipo_cocina: '',
         es_vegetariano: false,
@@ -276,9 +279,10 @@ export default function CafeteriaDashboard() {
         precio_original: selectedCafeteriaData.precio_original_default || 8.50,
         stock_total: "",
         fecha: new Date().toISOString().split('T')[0],
-        hora_limite_reserva: selectedCafeteriaData.hora_fin_reserva || "16:00",
-        hora_limite: selectedCafeteriaData.hora_fin_recogida || "18:00",
-        es_sorpresa: false
+        hora_limite_reserva: "16:30",
+        hora_limite: "18:00",
+        es_sorpresa: false,
+        permite_llevar_envase: true
       });
       setGeneratedImageUrl1('');
       setGeneratedImageUrl2('');
@@ -303,8 +307,8 @@ export default function CafeteriaDashboard() {
     setPublishFormData(prev => ({
       ...prev,
       precio_original: cafe.precio_original_default || 8.50,
-      hora_limite_reserva: cafe.hora_fin_reserva || "16:00",
-      hora_limite: cafe.hora_fin_recogida || "18:00"
+      hora_limite_reserva: "16:30",
+      hora_limite: "18:00"
     }));
     setGeneratedImageUrl1('');
     setGeneratedImageUrl2('');
@@ -444,7 +448,7 @@ export default function CafeteriaDashboard() {
             <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>⚡ Publicar Menú Rápido</DialogTitle>
-                <DialogDescription>Publica en segundos con imágenes IA automáticas</DialogDescription>
+                <DialogDescription>Reservas: 15:30-16:30 | Recogida: 16:30-18:00</DialogDescription>
               </DialogHeader>
 
               <form onSubmit={handleQuickPublish} className="space-y-4 mt-4">
@@ -453,6 +457,17 @@ export default function CafeteriaDashboard() {
                   <Switch
                     checked={publishFormData.es_sorpresa}
                     onCheckedChange={(checked) => setPublishFormData(prev => ({ ...prev, es_sorpresa: checked }))}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between p-3 bg-green-50 rounded-xl">
+                  <div className="flex items-center gap-2">
+                    <Recycle className="w-5 h-5 text-green-700" />
+                    <Label className="font-semibold">¿Permite envase propio?</Label>
+                  </div>
+                  <Switch
+                    checked={publishFormData.permite_llevar_envase}
+                    onCheckedChange={(checked) => setPublishFormData(prev => ({ ...prev, permite_llevar_envase: checked }))}
                   />
                 </div>
 
@@ -591,7 +606,15 @@ export default function CafeteriaDashboard() {
                     <div className="flex-1">
                       <h3 className="font-bold text-gray-900">{menu.plato_principal}</h3>
                       <p className="text-sm text-gray-600">+ {menu.plato_secundario}</p>
-                      <Badge variant="outline" className="mt-2">Stock: {menu.stock_disponible}/{menu.stock_total}</Badge>
+                      <div className="flex gap-2 mt-2">
+                        <Badge variant="outline">Stock: {menu.stock_disponible}/{menu.stock_total}</Badge>
+                        {menu.permite_llevar_envase && (
+                          <Badge className="bg-green-100 text-green-800">
+                            <Recycle className="w-3 h-3 mr-1" />
+                            Permite envase
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                     <div className="flex gap-2">
                       <Button size="sm" variant="outline" onClick={() => handleDuplicateMenu(menu)} title="Duplicar"><Copy className="w-4 h-4" /></Button>
