@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client'; // FIXED: Use base44 SDK
+import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -15,21 +15,26 @@ const withAuth = (WrappedComponent, allowedRoles = [], requireOwnership = false)
     useEffect(() => {
       const checkAuth = async () => {
         try {
-          const currentUser = await base44.auth.me(); // FIXED: Use base44.auth.me()
+          // Verificar que base44 y base44.auth existan
+          if (!base44 || !base44.auth) {
+            throw new Error('SDK no inicializado correctamente');
+          }
+
+          const currentUser = await base44.auth.me();
           
           if (!currentUser.app_role) {
-            await base44.auth.updateMe({ app_role: 'user' }); // FIXED: Use base44.auth.updateMe()
+            await base44.auth.updateMe({ app_role: 'user' });
             currentUser.app_role = 'user';
           }
           
-          // **FIX: Admins always have access to everything**
+          // Admins tienen acceso a todo
           if (currentUser.app_role === 'admin') {
             setUser(currentUser);
             setIsLoading(false);
             return;
           }
 
-          // Check if user has required role
+          // Verificar roles permitidos
           if (allowedRoles.length === 0 || allowedRoles.includes(currentUser.app_role)) {
             setUser(currentUser);
             setIsLoading(false);
@@ -38,6 +43,7 @@ const withAuth = (WrappedComponent, allowedRoles = [], requireOwnership = false)
             setIsLoading(false);
           }
         } catch (error) {
+          console.error('Error en withAuth:', error);
           setError('Debes iniciar sesión para acceder a esta página');
           setIsLoading(false);
         }
@@ -47,9 +53,14 @@ const withAuth = (WrappedComponent, allowedRoles = [], requireOwnership = false)
 
     const handleLogin = async () => {
       try {
-        await base44.auth.redirectToLogin(); // FIXED: Use base44.auth
+        if (base44 && base44.auth) {
+          await base44.auth.redirectToLogin();
+        } else {
+          window.location.href = createPageUrl("Home");
+        }
       } catch (error) {
         console.error('Login error:', error);
+        window.location.href = createPageUrl("Home");
       }
     };
 
