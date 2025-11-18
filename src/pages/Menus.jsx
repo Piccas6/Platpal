@@ -63,10 +63,9 @@ export default function Menus() {
       const currentMinute = now.getMinutes();
       const currentTime = currentHour + currentMinute / 60;
 
-      const reservaInicio = 15.5; // 15:30
       const reservaFin = 16.5;    // 16:30
 
-      setCanReserve(currentTime >= reservaInicio && currentTime <= reservaFin);
+      setCanReserve(currentTime <= reservaFin);
     };
 
     checkReservationTime();
@@ -147,7 +146,7 @@ export default function Menus() {
 
   const openReservationModal = (menu) => {
     if (!canReserve) {
-      alert('⏰ Las reservas solo están disponibles entre las 15:30 y las 16:30. Por favor, vuelve en ese horario.');
+      alert('⏰ Las reservas cierran a las 16:30. Por favor, vuelve mañana para reservar.');
       return;
     }
     setSelectedMenu(menu);
@@ -368,11 +367,11 @@ export default function Menus() {
                   {canReserve ? '✅ Horario de Reservas ABIERTO' : '⏰ Horarios de PlatPal'}
                 </h3>
                 <p className="text-sm text-gray-700 mt-1">
-                  <strong>Reserva:</strong> 15:30 - 16:30 • <strong>Recogida:</strong> 16:30 - 18:00
+                  <strong>Reserva:</strong> Hasta las 16:30 • <strong>Recogida:</strong> 16:30 - 18:00
                 </p>
                 {!canReserve && (
                   <p className="text-xs text-amber-700 mt-1 font-semibold">
-                    🔒 Fuera de horario de reservas. Vuelve entre las 15:30 - 16:30
+                    🔒 Fuera de horario. Las reservas cierran a las 16:30
                   </p>
                 )}
               </div>

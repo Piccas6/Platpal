@@ -28,10 +28,9 @@ export default function MenuCard({ menu, onReservationSuccess, currentUser, onFa
         const currentMinute = now.getMinutes();
         const currentTime = currentHour + currentMinute / 60;
 
-        const reservaInicio = 15.5; // 15:30
         const reservaFin = 16.5;    // 16:30
 
-        setCanReserveLocal(currentTime >= reservaInicio && currentTime <= reservaFin);
+        setCanReserveLocal(currentTime <= reservaFin);
       };
 
       checkReservationTime();
@@ -391,7 +390,7 @@ export default function MenuCard({ menu, onReservationSuccess, currentUser, onFa
           <Button 
             onClick={() => {
               if (!canMakeReservation) {
-                alert('⏰ Las reservas solo están disponibles entre las 15:30 y las 16:30. Por favor, vuelve en ese horario.');
+                alert('⏰ Las reservas cierran a las 16:30. Por favor, vuelve mañana para reservar.');
                 return;
               }
               setIsModalOpen(true);
