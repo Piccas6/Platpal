@@ -637,6 +637,17 @@ function PublishMenu() {
                 </div>
               </div>
 
+              <div className="flex items-center justify-between p-4 bg-emerald-50 rounded-xl border-2 border-emerald-200">
+                <div>
+                  <Label className="font-semibold">Permite envase propio</Label>
+                  <p className="text-sm text-gray-600">Los estudiantes pueden traer su propio contenedor</p>
+                </div>
+                <Switch
+                  checked={formData.permite_envase_propio}
+                  onCheckedChange={(v) => handleChange('permite_envase_propio', v)}
+                />
+              </div>
+
               <div>
                 <Label>Alérgenos</Label>
                 <div className="flex flex-wrap gap-2 mt-2">
