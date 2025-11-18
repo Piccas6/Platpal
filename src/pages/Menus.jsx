@@ -23,6 +23,7 @@ export default function Menus() {
   const [allMenus, setAllMenus] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [reservations, setReservations] = useState([]);
+  const [canReserve, setCanReserve] = useState(false);
 
   const [filters, setFilters] = useState({
     tipo_cocina: 'all',
@@ -54,6 +55,24 @@ export default function Menus() {
     
     loadMenus();
     fetchCurrentUser();
+
+    // Verificar horario de reservas cada minuto
+    const checkReservationTime = () => {
+      const now = new Date();
+      const currentHour = now.getHours();
+      const currentMinute = now.getMinutes();
+      const currentTime = currentHour + currentMinute / 60;
+
+      const reservaInicio = 15.5; // 15:30
+      const reservaFin = 16.5;    // 16:30
+
+      setCanReserve(currentTime >= reservaInicio && currentTime <= reservaFin);
+    };
+
+    checkReservationTime();
+    const interval = setInterval(checkReservationTime, 60000); // Check cada minuto
+
+    return () => clearInterval(interval);
   }, [loadMenus]);
 
   const applyFilters = useCallback((menuList) => {
@@ -127,6 +146,10 @@ export default function Menus() {
   };
 
   const openReservationModal = (menu) => {
+    if (!canReserve) {
+      alert('⏰ Las reservas solo están disponibles entre las 15:30 y las 16:30. Por favor, vuelve en ese horario.');
+      return;
+    }
     setSelectedMenu(menu);
     setShowReservationModal(true);
   };
@@ -334,17 +357,24 @@ export default function Menus() {
           </div>
         </div>
 
-        <Card className="mb-6 border-2 border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50">
+        <Card className={`mb-6 border-2 ${canReserve ? 'border-emerald-200 bg-gradient-to-r from-emerald-50 to-green-50' : 'border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50'}`}>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0">
+              <div className={`w-10 h-10 ${canReserve ? 'bg-emerald-500' : 'bg-amber-500'} rounded-full flex items-center justify-center flex-shrink-0`}>
                 <Clock className="w-5 h-5 text-white" />
               </div>
-              <div>
-                <h3 className="font-bold text-gray-900">⏰ Horarios de PlatPal</h3>
+              <div className="flex-1">
+                <h3 className="font-bold text-gray-900">
+                  {canReserve ? '✅ Horario de Reservas ABIERTO' : '⏰ Horarios de PlatPal'}
+                </h3>
                 <p className="text-sm text-gray-700 mt-1">
                   <strong>Reserva:</strong> 15:30 - 16:30 • <strong>Recogida:</strong> 16:30 - 18:00
                 </p>
+                {!canReserve && (
+                  <p className="text-xs text-amber-700 mt-1 font-semibold">
+                    🔒 Fuera de horario de reservas. Vuelve entre las 15:30 - 16:30
+                  </p>
+                )}
               </div>
             </div>
           </CardContent>
@@ -456,6 +486,7 @@ export default function Menus() {
                 onReserve={openReservationModal}
                 isFavorite={isFavorite(menu.cafeteria)}
                 onToggleFavorite={toggleFavoriteCafeteria}
+                canReserve={canReserve}
               />
             ))}
           </div>
