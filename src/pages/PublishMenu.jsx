@@ -28,11 +28,12 @@ function PublishMenu() {
     precio_original: 8.5,
     stock_total: '',
     fecha: new Date().toISOString().split('T')[0],
-    hora_limite_reserva: '16:00',
+    hora_limite_reserva: '16:30',
     hora_limite: '18:00',
     es_sorpresa: false,
     es_recurrente: false,
     dias_semana: [],
+    duracion_recurrencia_dias: 7,
     tipo_cocina: '',
     es_vegetariano: false,
     es_vegano: false,
@@ -87,7 +88,7 @@ function PublishMenu() {
             ...prev,
             cafeteria_id: firstCafe.id,
             precio_original: firstCafe.precio_original_default || 8.5,
-            hora_limite_reserva: firstCafe.hora_fin_reserva || '16:00',
+            hora_limite_reserva: firstCafe.hora_fin_reserva || '16:30',
             hora_limite: firstCafe.hora_fin_recogida || '18:00'
           }));
         }
@@ -126,7 +127,7 @@ function PublishMenu() {
         setFormData(prev => ({
           ...prev,
           precio_original: cafe.precio_original_default || 8.5,
-          hora_limite_reserva: cafe.hora_fin_reserva || '16:00',
+          hora_limite_reserva: cafe.hora_fin_reserva || '16:30',
           hora_limite: cafe.hora_fin_recogida || '18:00'
         }));
       }
@@ -152,15 +153,24 @@ function PublishMenu() {
   };
 
   const handleGenerateImage = useCallback(async () => {
-    if (formData.es_sorpresa || !formData.plato_principal || !formData.plato_secundario) {
+    if (isGenerating) return;
+
+    const shouldGenerateForSurprise = formData.es_sorpresa && formData.es_recurrente;
+    const shouldGenerateForRegular = !formData.es_sorpresa && formData.plato_principal && formData.plato_secundario;
+
+    if (!shouldGenerateForSurprise && !shouldGenerateForRegular) {
       return;
     }
 
-    if (isGenerating) return;
-
     setIsGenerating(true);
     try {
-      const prompt = `Foto profesional de comida: ${formData.plato_principal} con ${formData.plato_secundario}. Plato apetitoso, bien iluminado, presentación de restaurante, fondo neutro, alta calidad`;
+      let prompt;
+      
+      if (shouldGenerateForSurprise) {
+        prompt = 'A surprise mystery meal box for university students, featuring a beautifully arranged takeaway container with question mark decorations, colorful food presentation, eco-friendly packaging, professional food photography, appetizing and intriguing';
+      } else {
+        prompt = `Foto profesional de comida: ${formData.plato_principal} con ${formData.plato_secundario}. Plato apetitoso, bien iluminado, presentación de restaurante, fondo neutro, alta calidad`;
+      }
       
       const result = await base44.integrations.Core.GenerateImage({ prompt });
       
@@ -172,26 +182,27 @@ function PublishMenu() {
     } finally {
       setIsGenerating(false);
     }
-  }, [formData.plato_principal, formData.plato_secundario, formData.es_sorpresa, isGenerating]);
+  }, [formData.plato_principal, formData.plato_secundario, formData.es_sorpresa, formData.es_recurrente, isGenerating]);
 
   useEffect(() => {
-    if (formData.es_sorpresa || !formData.plato_principal || !formData.plato_secundario) {
-      if (generatedImageUrl) {
-        setGeneratedImageUrl('');
-      }
+    const shouldClear = formData.es_sorpresa && !formData.es_recurrente;
+    
+    if (shouldClear && generatedImageUrl) {
+      setGeneratedImageUrl('');
       return;
     }
 
-    if (formData.plato_principal && formData.plato_secundario && !formData.es_sorpresa && !generatedImageUrl && !isGenerating) {
+    const shouldGenerateForSurprise = formData.es_sorpresa && formData.es_recurrente;
+    const shouldGenerateForRegular = !formData.es_sorpresa && formData.plato_principal && formData.plato_secundario;
+
+    if ((shouldGenerateForSurprise || shouldGenerateForRegular) && !generatedImageUrl && !isGenerating) {
       const timer = setTimeout(() => {
-        if (formData.plato_principal && formData.plato_secundario && !formData.es_sorpresa && !generatedImageUrl && !isGenerating) {
-          handleGenerateImage();
-        }
+        handleGenerateImage();
       }, 1000);
       
       return () => clearTimeout(timer);
     }
-  }, [formData.plato_principal, formData.plato_secundario, formData.es_sorpresa, generatedImageUrl, isGenerating, handleGenerateImage]);
+  }, [formData.plato_principal, formData.plato_secundario, formData.es_sorpresa, formData.es_recurrente, generatedImageUrl, isGenerating, handleGenerateImage]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -227,7 +238,7 @@ function PublishMenu() {
     console.log('✅ Cafetería encontrada:', cafe.nombre, 'Campus:', cafe.campus);
 
     const confirmText = formData.es_recurrente
-      ? `¿Crear ${formData.dias_semana.length} menús recurrentes para los días seleccionados en ${cafe.nombre}?`
+      ? `¿Crear menú recurrente de ${formData.duracion_recurrencia_dias} días para los días seleccionados en ${cafe.nombre}?`
       : `¿Confirmar publicación de este menú en ${cafe.nombre}?`;
 
     if (!confirm(confirmText)) return;
@@ -261,14 +272,43 @@ function PublishMenu() {
       console.log('📝 Creando menú(s) con datos:', menuBase);
 
       if (formData.es_recurrente) {
-        const menusToCreate = formData.dias_semana.map(dia => ({
+        const startDate = new Date(formData.fecha);
+        const endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + formData.duracion_recurrencia_dias);
+        
+        const menuPadre = await base44.entities.Menu.create({
           ...menuBase,
           fecha: formData.fecha,
-          dias_semana: [dia]
-        }));
+          fecha_fin_recurrencia: endDate.toISOString().split('T')[0],
+          duracion_recurrencia_dias: formData.duracion_recurrencia_dias,
+          dias_semana: formData.dias_semana
+        });
 
-        await Promise.all(menusToCreate.map(m => base44.entities.Menu.create(m)));
-        alert(`✅ ${menusToCreate.length} menús recurrentes creados para ${cafe.nombre}`);
+        const daysOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        const menusToCreate = [];
+        
+        for (let i = 1; i < formData.duracion_recurrencia_dias; i++) {
+          const currentDate = new Date(startDate);
+          currentDate.setDate(startDate.getDate() + i);
+          const dayId = daysOfWeek[currentDate.getDay()];
+          
+          if (formData.dias_semana.includes(dayId)) {
+            menusToCreate.push({
+              ...menuBase,
+              fecha: currentDate.toISOString().split('T')[0],
+              fecha_fin_recurrencia: endDate.toISOString().split('T')[0],
+              duracion_recurrencia_dias: formData.duracion_recurrencia_dias,
+              menu_padre_id: menuPadre.id,
+              dias_semana: formData.dias_semana
+            });
+          }
+        }
+
+        for (const menuData of menusToCreate) {
+          await base44.entities.Menu.create(menuData);
+        }
+
+        alert(`✅ Menú recurrente creado (1 inicial + ${menusToCreate.length} programados para ${formData.duracion_recurrencia_dias} días)`);
       } else {
         const menu = {
           ...menuBase,
@@ -441,15 +481,18 @@ function PublishMenu() {
                   <div className="text-center">
                     <Sparkles className="w-12 h-12 text-gray-400 mx-auto mb-2" />
                     <p className="text-sm text-gray-600">
-                      {formData.es_sorpresa 
-                        ? 'No se genera imagen para platos sorpresa' 
+                      {formData.es_sorpresa && !formData.es_recurrente
+                        ? 'No se genera imagen para platos sorpresa simples'
+                        : formData.es_sorpresa && formData.es_recurrente
+                        ? 'Se generará una imagen especial para el plato sorpresa recurrente'
                         : 'Completa los platos para generar imagen automáticamente'}
                     </p>
                   </div>
                 </div>
               )}
               
-              {!formData.es_sorpresa && !isGenerating && (formData.plato_principal && formData.plato_secundario) && (
+              {(!formData.es_sorpresa && !isGenerating && formData.plato_principal && formData.plato_secundario || 
+                formData.es_sorpresa && formData.es_recurrente && !isGenerating) && (
                 <Button
                   type="button"
                   onClick={handleGenerateImage}
@@ -508,21 +551,43 @@ function PublishMenu() {
               </div>
 
               {formData.es_recurrente && (
-                <div>
-                  <Label>Días de la Semana *</Label>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {diasSemana.map(dia => (
-                      <Button
-                        key={dia.id}
-                        type="button"
-                        variant={formData.dias_semana.includes(dia.id) ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => toggleDia(dia.id)}
-                      >
-                        {formData.dias_semana.includes(dia.id) && <Check className="w-4 h-4 mr-1" />}
-                        {dia.label}
-                      </Button>
-                    ))}
+                <div className="space-y-4">
+                  <div>
+                    <Label>Duración del menú recurrente</Label>
+                    <Select 
+                      value={formData.duracion_recurrencia_dias?.toString()} 
+                      onValueChange={(value) => handleChange('duracion_recurrencia_dias', parseInt(value))}
+                    >
+                      <SelectTrigger className="mt-2">
+                        <SelectValue placeholder="Selecciona duración" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="7">1 semana (7 días)</SelectItem>
+                        <SelectItem value="14">2 semanas (14 días)</SelectItem>
+                        <SelectItem value="21">3 semanas (21 días)</SelectItem>
+                        <SelectItem value="30">1 mes (30 días)</SelectItem>
+                        <SelectItem value="60">2 meses (60 días)</SelectItem>
+                        <SelectItem value="90">3 meses (90 días)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <Label>Días de la Semana *</Label>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {diasSemana.map(dia => (
+                        <Button
+                          key={dia.id}
+                          type="button"
+                          variant={formData.dias_semana.includes(dia.id) ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => toggleDia(dia.id)}
+                        >
+                          {formData.dias_semana.includes(dia.id) && <Check className="w-4 h-4 mr-1" />}
+                          {dia.label}
+                        </Button>
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}
