@@ -311,7 +311,7 @@ export default function Menus() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-amber-50">
       <div className="max-w-7xl mx-auto p-6 md:p-8">
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex items-center gap-4 mb-6">
           <Link to={createPageUrl(selectedCampus ? "Campus" : "Home")}>
             <Button variant="outline" size="icon" className="rounded-2xl border-2 hover:border-emerald-200 hover:bg-emerald-50">
               <ArrowLeft className="w-4 h-4" />
@@ -333,6 +333,22 @@ export default function Menus() {
             )}
           </div>
         </div>
+
+        <Card className="mb-6 border-2 border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0">
+                <Clock className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-900">⏰ Horarios de PlatPal</h3>
+                <p className="text-sm text-gray-700 mt-1">
+                  <strong>Reserva:</strong> 15:30 - 16:30 • <strong>Recogida:</strong> 16:30 - 18:00
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Recomendaciones personalizadas */}
         {currentUser && currentUser.id && !isLoading && (
