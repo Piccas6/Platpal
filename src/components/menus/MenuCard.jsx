@@ -8,7 +8,7 @@ import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 
-export default function MenuCard({ menu, onReservationSuccess, currentUser, onFavoriteToggle }) {
+export default function MenuCard({ menu, onReservationSuccess, currentUser, onFavoriteToggle, canReserve }) {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFavorite, setIsFavorite] = useState(
@@ -16,6 +16,31 @@ export default function MenuCard({ menu, onReservationSuccess, currentUser, onFa
   );
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
   const [isReserving, setIsReserving] = useState(false);
+
+  // Si no se pasa canReserve como prop, calcularlo localmente
+  const [canReserveLocal, setCanReserveLocal] = useState(true);
+  
+  React.useEffect(() => {
+    if (canReserve === undefined) {
+      const checkReservationTime = () => {
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+        const currentTime = currentHour + currentMinute / 60;
+
+        const reservaInicio = 15.5; // 15:30
+        const reservaFin = 16.5;    // 16:30
+
+        setCanReserveLocal(currentTime >= reservaInicio && currentTime <= reservaFin);
+      };
+
+      checkReservationTime();
+      const interval = setInterval(checkReservationTime, 60000);
+      return () => clearInterval(interval);
+    }
+  }, [canReserve]);
+
+  const canMakeReservation = canReserve !== undefined ? canReserve : canReserveLocal;
   
   const isPastDeadline = () => {
     if (!menu.hora_limite_reserva) {
@@ -35,7 +60,7 @@ export default function MenuCard({ menu, onReservationSuccess, currentUser, onFa
   };
 
   const isOutOfStock = menu.stock_disponible <= 0;
-  const isUnavailable = isPastDeadline() || isOutOfStock;
+  const isUnavailable = isPastDeadline() || isOutOfStock || !canMakeReservation;
 
   const getTypeLabel = () => {
     if (menu.es_sorpresa) return { text: 'Menú Sorpresa', icon: Sparkles, color: 'bg-purple-100 text-purple-800' };
@@ -364,7 +389,13 @@ export default function MenuCard({ menu, onReservationSuccess, currentUser, onFa
 
           {/* Botón de reserva */}
           <Button 
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => {
+              if (!canMakeReservation) {
+                alert('⏰ Las reservas solo están disponibles entre las 15:30 y las 16:30. Por favor, vuelve en ese horario.');
+                return;
+              }
+              setIsModalOpen(true);
+            }}
             disabled={isUnavailable}
             className={`w-full py-6 text-base font-semibold rounded-xl transition-all duration-300 ${
               isUnavailable 
@@ -372,7 +403,7 @@ export default function MenuCard({ menu, onReservationSuccess, currentUser, onFa
                 : 'bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 shadow-lg hover:shadow-xl hover:scale-105'
             }`}
           >
-            {isOutOfStock ? 'Agotado' : isPastDeadline() ? 'Tiempo límite alcanzado' : 'Reservar ahora'}
+            {!canMakeReservation ? '🔒 Fuera de horario' : isOutOfStock ? 'Agotado' : isPastDeadline() ? 'Tiempo límite alcanzado' : 'Reservar ahora'}
           </Button>
         </CardContent>
       </Card>
