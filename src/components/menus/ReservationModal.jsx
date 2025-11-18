@@ -40,6 +40,19 @@ export default function ReservationModal({
       : menu.precio_descuento;
 
   const handleConfirm = () => {
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+    const currentTime = currentHour + currentMinute / 60;
+
+    const reservaInicio = 15.5; // 15:30
+    const reservaFin = 16.5;    // 16:30
+
+    if (currentTime < reservaInicio || currentTime > reservaFin) {
+      alert('⏰ Las reservas solo están disponibles entre las 15:30 y las 16:30. Por favor, vuelve en ese horario.');
+      return;
+    }
+
     const codigo = 'PLP' + Math.random().toString(36).substring(2, 8).toUpperCase();
     
     const reservaData = {
