@@ -162,7 +162,7 @@ function PublishMenu() {
   const handleGenerateImages = useCallback(async () => {
     if (isGenerating) return;
 
-    const shouldGenerateForSurprise = formData.es_sorpresa && formData.es_recurrente;
+    const shouldGenerateForSurprise = formData.es_sorpresa;
     const shouldGenerateForRegular = !formData.es_sorpresa && formData.plato_principal && formData.plato_secundario;
 
     if (!shouldGenerateForSurprise && !shouldGenerateForRegular) {
@@ -200,15 +200,7 @@ function PublishMenu() {
   }, [formData.plato_principal, formData.plato_secundario, formData.es_sorpresa, formData.es_recurrente, isGenerating]);
 
   useEffect(() => {
-    const shouldClear = formData.es_sorpresa && !formData.es_recurrente;
-    
-    if (shouldClear && (generatedImageUrl || generatedImageUrl2)) {
-      setGeneratedImageUrl('');
-      setGeneratedImageUrl2('');
-      return;
-    }
-
-    const shouldGenerateForSurprise = formData.es_sorpresa && formData.es_recurrente;
+    const shouldGenerateForSurprise = formData.es_sorpresa;
     const shouldGenerateForRegular = !formData.es_sorpresa && formData.plato_principal && formData.plato_secundario;
 
     if ((shouldGenerateForSurprise || shouldGenerateForRegular) && !generatedImageUrl && !generatedImageUrl2 && !isGenerating) {
@@ -539,10 +531,8 @@ function PublishMenu() {
                   <div className="text-center">
                     <Sparkles className="w-12 h-12 text-gray-400 mx-auto mb-2" />
                     <p className="text-sm text-gray-600">
-                      {formData.es_sorpresa && !formData.es_recurrente
-                        ? 'No se genera imagen para platos sorpresa simples'
-                        : formData.es_sorpresa && formData.es_recurrente
-                        ? 'Se generará una imagen especial para el plato sorpresa recurrente'
+                      {formData.es_sorpresa
+                        ? 'Se generará una imagen especial para el plato sorpresa'
                         : 'Completa los platos para generar imágenes automáticamente'}
                     </p>
                   </div>
@@ -550,7 +540,7 @@ function PublishMenu() {
               )}
               
               {(!formData.es_sorpresa && !isGenerating && formData.plato_principal && formData.plato_secundario || 
-                formData.es_sorpresa && formData.es_recurrente && !isGenerating) && (
+                formData.es_sorpresa && !isGenerating) && (
                 <Button
                   type="button"
                   onClick={handleGenerateImages}
