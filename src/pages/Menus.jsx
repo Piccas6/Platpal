@@ -63,15 +63,31 @@ export default function Menus() {
     loadMenus();
     fetchCurrentUser();
 
-    // Verificar horario de reservas cada minuto (3:30 PM - 4:30 PM)
+    // Verificar horario de reservas cada minuto
     const checkReservationTime = () => {
       const now = new Date();
       const currentHour = now.getHours();
       const currentMinute = now.getMinutes();
       const currentTime = currentHour + currentMinute / 60;
 
-      const reservaInicio = 15.5;  // 15:30 (3:30 PM)
-      const reservaFin = 16.5;     // 16:30 (4:30 PM)
+      // Obtener el menú más restrictivo del día para determinar el horario
+      const today = now.toISOString().split('T')[0];
+      const todayMenus = allMenus.filter(m => m.fecha === today);
+      
+      if (todayMenus.length === 0) {
+        setCanReserve(false);
+        return;
+      }
+
+      // Usar el horario más común o el primero disponible
+      const firstMenu = todayMenus[0];
+      const parseTime = (timeStr) => {
+        const [hours, minutes] = (timeStr || '16:30').split(':').map(Number);
+        return hours + minutes / 60;
+      };
+
+      const reservaInicio = parseTime(firstMenu.hora_inicio_reserva);
+      const reservaFin = parseTime(firstMenu.hora_limite_reserva);
 
       setCanReserve(currentTime >= reservaInicio && currentTime <= reservaFin);
     };
@@ -148,16 +164,26 @@ export default function Menus() {
   };
 
   const openReservationModal = (menu) => {
-    if (!canReserve) {
-      const now = new Date();
-      const currentTime = now.getHours() + now.getMinutes() / 60;
-      if (currentTime < 15.5) {
-        alert('⏰ Las reservas abren a las 15:30 (3:30 PM). Por favor, vuelve más tarde.');
-      } else {
-        alert('⏰ Las reservas cerraron a las 16:30 (4:30 PM). Por favor, vuelve mañana.');
-      }
+    const parseTime = (timeStr) => {
+      const [hours, minutes] = (timeStr || '16:30').split(':').map(Number);
+      return hours + minutes / 60;
+    };
+
+    const now = new Date();
+    const currentTime = now.getHours() + now.getMinutes() / 60;
+    const reservaInicio = parseTime(menu.hora_inicio_reserva);
+    const reservaFin = parseTime(menu.hora_limite_reserva);
+
+    if (currentTime < reservaInicio) {
+      alert(`⏰ Las reservas para este menú abren a las ${menu.hora_inicio_reserva}. Por favor, vuelve más tarde.`);
       return;
     }
+    
+    if (currentTime > reservaFin) {
+      alert(`⏰ Las reservas para este menú cerraron a las ${menu.hora_limite_reserva}. Por favor, vuelve mañana.`);
+      return;
+    }
+
     setSelectedMenu(menu);
     setShowReservationModal(true);
   };
@@ -376,11 +402,20 @@ export default function Menus() {
                   {canReserve ? '✅ Horario de Reservas ABIERTO' : '⏰ Horarios de PlatPal'}
                 </h3>
                 <p className="text-sm text-gray-700 mt-1">
-                  <strong>Reserva:</strong> 15:30 - 16:30 • <strong>Recogida:</strong> 16:30 - 18:00
+                  {menus.length > 0 && menus[0].hora_inicio_reserva && menus[0].hora_limite_reserva ? (
+                    <>
+                      <strong>Reserva:</strong> {menus[0].hora_inicio_reserva} - {menus[0].hora_limite_reserva} • 
+                      <strong> Recogida:</strong> {menus[0].hora_inicio_recogida || menus[0].hora_limite_reserva} - {menus[0].hora_limite}
+                    </>
+                  ) : (
+                    <>
+                      <strong>Reserva:</strong> 15:30 - 16:30 • <strong>Recogida:</strong> 16:30 - 18:00
+                    </>
+                  )}
                 </p>
                 {!canReserve && (
                   <p className="text-xs text-amber-700 mt-1 font-semibold">
-                    🔒 Fuera de horario. Reservas: 15:30 - 16:30
+                    🔒 Fuera de horario de reserva
                   </p>
                 )}
               </div>

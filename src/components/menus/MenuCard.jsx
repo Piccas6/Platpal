@@ -42,25 +42,31 @@ export default function MenuCard({ menu, onReservationSuccess, currentUser, onFa
 
   const canMakeReservation = canReserve !== undefined ? canReserve : canReserveLocal;
   
-  const isPastDeadline = () => {
-    if (!menu.hora_limite_reserva) {
+  const isOutsideReservationWindow = () => {
+    if (!menu.hora_inicio_reserva || !menu.hora_limite_reserva) {
       return false;
     }
 
     try {
       const now = new Date();
-      const [hours, minutes] = menu.hora_limite_reserva.split(':');
-      const deadline = new Date();
-      deadline.setHours(parseInt(hours), parseInt(minutes), 0);
-      return now > deadline;
+      const parseTime = (timeStr) => {
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        return hours + minutes / 60;
+      };
+
+      const currentTime = now.getHours() + now.getMinutes() / 60;
+      const reservaInicio = parseTime(menu.hora_inicio_reserva);
+      const reservaFin = parseTime(menu.hora_limite_reserva);
+
+      return currentTime < reservaInicio || currentTime > reservaFin;
     } catch (error) {
-      console.error('Error parsing hora_limite_reserva:', menu.hora_limite_reserva, error);
+      console.error('Error parsing horarios de reserva:', error);
       return false;
     }
   };
 
   const isOutOfStock = menu.stock_disponible <= 0;
-  const isUnavailable = isPastDeadline() || isOutOfStock || !canMakeReservation;
+  const isUnavailable = isOutsideReservationWindow() || isOutOfStock || !canMakeReservation;
 
   const getTypeLabel = () => {
     if (menu.es_sorpresa) return { text: 'Menú Sorpresa', icon: Sparkles, color: 'bg-purple-100 text-purple-800' };
@@ -325,8 +331,8 @@ export default function MenuCard({ menu, onReservationSuccess, currentUser, onFa
           <div className="absolute bottom-3 left-3">
             {isOutOfStock ? (
               <Badge className="bg-red-500 text-white shadow-lg">Agotado</Badge>
-            ) : isPastDeadline() ? (
-              <Badge className="bg-orange-500 text-white shadow-lg">Tiempo límite</Badge>
+            ) : isOutsideReservationWindow() ? (
+              <Badge className="bg-orange-500 text-white shadow-lg">Fuera de horario</Badge>
             ) : (
               <Badge className="bg-emerald-500 text-white shadow-lg">
                 {menu.stock_disponible} disponibles
@@ -378,7 +384,7 @@ export default function MenuCard({ menu, onReservationSuccess, currentUser, onFa
           <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
             <div className="flex items-center gap-1">
               <Clock className="w-4 h-4" />
-              <span>Hasta {menu.hora_limite_reserva}</span>
+              <span>{menu.hora_inicio_reserva} - {menu.hora_limite_reserva}</span>
             </div>
             {menu.permite_envase_propio && (
               <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
@@ -390,16 +396,26 @@ export default function MenuCard({ menu, onReservationSuccess, currentUser, onFa
           {/* Botón de reserva */}
           <Button 
             onClick={() => {
-              if (!canMakeReservation) {
-                const now = new Date();
-                const currentTime = now.getHours() + now.getMinutes() / 60;
-                if (currentTime < 15.5) {
-                  alert('⏰ Las reservas abren a las 15:30 (3:30 PM). Por favor, vuelve más tarde.');
-                } else {
-                  alert('⏰ Las reservas cerraron a las 16:30 (4:30 PM). Por favor, vuelve mañana.');
-                }
+              const parseTime = (timeStr) => {
+                const [hours, minutes] = (timeStr || '16:30').split(':').map(Number);
+                return hours + minutes / 60;
+              };
+
+              const now = new Date();
+              const currentTime = now.getHours() + now.getMinutes() / 60;
+              const reservaInicio = parseTime(menu.hora_inicio_reserva);
+              const reservaFin = parseTime(menu.hora_limite_reserva);
+
+              if (currentTime < reservaInicio) {
+                alert(`⏰ Las reservas abren a las ${menu.hora_inicio_reserva}. Por favor, vuelve más tarde.`);
                 return;
               }
+              
+              if (currentTime > reservaFin) {
+                alert(`⏰ Las reservas cerraron a las ${menu.hora_limite_reserva}. Por favor, vuelve mañana.`);
+                return;
+              }
+
               setIsModalOpen(true);
             }}
             disabled={isUnavailable}
@@ -409,7 +425,7 @@ export default function MenuCard({ menu, onReservationSuccess, currentUser, onFa
                 : 'bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 shadow-lg hover:shadow-xl hover:scale-105'
             }`}
           >
-            {!canMakeReservation ? '🔒 Fuera de horario (15:30-16:30)' : isOutOfStock ? 'Agotado' : isPastDeadline() ? 'Tiempo límite alcanzado' : 'Reservar ahora'}
+            {isOutOfStock ? 'Agotado' : isOutsideReservationWindow() ? '🔒 Fuera de horario' : 'Reservar ahora'}
           </Button>
         </CardContent>
       </Card>

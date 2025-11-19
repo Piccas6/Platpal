@@ -29,7 +29,9 @@ function PublishMenu() {
     precio_original: 8.5,
     stock_total: '',
     fecha: new Date().toISOString().split('T')[0],
+    hora_inicio_reserva: '15:30',
     hora_limite_reserva: '16:30',
+    hora_inicio_recogida: '16:30',
     hora_limite: '18:00',
     es_sorpresa: false,
     es_recurrente: false,
@@ -89,7 +91,9 @@ function PublishMenu() {
             ...prev,
             cafeteria_id: firstCafe.id,
             precio_original: firstCafe.precio_original_default || 8.5,
+            hora_inicio_reserva: '15:30',
             hora_limite_reserva: firstCafe.hora_fin_reserva || '16:30',
+            hora_inicio_recogida: firstCafe.hora_fin_reserva || '16:30',
             hora_limite: firstCafe.hora_fin_recogida || '18:00'
           }));
         }
@@ -128,7 +132,9 @@ function PublishMenu() {
         setFormData(prev => ({
           ...prev,
           precio_original: cafe.precio_original_default || 8.5,
+          hora_inicio_reserva: '15:30',
           hora_limite_reserva: cafe.hora_fin_reserva || '16:30',
+          hora_inicio_recogida: cafe.hora_fin_reserva || '16:30',
           hora_limite: cafe.hora_fin_recogida || '18:00'
         }));
       }
@@ -265,7 +271,9 @@ function PublishMenu() {
         stock_disponible: parseInt(formData.stock_total),
         campus: cafe.campus, 
         cafeteria: cafe.nombre, 
+        hora_inicio_reserva: formData.hora_inicio_reserva,
         hora_limite_reserva: formData.hora_limite_reserva,
+        hora_inicio_recogida: formData.hora_inicio_recogida,
         hora_limite: formData.hora_limite,
         es_recurrente: formData.es_recurrente,
         es_sorpresa: formData.es_sorpresa,
@@ -585,6 +593,63 @@ function PublishMenu() {
                   <Label>Precio PlatPal</Label>
                   <div className="h-10 flex items-center justify-center bg-emerald-50 rounded-lg border-2 border-emerald-200">
                     <span className="text-lg font-bold text-emerald-600">€2.99</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 bg-blue-50 rounded-xl border-2 border-blue-200 space-y-4">
+                <h3 className="font-semibold text-blue-900 flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  Horarios de Reserva y Recogida
+                </h3>
+                
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm text-blue-800">Horario de Reservas</Label>
+                    <div className="grid grid-cols-2 gap-2 mt-2">
+                      <div>
+                        <Label className="text-xs text-gray-600">Inicio</Label>
+                        <Input
+                          type="time"
+                          value={formData.hora_inicio_reserva}
+                          onChange={(e) => handleChange('hora_inicio_reserva', e.target.value)}
+                          className="text-sm"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs text-gray-600">Fin</Label>
+                        <Input
+                          type="time"
+                          value={formData.hora_limite_reserva}
+                          onChange={(e) => handleChange('hora_limite_reserva', e.target.value)}
+                          className="text-sm"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label className="text-sm text-blue-800">Horario de Recogida</Label>
+                    <div className="grid grid-cols-2 gap-2 mt-2">
+                      <div>
+                        <Label className="text-xs text-gray-600">Inicio</Label>
+                        <Input
+                          type="time"
+                          value={formData.hora_inicio_recogida}
+                          onChange={(e) => handleChange('hora_inicio_recogida', e.target.value)}
+                          className="text-sm"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs text-gray-600">Fin</Label>
+                        <Input
+                          type="time"
+                          value={formData.hora_limite}
+                          onChange={(e) => handleChange('hora_limite', e.target.value)}
+                          className="text-sm"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
