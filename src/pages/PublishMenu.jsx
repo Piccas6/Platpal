@@ -20,6 +20,7 @@ function PublishMenu() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [generatedImageUrl, setGeneratedImageUrl] = useState('');
+  const [generatedImageUrl2, setGeneratedImageUrl2] = useState('');
 
   const [formData, setFormData] = useState({
     cafeteria_id: '',
@@ -152,7 +153,7 @@ function PublishMenu() {
     }));
   };
 
-  const handleGenerateImage = useCallback(async () => {
+  const handleGenerateImages = useCallback(async () => {
     if (isGenerating) return;
 
     const shouldGenerateForSurprise = formData.es_sorpresa && formData.es_recurrente;
@@ -164,21 +165,29 @@ function PublishMenu() {
 
     setIsGenerating(true);
     try {
-      let prompt;
-      
       if (shouldGenerateForSurprise) {
-        prompt = 'A surprise mystery meal box for university students, featuring a beautifully arranged takeaway container with question mark decorations, colorful food presentation, eco-friendly packaging, professional food photography, appetizing and intriguing';
+        const prompt = 'A surprise mystery meal box for university students, featuring a beautifully arranged takeaway container with question mark decorations, colorful food presentation, eco-friendly packaging, professional food photography, appetizing and intriguing';
+        const result = await base44.integrations.Core.GenerateImage({ prompt });
+        if (result.url) {
+          setGeneratedImageUrl(result.url);
+        }
       } else {
-        prompt = `Foto profesional de comida: ${formData.plato_principal} con ${formData.plato_secundario}. Plato apetitoso, bien iluminado, presentación de restaurante, fondo neutro, alta calidad`;
-      }
-      
-      const result = await base44.integrations.Core.GenerateImage({ prompt });
-      
-      if (result.url) {
-        setGeneratedImageUrl(result.url);
+        // Generar imagen para plato principal
+        const prompt1 = `Foto profesional de comida: ${formData.plato_principal}. Plato apetitoso, bien iluminado, presentación de restaurante, fondo neutro, alta calidad`;
+        const result1 = await base44.integrations.Core.GenerateImage({ prompt: prompt1 });
+        if (result1.url) {
+          setGeneratedImageUrl(result1.url);
+        }
+
+        // Generar imagen para plato secundario
+        const prompt2 = `Foto profesional de comida: ${formData.plato_secundario}. Plato apetitoso, bien iluminado, presentación de restaurante, fondo neutro, alta calidad`;
+        const result2 = await base44.integrations.Core.GenerateImage({ prompt: prompt2 });
+        if (result2.url) {
+          setGeneratedImageUrl2(result2.url);
+        }
       }
     } catch (error) {
-      console.error('Error al generar imagen con IA:', error);
+      console.error('Error al generar imágenes con IA:', error);
     } finally {
       setIsGenerating(false);
     }
@@ -187,22 +196,23 @@ function PublishMenu() {
   useEffect(() => {
     const shouldClear = formData.es_sorpresa && !formData.es_recurrente;
     
-    if (shouldClear && generatedImageUrl) {
+    if (shouldClear && (generatedImageUrl || generatedImageUrl2)) {
       setGeneratedImageUrl('');
+      setGeneratedImageUrl2('');
       return;
     }
 
     const shouldGenerateForSurprise = formData.es_sorpresa && formData.es_recurrente;
     const shouldGenerateForRegular = !formData.es_sorpresa && formData.plato_principal && formData.plato_secundario;
 
-    if ((shouldGenerateForSurprise || shouldGenerateForRegular) && !generatedImageUrl && !isGenerating) {
+    if ((shouldGenerateForSurprise || shouldGenerateForRegular) && !generatedImageUrl && !generatedImageUrl2 && !isGenerating) {
       const timer = setTimeout(() => {
-        handleGenerateImage();
+        handleGenerateImages();
       }, 1000);
       
       return () => clearTimeout(timer);
     }
-  }, [formData.plato_principal, formData.plato_secundario, formData.es_sorpresa, formData.es_recurrente, generatedImageUrl, isGenerating, handleGenerateImage]);
+  }, [formData.plato_principal, formData.plato_secundario, formData.es_sorpresa, formData.es_recurrente, generatedImageUrl, generatedImageUrl2, isGenerating, handleGenerateImages]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -266,7 +276,8 @@ function PublishMenu() {
         es_vegano: formData.es_vegano,
         sin_gluten: formData.sin_gluten,
         alergenos: formData.alergenos.length > 0 ? formData.alergenos : ['ninguno'],
-        imagen_url: generatedImageUrl || undefined
+        imagen_url: generatedImageUrl || undefined,
+        imagen_url_secundaria: generatedImageUrl2 || undefined
       };
 
       console.log('📝 Creando menú(s) con datos:', menuBase);
@@ -435,7 +446,7 @@ function PublishMenu() {
             <CardHeader className="bg-blue-50">
               <CardTitle className="flex items-center gap-2">
                 <ImageIcon className="w-5 h-5" />
-                Imagen del Menú
+                Imágenes de los Platos
                 {isGenerating && (
                   <Badge className="ml-2 bg-blue-100 text-blue-800">
                     <Loader2 className="w-3 h-3 mr-1 animate-spin" />
@@ -445,35 +456,74 @@ function PublishMenu() {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6 space-y-4">
-              {generatedImageUrl ? (
-                <div className="relative group">
-                  <img src={generatedImageUrl} alt="Menu" className="w-full h-64 object-cover rounded-xl" />
-                  <div className="absolute top-2 right-2 flex gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={handleGenerateImage}
-                      disabled={isGenerating}
-                      className="bg-white/90 backdrop-blur-sm"
-                    >
-                      <RefreshCw className="w-4 h-4 mr-1" />
-                      Regenerar
-                    </Button>
-                    <button
-                      type="button"
-                      onClick={() => setGeneratedImageUrl('')}
-                      className="w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
+              {!formData.es_sorpresa && (generatedImageUrl || generatedImageUrl2) ? (
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Imagen Plato Principal */}
+                  <div className="space-y-2">
+                    <Label className="text-sm text-gray-600">Plato Principal</Label>
+                    {generatedImageUrl ? (
+                      <div className="relative group">
+                        <img src={generatedImageUrl} alt="Plato Principal" className="w-full h-48 object-cover rounded-xl" />
+                        <button
+                          type="button"
+                          onClick={() => setGeneratedImageUrl('')}
+                          className="absolute top-2 right-2 w-7 h-7 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : isGenerating ? (
+                      <div className="h-48 bg-gray-100 rounded-xl flex items-center justify-center">
+                        <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+                      </div>
+                    ) : (
+                      <div className="h-48 bg-gray-100 rounded-xl flex items-center justify-center border-2 border-dashed">
+                        <Sparkles className="w-8 h-8 text-gray-400" />
+                      </div>
+                    )}
                   </div>
+
+                  {/* Imagen Plato Secundario */}
+                  <div className="space-y-2">
+                    <Label className="text-sm text-gray-600">Acompañamiento</Label>
+                    {generatedImageUrl2 ? (
+                      <div className="relative group">
+                        <img src={generatedImageUrl2} alt="Acompañamiento" className="w-full h-48 object-cover rounded-xl" />
+                        <button
+                          type="button"
+                          onClick={() => setGeneratedImageUrl2('')}
+                          className="absolute top-2 right-2 w-7 h-7 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : isGenerating ? (
+                      <div className="h-48 bg-gray-100 rounded-xl flex items-center justify-center">
+                        <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+                      </div>
+                    ) : (
+                      <div className="h-48 bg-gray-100 rounded-xl flex items-center justify-center border-2 border-dashed">
+                        <Sparkles className="w-8 h-8 text-gray-400" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : formData.es_sorpresa && generatedImageUrl ? (
+                <div className="relative group">
+                  <img src={generatedImageUrl} alt="Menú Sorpresa" className="w-full h-64 object-cover rounded-xl" />
+                  <button
+                    type="button"
+                    onClick={() => setGeneratedImageUrl('')}
+                    className="absolute top-2 right-2 w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
                 </div>
               ) : isGenerating ? (
                 <div className="h-64 bg-gray-100 rounded-xl flex items-center justify-center">
                   <div className="text-center">
                     <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600">Generando imagen con IA...</p>
+                    <p className="text-sm text-gray-600">Generando imágenes con IA...</p>
                   </div>
                 </div>
               ) : (
@@ -485,7 +535,7 @@ function PublishMenu() {
                         ? 'No se genera imagen para platos sorpresa simples'
                         : formData.es_sorpresa && formData.es_recurrente
                         ? 'Se generará una imagen especial para el plato sorpresa recurrente'
-                        : 'Completa los platos para generar imagen automáticamente'}
+                        : 'Completa los platos para generar imágenes automáticamente'}
                     </p>
                   </div>
                 </div>
@@ -495,12 +545,12 @@ function PublishMenu() {
                 formData.es_sorpresa && formData.es_recurrente && !isGenerating) && (
                 <Button
                   type="button"
-                  onClick={handleGenerateImage}
+                  onClick={handleGenerateImages}
                   variant="outline"
                   className="w-full"
                 >
                   <Sparkles className="w-4 h-4 mr-2" />
-                  {generatedImageUrl ? 'Regenerar Imagen' : 'Generar Imagen Manualmente'}
+                  {generatedImageUrl || generatedImageUrl2 ? 'Regenerar Imágenes' : 'Generar Imágenes Manualmente'}
                 </Button>
               )}
             </CardContent>
