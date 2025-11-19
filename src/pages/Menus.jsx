@@ -11,6 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import RecommendedMenus from "../components/menus/RecommendedMenus";
+import SurveyCard from "../components/surveys/SurveyCard";
+import SurveyManager from "../components/surveys/SurveyManager";
 
 export default function Menus() {
   const navigate = useNavigate();
@@ -24,6 +26,7 @@ export default function Menus() {
   const [currentUser, setCurrentUser] = useState(null);
   const [reservations, setReservations] = useState([]);
   const [canReserve, setCanReserve] = useState(false);
+  const [surveys, setSurveys] = useState([]);
 
   const [filters, setFilters] = useState({
     tipo_cocina: 'all',
@@ -40,6 +43,10 @@ export default function Menus() {
       setAllMenus(fetchedMenus);
       const fetchedReservations = await base44.entities.Reserva.list();
       setReservations(fetchedReservations);
+      
+      // Cargar encuestas
+      const fetchedSurveys = await base44.entities.Survey.filter({ activa: true }, '-created_date');
+      setSurveys(fetchedSurveys);
     } catch (error) {
       console.error("Error loading data:", error);
     } finally {
@@ -102,22 +109,17 @@ export default function Menus() {
     const now = new Date();
     const today = now.toISOString().split('T')[0];
 
-    if (selectedCampus) {
-        let filteredByLocation = allMenus.filter(m => {
-            if (m.campus !== selectedCampus.id) return false;
-            return m.fecha === today;
-        });
-        
-        filteredByLocation = applyFilters(filteredByLocation);
-        setMenus(filteredByLocation);
-    } else {
-        let availableMenus = allMenus.filter(menu => {
-            return menu.fecha === today;
-        });
-        
-        availableMenus = applyFilters(availableMenus);
-        setMenus(availableMenus);
+    let filteredMenus = allMenus.filter(menu => menu.fecha === today);
+
+    // Filtrar por campus si hay uno seleccionado
+    if (selectedCampus && selectedCampus.id) {
+        filteredMenus = filteredMenus.filter(m => m.campus === selectedCampus.id);
     }
+    
+    // Aplicar filtros adicionales (tipo cocina, vegetariano, etc)
+    filteredMenus = applyFilters(filteredMenus);
+    
+    setMenus(filteredMenus);
   }, [selectedCampus, allMenus, applyFilters]);
 
   const fetchCurrentUser = async () => {
@@ -518,7 +520,33 @@ export default function Menus() {
           isLoading={isReserving}
           currentUser={currentUser}
         />
-      </div>
-    </div>
-  );
-}
+
+        {/* Sección de Encuestas */}
+        {(currentUser?.app_role === 'admin' || surveys.filter(s => !selectedCampus || s.campus === 'todos' || s.campus === selectedCampus?.id).length > 0) && (
+          <div className="mt-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">📊 Encuestas de la Comunidad</h2>
+
+            <div className="space-y-6">
+              {currentUser?.app_role === 'admin' && (
+                <SurveyManager surveys={surveys} onUpdate={loadMenus} />
+              )}
+
+              <div className="grid gap-6 md:grid-cols-2">
+                {surveys
+                  .filter(s => !selectedCampus || s.campus === 'todos' || s.campus === selectedCampus?.id)
+                  .map(survey => (
+                    <SurveyCard
+                      key={survey.id}
+                      survey={survey}
+                      currentUser={currentUser}
+                      onVoteSuccess={loadMenus}
+                    />
+                  ))}
+              </div>
+            </div>
+          </div>
+        )}
+        </div>
+        </div>
+        );
+        }
