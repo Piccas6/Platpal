@@ -20,6 +20,7 @@ function EditMenu({ user }) {
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [imageUrl, setImageUrl] = useState('');
+  const [imageUrl2, setImageUrl2] = useState('');
 
   useEffect(() => {
     const loadMenu = async () => {
@@ -39,6 +40,7 @@ function EditMenu({ user }) {
           es_sorpresa: menuData.es_sorpresa ?? false
         });
         setImageUrl(menuData.imagen_url || '');
+        setImageUrl2(menuData.imagen_url_secundaria || '');
         setIsLoading(false);
         return;
       }
@@ -62,6 +64,7 @@ function EditMenu({ user }) {
             es_sorpresa: data.es_sorpresa ?? false
           });
           setImageUrl(data.imagen_url || '');
+          setImageUrl2(data.imagen_url_secundaria || '');
           setIsLoading(false);
         } catch (err) {
           console.error("Error fetching menu:", err);
@@ -86,7 +89,7 @@ function EditMenu({ user }) {
     setFormData(prev => ({ ...prev, [field]: checked }));
   };
 
-  const handleGenerateImage = useCallback(async () => {
+  const handleGenerateImages = useCallback(async () => {
     if (formData.es_sorpresa || !formData.plato_principal || !formData.plato_secundario) {
       return;
     }
@@ -95,22 +98,28 @@ function EditMenu({ user }) {
 
     setIsGeneratingImage(true);
     try {
-      const prompt = `Foto profesional de comida: ${formData.plato_principal} con ${formData.plato_secundario}. Plato apetitoso, bien iluminado, presentación de restaurante, fondo neutro, alta calidad`;
+      // Generar imagen para plato principal
+      const prompt1 = `Foto profesional de comida: ${formData.plato_principal}. Plato apetitoso, bien iluminado, presentación de restaurante, fondo neutro, alta calidad`;
+      const result1 = await base44.integrations.Core.GenerateImage({ prompt: prompt1 });
+      if (result1.url) {
+        setImageUrl(result1.url);
+      }
 
-      const result = await base44.integrations.Core.GenerateImage({ prompt });
-
-      if (result.url) {
-        setImageUrl(result.url);
+      // Generar imagen para plato secundario
+      const prompt2 = `Foto profesional de comida: ${formData.plato_secundario}. Plato apetitoso, bien iluminado, presentación de restaurante, fondo neutro, alta calidad`;
+      const result2 = await base44.integrations.Core.GenerateImage({ prompt: prompt2 });
+      if (result2.url) {
+        setImageUrl2(result2.url);
       }
     } catch (error) {
-      console.error('Error al generar imagen con IA:', error);
-      alert('Error al generar la imagen. Inténtalo de nuevo.');
+      console.error('Error al generar imágenes con IA:', error);
+      alert('Error al generar las imágenes. Inténtalo de nuevo.');
     } finally {
       setIsGeneratingImage(false);
     }
   }, [formData.plato_principal, formData.plato_secundario, formData.es_sorpresa, isGeneratingImage]);
 
-  const handleImageUpload = async (e) => {
+  const handleImageUpload = async (e, imageNumber) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -131,7 +140,11 @@ function EditMenu({ user }) {
       const result = await base44.integrations.Core.UploadFile({ file });
       
       if (result.file_url) {
-        setImageUrl(result.file_url);
+        if (imageNumber === 1) {
+          setImageUrl(result.file_url);
+        } else {
+          setImageUrl2(result.file_url);
+        }
       }
     } catch (error) {
       console.error('Error subiendo imagen:', error);
@@ -151,7 +164,8 @@ function EditMenu({ user }) {
       await base44.entities.Menu.update(menu.id, {
         ...formData,
         stock_total: menu.stock_total, // Mantener stock_total original
-        imagen_url: imageUrl || undefined // Guardar la imagen actualizada
+        imagen_url: imageUrl || undefined,
+        imagen_url_secundaria: imageUrl2 || undefined
       });
       
       console.log('✅ Menú actualizado exitosamente');
@@ -216,13 +230,13 @@ function EditMenu({ user }) {
                 </div>
               </div>
 
-              {/* SECCIÓN DE IMAGEN */}
+              {/* SECCIÓN DE IMÁGENES */}
               {!formData.es_sorpresa && (
                 <Card className="border-2 border-blue-200">
                   <CardHeader className="bg-blue-50">
                     <CardTitle className="flex items-center gap-2">
                       <ImageIcon className="w-5 h-5" />
-                      Imagen del Menú
+                      Imágenes de los Platos
                       {isGeneratingImage && (
                         <span className="ml-2 text-sm text-blue-600 flex items-center gap-1">
                           <Loader2 className="w-4 h-4 animate-spin" />
@@ -238,72 +252,104 @@ function EditMenu({ user }) {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-6 space-y-4">
-                    {imageUrl ? (
-                      <div className="relative group">
-                        <img src={imageUrl} alt="Menu" className="w-full h-64 object-cover rounded-xl border-2" />
-                        <button
-                          type="button"
-                          onClick={() => setImageUrl('')}
-                          className="absolute top-2 right-2 w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="h-64 bg-gray-100 rounded-xl flex items-center justify-center border-2 border-dashed">
-                        <div className="text-center">
-                          <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                          <p className="text-sm text-gray-600">
-                            {formData.plato_principal && formData.plato_secundario
-                              ? 'Genera una imagen con IA o sube la tuya propia'
-                              : 'Completa los platos para generar imagen'}
-                          </p>
+                    <div className="grid grid-cols-2 gap-4">
+                      {/* Imagen Plato Principal */}
+                      <div className="space-y-2">
+                        <Label className="text-sm text-gray-600">Plato Principal</Label>
+                        {imageUrl ? (
+                          <div className="relative group">
+                            <img src={imageUrl} alt="Plato Principal" className="w-full h-48 object-cover rounded-xl border-2" />
+                            <button
+                              type="button"
+                              onClick={() => setImageUrl('')}
+                              className="absolute top-2 right-2 w-7 h-7 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="h-48 bg-gray-100 rounded-xl flex items-center justify-center border-2 border-dashed">
+                            <ImageIcon className="w-8 h-8 text-gray-400" />
+                          </div>
+                        )}
+                        <div className="relative">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleImageUpload(e, 1)}
+                            disabled={isGeneratingImage || isUploadingImage}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="w-full pointer-events-none"
+                            disabled={isGeneratingImage || isUploadingImage}
+                          >
+                            <Upload className="w-3 h-3 mr-1" />
+                            Subir imagen
+                          </Button>
                         </div>
                       </div>
-                    )}
 
-                    <div className="grid grid-cols-2 gap-3">
-                      <Button
-                        type="button"
-                        onClick={handleGenerateImage}
-                        disabled={isGeneratingImage || isUploadingImage || !formData.plato_principal || !formData.plato_secundario}
-                        variant="outline"
-                        className="w-full"
-                      >
-                        {isGeneratingImage ? (
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        ) : imageUrl ? (
-                          <RefreshCw className="w-4 h-4 mr-2" />
+                      {/* Imagen Plato Secundario */}
+                      <div className="space-y-2">
+                        <Label className="text-sm text-gray-600">Acompañamiento</Label>
+                        {imageUrl2 ? (
+                          <div className="relative group">
+                            <img src={imageUrl2} alt="Acompañamiento" className="w-full h-48 object-cover rounded-xl border-2" />
+                            <button
+                              type="button"
+                              onClick={() => setImageUrl2('')}
+                              className="absolute top-2 right-2 w-7 h-7 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
                         ) : (
-                          <Sparkles className="w-4 h-4 mr-2" />
+                          <div className="h-48 bg-gray-100 rounded-xl flex items-center justify-center border-2 border-dashed">
+                            <ImageIcon className="w-8 h-8 text-gray-400" />
+                          </div>
                         )}
-                        {imageUrl ? 'Regenerar con IA' : 'Generar con IA'}
-                      </Button>
-
-                      <div className="relative">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageUpload}
-                          disabled={isGeneratingImage || isUploadingImage}
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                          id="image-upload"
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="w-full pointer-events-none"
-                          disabled={isGeneratingImage || isUploadingImage}
-                        >
-                          {isUploadingImage ? (
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          ) : (
-                            <Upload className="w-4 h-4 mr-2" />
-                          )}
-                          Subir imagen propia
-                        </Button>
+                        <div className="relative">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleImageUpload(e, 2)}
+                            disabled={isGeneratingImage || isUploadingImage}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="w-full pointer-events-none"
+                            disabled={isGeneratingImage || isUploadingImage}
+                          >
+                            <Upload className="w-3 h-3 mr-1" />
+                            Subir imagen
+                          </Button>
+                        </div>
                       </div>
                     </div>
+
+                    <Button
+                      type="button"
+                      onClick={handleGenerateImages}
+                      disabled={isGeneratingImage || isUploadingImage || !formData.plato_principal || !formData.plato_secundario}
+                      variant="outline"
+                      className="w-full"
+                    >
+                      {isGeneratingImage ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (imageUrl && imageUrl2) ? (
+                        <RefreshCw className="w-4 h-4 mr-2" />
+                      ) : (
+                        <Sparkles className="w-4 h-4 mr-2" />
+                      )}
+                      {(imageUrl && imageUrl2) ? 'Regenerar ambas con IA' : 'Generar ambas con IA'}
+                    </Button>
                   </CardContent>
                 </Card>
               )}
