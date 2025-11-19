@@ -28,9 +28,10 @@ export default function MenuCard({ menu, onReservationSuccess, currentUser, onFa
         const currentMinute = now.getMinutes();
         const currentTime = currentHour + currentMinute / 60;
 
-        const reservaFin = 16.5;    // 16:30
+        const reservaInicio = 15.5;  // 15:30 (3:30 PM)
+        const reservaFin = 16.5;     // 16:30 (4:30 PM)
 
-        setCanReserveLocal(currentTime <= reservaFin);
+        setCanReserveLocal(currentTime >= reservaInicio && currentTime <= reservaFin);
       };
 
       checkReservationTime();
@@ -390,7 +391,13 @@ export default function MenuCard({ menu, onReservationSuccess, currentUser, onFa
           <Button 
             onClick={() => {
               if (!canMakeReservation) {
-                alert('⏰ Las reservas cierran a las 16:30. Por favor, vuelve mañana para reservar.');
+                const now = new Date();
+                const currentTime = now.getHours() + now.getMinutes() / 60;
+                if (currentTime < 15.5) {
+                  alert('⏰ Las reservas abren a las 15:30 (3:30 PM). Por favor, vuelve más tarde.');
+                } else {
+                  alert('⏰ Las reservas cerraron a las 16:30 (4:30 PM). Por favor, vuelve mañana.');
+                }
                 return;
               }
               setIsModalOpen(true);
@@ -402,7 +409,7 @@ export default function MenuCard({ menu, onReservationSuccess, currentUser, onFa
                 : 'bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 shadow-lg hover:shadow-xl hover:scale-105'
             }`}
           >
-            {!canMakeReservation ? '🔒 Fuera de horario' : isOutOfStock ? 'Agotado' : isPastDeadline() ? 'Tiempo límite alcanzado' : 'Reservar ahora'}
+            {!canMakeReservation ? '🔒 Fuera de horario (15:30-16:30)' : isOutOfStock ? 'Agotado' : isPastDeadline() ? 'Tiempo límite alcanzado' : 'Reservar ahora'}
           </Button>
         </CardContent>
       </Card>
