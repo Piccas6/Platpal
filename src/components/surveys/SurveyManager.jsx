@@ -55,24 +55,33 @@ export default function SurveyManager({ surveys, onUpdate }) {
     const opcionesFiltradas = formData.opciones.filter(o => o.trim());
 
     try {
-      if (editingId) {
-        await base44.entities.Survey.update(editingId, {
-          ...formData,
-          opciones: opcionesFiltradas
-        });
-      } else {
-        await base44.entities.Survey.create({
-          ...formData,
-          opciones: opcionesFiltradas,
-          votos: {}
-        });
+      const dataToSave = {
+        titulo: formData.titulo,
+        descripcion: formData.descripcion || '',
+        opciones: opcionesFiltradas,
+        campus: formData.campus || 'todos',
+        activa: formData.activa !== false
+      };
+
+      // Solo añadir fecha_cierre si tiene valor
+      if (formData.fecha_cierre) {
+        dataToSave.fecha_cierre = formData.fecha_cierre;
       }
+
+      if (editingId) {
+        await base44.entities.Survey.update(editingId, dataToSave);
+      } else {
+        dataToSave.votos = {};
+        await base44.entities.Survey.create(dataToSave);
+      }
+      
       setIsCreating(false);
       setEditingId(null);
       onUpdate();
     } catch (error) {
-      console.error('Error al guardar encuesta:', error);
-      alert('Error al guardar la encuesta');
+      console.error('Error completo al guardar encuesta:', error);
+      const errorMsg = error?.response?.data?.message || error?.message || 'Error desconocido';
+      alert(`Error al guardar la encuesta: ${errorMsg}`);
     }
   };
 
