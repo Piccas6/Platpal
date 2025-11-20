@@ -402,16 +402,7 @@ export default function Menus() {
                   {canReserve ? '✅ Horario de Reservas ABIERTO' : '⏰ Horarios de PlatPal'}
                 </h3>
                 <p className="text-sm text-gray-700 mt-1">
-                  {menus.length > 0 && menus[0].hora_inicio_reserva && menus[0].hora_limite_reserva ? (
-                    <>
-                      <strong>Reserva:</strong> {menus[0].hora_inicio_reserva} - {menus[0].hora_limite_reserva} • 
-                      <strong> Recogida:</strong> {menus[0].hora_inicio_recogida || menus[0].hora_limite_reserva} - {menus[0].hora_limite}
-                    </>
-                  ) : (
-                    <>
-                      <strong>Reserva:</strong> 15:30 - 16:30 • <strong>Recogida:</strong> 16:30 - 18:00
-                    </>
-                  )}
+                  <strong>Reserva:</strong> 15:30 - 16:30 • <strong>Recogida:</strong> 16:30 - 18:00
                 </p>
                 {!canReserve && (
                   <p className="text-xs text-amber-700 mt-1 font-semibold">
