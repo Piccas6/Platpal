@@ -62,7 +62,7 @@ export default function MenuCard({ menu, onReservationSuccess, currentUser, onFa
   };
 
   const isOutOfStock = menu.stock_disponible <= 0;
-  const isUnavailable = isOutsideReservationWindow() || isOutOfStock || !canMakeReservation;
+  const isUnavailable = isOutOfStock;
 
   const getTypeLabel = () => {
     if (menu.es_sorpresa) return { text: 'Menú Sorpresa', icon: Sparkles, color: 'bg-purple-100 text-purple-800' };
