@@ -27,8 +27,7 @@ export default function RecommendedMenus({
         const availableMenus = allMenus.filter(m => {
           const isToday = m.fecha === today;
           const hasStock = m.stock_disponible > 0;
-          const withinReservationWindow = !isOutsideReservationWindow(m);
-          return isToday && hasStock && withinReservationWindow;
+          return isToday && hasStock;
         });
 
         if (availableMenus.length === 0) {
@@ -119,29 +118,6 @@ export default function RecommendedMenus({
 
     calculateRecommendations();
   }, [currentUser, allMenus, allReservations]);
-
-  const isOutsideReservationWindow = (menu) => {
-    if (!menu.hora_inicio_reserva || !menu.hora_limite_reserva) {
-      return false;
-    }
-
-    try {
-      const now = new Date();
-      const parseTime = (timeStr) => {
-        const [hours, minutes] = timeStr.split(':').map(Number);
-        return hours + minutes / 60;
-      };
-
-      const currentTime = now.getHours() + now.getMinutes() / 60;
-      const reservaInicio = parseTime(menu.hora_inicio_reserva);
-      const reservaFin = parseTime(menu.hora_limite_reserva);
-
-      return currentTime < reservaInicio || currentTime > reservaFin;
-    } catch (error) {
-      console.error('Error parsing horarios de reserva:', error);
-      return false;
-    }
-  };
 
   const getRecommendationReason = (menu) => {
     const reasons = [];
