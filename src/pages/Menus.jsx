@@ -526,9 +526,16 @@ export default function Menus() {
               <MenuCard
                 key={menu.id}
                 menu={menu}
-                onReserve={openReservationModal}
-                isFavorite={isFavorite(menu.cafeteria)}
-                onToggleFavorite={toggleFavoriteCafeteria}
+                onReservationSuccess={handleReservationSuccess}
+                currentUser={currentUser}
+                onFavoriteToggle={(menuId, isFavorite) => {
+                  setCurrentUser(prev => ({
+                    ...prev,
+                    menus_favoritos: isFavorite 
+                      ? [...(prev.menus_favoritos || []), menuId]
+                      : (prev.menus_favoritos || []).filter(id => id !== menuId)
+                  }));
+                }}
                 canReserve={canReserve}
               />
             ))}
