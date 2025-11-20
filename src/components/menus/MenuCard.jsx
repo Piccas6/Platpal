@@ -43,10 +43,6 @@ export default function MenuCard({ menu, onReservationSuccess, currentUser, onFa
   const canMakeReservation = canReserve !== undefined ? canReserve : canReserveLocal;
   
   const isOutsideReservationWindow = () => {
-    if (!menu.hora_inicio_reserva || !menu.hora_limite_reserva) {
-      return false;
-    }
-
     try {
       const now = new Date();
       const parseTime = (timeStr) => {
@@ -55,8 +51,8 @@ export default function MenuCard({ menu, onReservationSuccess, currentUser, onFa
       };
 
       const currentTime = now.getHours() + now.getMinutes() / 60;
-      const reservaInicio = parseTime(menu.hora_inicio_reserva);
-      const reservaFin = parseTime(menu.hora_limite_reserva);
+      const reservaInicio = parseTime(menu.hora_inicio_reserva || '15:30');
+      const reservaFin = parseTime(menu.hora_limite_reserva || '16:30');
 
       return currentTime < reservaInicio || currentTime > reservaFin;
     } catch (error) {
@@ -384,7 +380,7 @@ export default function MenuCard({ menu, onReservationSuccess, currentUser, onFa
           <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
             <div className="flex items-center gap-1">
               <Clock className="w-4 h-4" />
-              <span>{menu.hora_inicio_reserva} - {menu.hora_limite_reserva}</span>
+              <span>{menu.hora_inicio_reserva || '15:30'} - {menu.hora_limite_reserva || '16:30'}</span>
             </div>
             {menu.permite_envase_propio && (
               <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
@@ -397,22 +393,22 @@ export default function MenuCard({ menu, onReservationSuccess, currentUser, onFa
           <Button 
             onClick={() => {
               const parseTime = (timeStr) => {
-                const [hours, minutes] = (timeStr || '16:30').split(':').map(Number);
+                const [hours, minutes] = timeStr.split(':').map(Number);
                 return hours + minutes / 60;
               };
 
               const now = new Date();
               const currentTime = now.getHours() + now.getMinutes() / 60;
-              const reservaInicio = parseTime(menu.hora_inicio_reserva);
-              const reservaFin = parseTime(menu.hora_limite_reserva);
+              const reservaInicio = parseTime(menu.hora_inicio_reserva || '15:30');
+              const reservaFin = parseTime(menu.hora_limite_reserva || '16:30');
 
               if (currentTime < reservaInicio) {
-                alert(`⏰ Las reservas abren a las ${menu.hora_inicio_reserva}. Por favor, vuelve más tarde.`);
+                alert(`⏰ Las reservas abren a las ${menu.hora_inicio_reserva || '15:30'}. Por favor, vuelve más tarde.`);
                 return;
               }
               
               if (currentTime > reservaFin) {
-                alert(`⏰ Las reservas cerraron a las ${menu.hora_limite_reserva}. Por favor, vuelve mañana.`);
+                alert(`⏰ Las reservas cerraron a las ${menu.hora_limite_reserva || '16:30'}. Por favor, vuelve mañana.`);
                 return;
               }
 
