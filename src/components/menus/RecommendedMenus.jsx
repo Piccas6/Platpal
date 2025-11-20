@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -28,8 +27,8 @@ export default function RecommendedMenus({
         const availableMenus = allMenus.filter(m => {
           const isToday = m.fecha === today;
           const hasStock = m.stock_disponible > 0;
-          const notExpired = !isPastDeadline(m);
-          return isToday && hasStock && notExpired;
+          const withinReservationWindow = !isOutsideReservationWindow(m);
+          return isToday && hasStock && withinReservationWindow;
         });
 
         if (availableMenus.length === 0) {
@@ -121,21 +120,26 @@ export default function RecommendedMenus({
     calculateRecommendations();
   }, [currentUser, allMenus, allReservations]);
 
-  const isPastDeadline = (menu) => {
-    // Safety check for undefined hora_limite_reserva
-    if (!menu.hora_limite_reserva) {
-      return false; // Si no tiene hora límite, considerarlo disponible (no ha pasado el plazo)
+  const isOutsideReservationWindow = (menu) => {
+    if (!menu.hora_inicio_reserva || !menu.hora_limite_reserva) {
+      return false;
     }
 
     try {
       const now = new Date();
-      const [hours, minutes] = menu.hora_limite_reserva.split(':');
-      const deadline = new Date();
-      deadline.setHours(parseInt(hours), parseInt(minutes), 0);
-      return now > deadline;
+      const parseTime = (timeStr) => {
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        return hours + minutes / 60;
+      };
+
+      const currentTime = now.getHours() + now.getMinutes() / 60;
+      const reservaInicio = parseTime(menu.hora_inicio_reserva);
+      const reservaFin = parseTime(menu.hora_limite_reserva);
+
+      return currentTime < reservaInicio || currentTime > reservaFin;
     } catch (error) {
-      console.error('Error parsing hora_limite_reserva:', menu.hora_limite_reserva, error);
-      return false; // En caso de error, considerarlo disponible (no ha pasado el plazo)
+      console.error('Error parsing horarios de reserva:', error);
+      return false;
     }
   };
 
