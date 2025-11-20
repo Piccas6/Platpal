@@ -33,8 +33,10 @@ function EditMenu({ user }) {
           plato_secundario: menuData.plato_secundario,
           precio_original: menuData.precio_original,
           stock_disponible: menuData.stock_disponible,
-          hora_limite_reserva: menuData.hora_limite_reserva,
-          hora_limite: menuData.hora_limite,
+          hora_inicio_reserva: menuData.hora_inicio_reserva || '15:30',
+          hora_limite_reserva: menuData.hora_limite_reserva || '16:30',
+          hora_inicio_recogida: menuData.hora_inicio_recogida || '16:30',
+          hora_limite: menuData.hora_limite || '18:00',
           permite_envase_propio: menuData.permite_envase_propio ?? true,
           descuento_envase_propio: menuData.descuento_envase_propio ?? 0.15,
           es_sorpresa: menuData.es_sorpresa ?? false
@@ -57,8 +59,10 @@ function EditMenu({ user }) {
             plato_secundario: data.plato_secundario,
             precio_original: data.precio_original,
             stock_disponible: data.stock_disponible,
-            hora_limite_reserva: data.hora_limite_reserva,
-            hora_limite: data.hora_limite,
+            hora_inicio_reserva: data.hora_inicio_reserva || '15:30',
+            hora_limite_reserva: data.hora_limite_reserva || '16:30',
+            hora_inicio_recogida: data.hora_inicio_recogida || '16:30',
+            hora_limite: data.hora_limite || '18:00',
             permite_envase_propio: data.permite_envase_propio ?? true,
             descuento_envase_propio: data.descuento_envase_propio ?? 0.15,
             es_sorpresa: data.es_sorpresa ?? false
@@ -372,16 +376,42 @@ function EditMenu({ user }) {
                 </div>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="hora_limite_reserva">Límite para Reservar</Label>
-                  <Input id="hora_limite_reserva" type="time" value={formData.hora_limite_reserva || ''} onChange={handleInputChange} required />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="hora_limite">Límite para Recoger</Label>
-                  <Input id="hora_limite" type="time" value={formData.hora_limite || ''} onChange={handleInputChange} required />
-                </div>
-              </div>
+              <Card className="border-2 border-blue-200">
+                <CardHeader className="bg-blue-50">
+                  <CardTitle className="text-base">⏰ Horarios de Reserva y Recogida</CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 space-y-4">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-3">
+                      <Label className="font-semibold text-blue-800">Horario de Reservas</Label>
+                      <div className="space-y-2">
+                        <div>
+                          <Label htmlFor="hora_inicio_reserva" className="text-xs text-gray-600">Inicio</Label>
+                          <Input id="hora_inicio_reserva" type="time" value={formData.hora_inicio_reserva || ''} onChange={handleInputChange} required />
+                        </div>
+                        <div>
+                          <Label htmlFor="hora_limite_reserva" className="text-xs text-gray-600">Fin</Label>
+                          <Input id="hora_limite_reserva" type="time" value={formData.hora_limite_reserva || ''} onChange={handleInputChange} required />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <Label className="font-semibold text-blue-800">Horario de Recogida</Label>
+                      <div className="space-y-2">
+                        <div>
+                          <Label htmlFor="hora_inicio_recogida" className="text-xs text-gray-600">Inicio</Label>
+                          <Input id="hora_inicio_recogida" type="time" value={formData.hora_inicio_recogida || ''} onChange={handleInputChange} required />
+                        </div>
+                        <div>
+                          <Label htmlFor="hora_limite" className="text-xs text-gray-600">Fin</Label>
+                          <Input id="hora_limite" type="time" value={formData.hora_limite || ''} onChange={handleInputChange} required />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
                <div className="p-4 border rounded-2xl space-y-4 bg-green-50/30">
                   <div className="flex items-center justify-between">
