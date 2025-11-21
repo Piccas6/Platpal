@@ -23,9 +23,9 @@ export default function Home() {
   const [displayMenus, setDisplayMenus] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({
-    totalMeals: 247,
-    totalStudents: 89,
-    co2Saved: 618
+    totalMeals: 39,
+    totalStudents: 18,
+    co2Saved: 98
   });
 
   const texts = {
