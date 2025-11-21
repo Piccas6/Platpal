@@ -5,6 +5,7 @@ import StudentProfile from "../components/profile/StudentProfile";
 import CafeteriaProfile from "../components/profile/CafeteriaProfile";
 import AdminProfile from "../components/profile/AdminProfile";
 import ManagerProfile from "../components/profile/ManagerProfile";
+import NotificationManager from "../components/notifications/NotificationManager";
 import { Loader2 } from "lucide-react";
 
 function ProfilePage({ user, testRole }) {
@@ -26,18 +27,22 @@ function ProfilePage({ user, testRole }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-emerald-50 p-6 md:p-8">
-      {displayRole === 'user' && (
-        <StudentProfile user={profileUser} />
-      )}
-      {displayRole === 'cafeteria' && (
-        <CafeteriaProfile user={profileUser} />
-      )}
-      {displayRole === 'admin' && (
-        <AdminProfile user={profileUser} />
-      )}
-      {displayRole === 'manager' && (
-        <ManagerProfile user={profileUser} />
-      )}
+      <div className="max-w-5xl mx-auto space-y-8">
+        {displayRole === 'user' && (
+          <StudentProfile user={profileUser} />
+        )}
+        {displayRole === 'cafeteria' && (
+          <CafeteriaProfile user={profileUser} />
+        )}
+        {displayRole === 'admin' && (
+          <AdminProfile user={profileUser} />
+        )}
+        {displayRole === 'manager' && (
+          <ManagerProfile user={profileUser} />
+        )}
+
+        <NotificationManager currentUser={profileUser} />
+      </div>
     </div>
   );
 }
