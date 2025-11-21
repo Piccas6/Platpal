@@ -16,7 +16,6 @@ import {
   ChevronRight,
   LogIn
 } from "lucide-react";
-import InstallPWA from '../components/notifications/InstallPWA';
 
 export default function Home() {
   const navigate = useNavigate();
@@ -281,7 +280,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white">
-      <InstallPWA language={language} />
       {/* Hero Section */}
       <section className="relative min-h-[85vh] md:min-h-[90vh] flex items-center justify-center overflow-hidden">
         {/* Background Pattern */}
@@ -309,9 +307,6 @@ export default function Home() {
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-gray-900 leading-tight">
               {t.hero.title}
             </h1>
-            
-            <InstallPWA language={language} inlineButton />
-            
             <p className="text-lg sm:text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
               {t.hero.subtitle}
             </p>

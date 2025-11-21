@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Home, MapPin, UtensilsCrossed, HelpCircle, User, ChefHat, Target, Settings, UserCheck, BarChart3, Gift, Plus, Building2 } from "lucide-react";
+import { Home, MapPin, UtensilsCrossed, HelpCircle, User, ChefHat, Target, Settings, UserCheck, BarChart3, Gift, Plus, Building2, Download } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import {
   Sidebar,
@@ -60,6 +60,8 @@ export default function Layout({ children, currentPageName }) {
   const [language, setLanguage] = useState(() => {
     return localStorage.getItem('platpal_language') || 'es';
   });
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [showInstallButton, setShowInstallButton] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -87,6 +89,42 @@ export default function Layout({ children, currentPageName }) {
     localStorage.setItem('platpal_language', language);
     window.dispatchEvent(new CustomEvent('languageChange', { detail: language }));
   }, [language]);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowInstallButton(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setShowInstallButton(false);
+    }
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) {
+      alert(language === 'es' 
+        ? '📱 Para instalar PlatPal:\n\nEn móvil: Menú del navegador (⋮) → "Añadir a pantalla de inicio"\n\nEn ordenador: Icono de instalación en la barra de direcciones' 
+        : '📱 To install PlatPal:\n\nOn mobile: Browser menu (⋮) → "Add to Home Screen"\n\nOn desktop: Install icon in address bar');
+      return;
+    }
+
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    
+    if (outcome === 'accepted') {
+      setShowInstallButton(false);
+    }
+    
+    setDeferredPrompt(null);
+  };
 
   const handleLogin = async () => {
     try {
@@ -198,17 +236,27 @@ export default function Layout({ children, currentPageName }) {
           </SidebarContent>
 
           <SidebarFooter className="border-t border-gray-100/50 p-4 space-y-4 mt-auto">
-            <div className="px-2">
-              <Select value={language} onValueChange={setLanguage}>
-                <SelectTrigger className="w-full h-8 text-xs border-gray-200 bg-gray-50 hover:bg-gray-100 transition-colors">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="es">🇪🇸 Español</SelectItem>
-                  <SelectItem value="en">🇬🇧 English</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+              {showInstallButton && (
+                <Button
+                  onClick={handleInstallClick}
+                  className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-md hover:shadow-lg transition-all duration-300"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  {language === 'es' ? 'Instalar App' : 'Install App'}
+                </Button>
+              )}
+
+              <div className="px-2">
+                <Select value={language} onValueChange={setLanguage}>
+                  <SelectTrigger className="w-full h-8 text-xs border-gray-200 bg-gray-50 hover:bg-gray-100 transition-colors">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="es">🇪🇸 Español</SelectItem>
+                    <SelectItem value="en">🇬🇧 English</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
             {isLoggedIn && (currentUser?.app_role === 'admin') && (
                 <div className="flex items-center gap-2 p-1 bg-gray-100 rounded-xl">
