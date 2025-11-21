@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Download, X } from 'lucide-react';
 
-export default function InstallPWA({ language = 'es' }) {
+export default function InstallPWA({ language = 'es', inlineButton = false }) {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showButton, setShowButton] = useState(false);
 
@@ -45,6 +45,22 @@ export default function InstallPWA({ language = 'es' }) {
 
   if (!showButton) return null;
 
+  // Botón inline translúcido (para hero section)
+  if (inlineButton) {
+    return (
+      <Button
+        onClick={handleInstallClick}
+        variant="outline"
+        size="sm"
+        className="bg-white/60 backdrop-blur-md border-2 border-emerald-200 text-emerald-700 hover:bg-white/80 hover:border-emerald-300 transition-all duration-300 rounded-full px-4 py-2 text-xs font-semibold shadow-md"
+      >
+        <Download className="w-3.5 h-3.5 mr-1.5" />
+        {language === 'es' ? 'Descargar App' : 'Download App'}
+      </Button>
+    );
+  }
+
+  // Botón flotante (original)
   return (
     <div className="fixed bottom-20 right-4 z-50 md:bottom-8 md:right-8 animate-bounce">
       <div className="relative">

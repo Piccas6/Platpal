@@ -309,6 +309,9 @@ export default function Home() {
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-gray-900 leading-tight">
               {t.hero.title}
             </h1>
+            
+            <InstallPWA language={language} inlineButton />
+            
             <p className="text-lg sm:text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
               {t.hero.subtitle}
             </p>
