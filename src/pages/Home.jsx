@@ -14,7 +14,9 @@ import {
   Users,
   Leaf,
   ChevronRight,
-  LogIn
+  LogIn,
+  Download,
+  X
 } from "lucide-react";
 
 export default function Home() {
@@ -27,6 +29,8 @@ export default function Home() {
     totalStudents: 0,
     co2Saved: 0
   });
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [showInstallButton, setShowInstallButton] = useState(false);
 
   const texts = {
     es: {
@@ -184,7 +188,25 @@ export default function Home() {
     };
 
     window.addEventListener('languageChange', handleLanguageChange);
-    return () => window.removeEventListener('languageChange', handleLanguageChange);
+
+    // PWA Install prompt
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowInstallButton(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    // Check if already installed
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setShowInstallButton(false);
+    }
+
+    return () => {
+      window.removeEventListener('languageChange', handleLanguageChange);
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
   }, []);
 
   useEffect(() => {
@@ -278,8 +300,49 @@ export default function Home() {
     }
   };
 
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) {
+      alert(language === 'es' 
+        ? 'Para instalar PlatPal:\n\n📱 En móvil: Abre el menú del navegador (⋮) y selecciona "Añadir a pantalla de inicio"\n\n💻 En ordenador: Busca el icono de instalación en la barra de direcciones' 
+        : 'To install PlatPal:\n\n📱 On mobile: Open browser menu (⋮) and select "Add to Home Screen"\n\n💻 On desktop: Look for the install icon in the address bar');
+      return;
+    }
+
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    
+    if (outcome === 'accepted') {
+      setShowInstallButton(false);
+    }
+    
+    setDeferredPrompt(null);
+  };
+
   return (
     <div className="min-h-screen bg-white">
+      {/* Install App Button - Floating */}
+      {showInstallButton && (
+        <div className="fixed bottom-20 right-4 z-50 md:bottom-8 md:right-8">
+          <div className="relative animate-bounce">
+            <button
+              onClick={() => setShowInstallButton(false)}
+              className="absolute -top-2 -right-2 w-6 h-6 bg-gray-800 rounded-full flex items-center justify-center text-white hover:bg-gray-900 transition-colors z-10 shadow-lg"
+              aria-label="Cerrar"
+            >
+              <X className="w-3 h-3" />
+            </button>
+            <Button
+              onClick={handleInstallClick}
+              className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-105 rounded-full pl-4 pr-5 py-3 md:pl-5 md:pr-6 md:py-6 flex items-center gap-2 text-sm md:text-base font-bold"
+            >
+              <Download className="w-5 h-5 md:w-6 md:h-6" />
+              <span>
+                {language === 'es' ? 'Instalar App' : 'Install App'}
+              </span>
+            </Button>
+          </div>
+        </div>
+      )}
       {/* Hero Section */}
       <section className="relative min-h-[85vh] md:min-h-[90vh] flex items-center justify-center overflow-hidden">
         {/* Background Pattern */}
