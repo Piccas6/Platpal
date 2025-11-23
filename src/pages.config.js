@@ -31,6 +31,7 @@ import OfficeMenus from './pages/OfficeMenus';
 import OfficePacks from './pages/OfficePacks';
 import RegistroCafeteria from './pages/RegistroCafeteria';
 import UploadDocumentsCafeteria from './pages/UploadDocumentsCafeteria';
+import SEOBlog from './pages/SEOBlog';
 import __Layout from './Layout.jsx';
 
 
@@ -68,6 +69,7 @@ export const PAGES = {
     "OfficePacks": OfficePacks,
     "RegistroCafeteria": RegistroCafeteria,
     "UploadDocumentsCafeteria": UploadDocumentsCafeteria,
+    "SEOBlog": SEOBlog,
 }
 
 export const pagesConfig = {

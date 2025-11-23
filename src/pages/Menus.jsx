@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import RecommendedMenus from "../components/menus/RecommendedMenus";
 import SurveyCard from "../components/surveys/SurveyCard";
 import SurveyManager from "../components/surveys/SurveyManager";
+import SEOHead from "../components/seo/SEOHead";
 
 export default function Menus() {
   const navigate = useNavigate();
@@ -365,8 +366,36 @@ export default function Menus() {
     return currentUser?.cafeterias_favoritas?.includes(cafeteriaName) || false;
   };
 
+  const structuredDataMenu = menus.length > 0 ? {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "Menús Disponibles Hoy",
+    "itemListElement": menus.slice(0, 5).map((menu, index) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "item": {
+        "@type": "MenuItem",
+        "name": menu.plato_principal,
+        "description": menu.plato_secundario,
+        "offers": {
+          "@type": "Offer",
+          "price": "2.99",
+          "priceCurrency": "EUR",
+          "availability": menu.stock_disponible > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
+        }
+      }
+    }))
+  } : null;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-amber-50">
+      <SEOHead
+        title={`Menús de Hoy ${selectedCampus ? `en ${selectedCampus.nombre}` : ''} | PlatPal`}
+        description={`Descubre los menús disponibles hoy en ${selectedCampus?.nombre || 'todos los campus'}. Comida de calidad desde 2,99€. Reserva, recoge y disfruta. ${menus.length} menús disponibles ahora.`}
+        keywords={`menús hoy ${selectedCampus?.ubicacion || 'Cádiz'}, comida universitaria hoy, menús disponibles ${selectedCampus?.nombre || 'campus'}, reservar menú universidad, comida barata hoy`}
+        canonicalUrl={`https://platpal.app/menus${selectedCampus ? `?campus=${selectedCampus.id}` : ''}`}
+        structuredData={structuredDataMenu}
+      />
       <div className="max-w-7xl mx-auto p-6 md:p-8">
         <div className="flex items-center gap-4 mb-6">
           <Link to={createPageUrl(selectedCampus ? "Campus" : "Home")}>
