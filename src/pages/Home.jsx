@@ -303,6 +303,24 @@ export default function Home() {
             </p>
           </div>
           
+          {/* Selector de Vertical */}
+          <div className="flex justify-center gap-3 mb-8">
+            <Button 
+              variant="outline"
+              className="bg-emerald-50 border-2 border-emerald-600 text-emerald-700 font-semibold px-6 py-3 rounded-full"
+            >
+              👨‍🎓 Para Estudiantes
+            </Button>
+            <Link to={createPageUrl("OfficeHome")}>
+              <Button 
+                variant="outline"
+                className="border-2 border-gray-300 text-gray-600 hover:border-blue-600 hover:text-blue-600 font-semibold px-6 py-3 rounded-full transition-all"
+              >
+                🏢 Para Oficinas
+              </Button>
+            </Link>
+          </div>
+
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link to={createPageUrl("Campus")}>

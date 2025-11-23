@@ -26,6 +26,8 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import CrearCafeteria from './pages/CrearCafeteria';
 import GestionarCafeterias from './pages/GestionarCafeterias';
+import OfficeHome from './pages/OfficeHome';
+import OfficeMenus from './pages/OfficeMenus';
 import __Layout from './Layout.jsx';
 
 
@@ -58,6 +60,8 @@ export const PAGES = {
     "TermsOfService": TermsOfService,
     "CrearCafeteria": CrearCafeteria,
     "GestionarCafeterias": GestionarCafeterias,
+    "OfficeHome": OfficeHome,
+    "OfficeMenus": OfficeMenus,
 }
 
 export const pagesConfig = {
