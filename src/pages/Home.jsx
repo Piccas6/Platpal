@@ -14,7 +14,8 @@ import {
   Users,
   Leaf,
   ChevronRight,
-  LogIn
+  LogIn,
+  Lock
 } from "lucide-react";
 
 export default function Home() {
@@ -311,14 +312,7 @@ export default function Home() {
             >
               👨‍🎓 Para Estudiantes
             </Button>
-            <Link to={createPageUrl("OfficeHome")}>
-              <Button 
-                variant="outline"
-                className="border-2 border-gray-300 text-gray-600 hover:border-blue-600 hover:text-blue-600 font-semibold px-6 py-3 rounded-full transition-all"
-              >
-                🏢 Para Oficinas
-              </Button>
-            </Link>
+            <OfficeAccessButton />
           </div>
 
           {/* CTA Buttons */}
@@ -632,6 +626,42 @@ export default function Home() {
         </div>
       </footer>
     </div>
+  );
+}
+
+// Componente Office Access Button
+function OfficeAccessButton() {
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    base44.auth.me().then(setUser).catch(() => setUser(null));
+  }, []);
+
+  const handleClick = async () => {
+    try {
+      const currentUser = await base44.auth.me();
+      if (currentUser?.app_role === 'admin') {
+        navigate(createPageUrl("OfficeHome"));
+      } else {
+        alert('🚧 Esta sección está en construcción y pronto estará disponible. Por ahora solo accesible para administradores.');
+      }
+    } catch {
+      alert('🚧 Esta sección está en construcción y pronto estará disponible.');
+    }
+  };
+
+  return (
+    <Button 
+      onClick={handleClick}
+      variant="outline"
+      className="border-2 border-gray-300 text-gray-600 hover:border-blue-600 hover:text-blue-600 font-semibold px-6 py-3 rounded-full transition-all relative"
+    >
+      🏢 Para Oficinas
+      {user?.app_role !== 'admin' && (
+        <Lock className="w-4 h-4 ml-2 text-gray-400" />
+      )}
+    </Button>
   );
 }
 

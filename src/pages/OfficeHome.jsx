@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import withOfficeAuth from "../components/auth/withOfficeAuth";
 import { 
   ArrowRight, 
   Building2,
@@ -14,7 +15,7 @@ import {
   Euro
 } from "lucide-react";
 
-export default function OfficeHome() {
+function OfficeHome() {
   const navigate = useNavigate();
 
   return (
@@ -208,3 +209,5 @@ export default function OfficeHome() {
     </div>
   );
 }
+
+export default withOfficeAuth(OfficeHome);
