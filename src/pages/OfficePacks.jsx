@@ -6,8 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Package, CheckCircle, Building2, Truck, Calendar, Euro } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import withOfficeAuth from "../components/auth/withOfficeAuth";
 
-export default function OfficePacks() {
+function OfficePacks() {
   const [selectedPack, setSelectedPack] = useState(null);
   const [includeBebida, setIncludeBebida] = useState(false);
 
@@ -250,3 +251,5 @@ export default function OfficePacks() {
     </div>
   );
 }
+
+export default withOfficeAuth(OfficePacks);
