@@ -29,6 +29,8 @@ import GestionarCafeterias from './pages/GestionarCafeterias';
 import OfficeHome from './pages/OfficeHome';
 import OfficeMenus from './pages/OfficeMenus';
 import OfficePacks from './pages/OfficePacks';
+import RegistroCafeteria from './pages/RegistroCafeteria';
+import UploadDocumentsCafeteria from './pages/UploadDocumentsCafeteria';
 import __Layout from './Layout.jsx';
 
 
@@ -64,6 +66,8 @@ export const PAGES = {
     "OfficeHome": OfficeHome,
     "OfficeMenus": OfficeMenus,
     "OfficePacks": OfficePacks,
+    "RegistroCafeteria": RegistroCafeteria,
+    "UploadDocumentsCafeteria": UploadDocumentsCafeteria,
 }
 
 export const pagesConfig = {
