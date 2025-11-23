@@ -1,11 +1,13 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { ArrowRight, Leaf, Users, Wallet, ChefHat } from "lucide-react";
-import SEOHead from "../components/seo/SEOHead";
 
 export default function SEOBlog() {
+  useEffect(() => {
+    document.title = "Blog PlatPal - Consejos, Sostenibilidad y Ahorro para Estudiantes";
+  }, []);
   const articles = [
     {
       id: 'como-ahorrar-comida-universidad',
@@ -43,13 +45,6 @@ export default function SEOBlog() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-amber-50 p-6">
-      <SEOHead
-        title="Blog PlatPal - Consejos, Sostenibilidad y Ahorro para Estudiantes"
-        description="Lee artículos sobre cómo ahorrar en comida, reducir desperdicio alimentario, las mejores cafeterías universitarias y crear comunidades sostenibles."
-        keywords="blog estudiantes, consejos ahorro comida, sostenibilidad universitaria, guía cafeterías Cádiz, tips estudiantes"
-        canonicalUrl="https://platpal.app/blog"
-      />
-      
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">

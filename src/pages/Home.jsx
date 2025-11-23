@@ -4,7 +4,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
-import SEOHead from "../components/seo/SEOHead";
 import { 
   ArrowRight, 
   UtensilsCrossed,
@@ -271,42 +270,12 @@ export default function Home() {
     }
   };
 
-  const structuredData = {
-    "@context": "https://schema.org",
-    "@type": "LocalBusiness",
-    "name": "PlatPal",
-    "description": "Plataforma de menús sostenibles para estudiantes universitarios",
-    "url": "https://platpal.app",
-    "logo": "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68a77c0a8a0286e1f5d59edb/ca5d210a4_ChatGPTImage17sept202520_10_05.png",
-    "image": "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68a77c0a8a0286e1f5d59edb/ca5d210a4_ChatGPTImage17sept202520_10_05.png",
-    "priceRange": "€€",
-    "servesCuisine": "Comida mediterránea, casera, internacional",
-    "address": {
-      "@type": "PostalAddress",
-      "addressRegion": "Andalucía",
-      "addressCountry": "ES"
-    },
-    "geo": {
-      "@type": "GeoCoordinates",
-      "latitude": "36.5297",
-      "longitude": "-6.2925"
-    },
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.8",
-      "reviewCount": stats.totalStudents
-    }
-  };
+  useEffect(() => {
+    document.title = "PlatPal - Menús Sostenibles desde 2,99€ | Ahorra y Ayuda al Planeta";
+  }, []);
 
   return (
     <div className="min-h-screen bg-white">
-      <SEOHead
-        title="PlatPal - Menús Sostenibles desde 2,99€ | Ahorra y Ayuda al Planeta"
-        description="Rescata deliciosos menús de las cafeterías universitarias de Cádiz antes de que se desperdicien. Comida de calidad por solo 2,99€. Ya salvamos más de 39 menús y evitamos 98kg de CO₂."
-        keywords="menús baratos Cádiz, comida estudiantes UCA, menús sostenibles universidad, ahorro comida estudiantes, cafetería universidad Cádiz, comida 3 euros, reducir desperdicio alimentario, menús Jerez, menús Puerto Real, comida sostenible Andalucía"
-        canonicalUrl="https://platpal.app"
-        structuredData={structuredData}
-      />
       {/* Hero Section */}
       <section className="relative min-h-[85vh] md:min-h-[90vh] flex items-center justify-center overflow-hidden">
         {/* Background Pattern */}

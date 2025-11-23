@@ -5,7 +5,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import CampusCard from "../components/campus/CampusCard";
 import { base44 } from "@/api/base44Client";
-import SEOHead from "../components/seo/SEOHead";
 
 const initialCampusData = [
   { id: "jerez", nombre: "Campus Jerez", ubicacion: "Jerez de la Frontera", horario: "08:00 - 18:00", cafeterias: [] },
@@ -84,35 +83,12 @@ export default function Campus() {
     );
   }
 
-  const structuredData = {
-    "@context": "https://schema.org",
-    "@type": "ItemList",
-    "name": "Campus Universitarios PlatPal",
-    "itemListElement": campusList.map((campus, index) => ({
-      "@type": "ListItem",
-      "position": index + 1,
-      "item": {
-        "@type": "Place",
-        "name": campus.nombre,
-        "address": {
-          "@type": "PostalAddress",
-          "addressLocality": campus.ubicacion,
-          "addressRegion": "Andalucía",
-          "addressCountry": "ES"
-        }
-      }
-    }))
-  };
+  useEffect(() => {
+    document.title = "Campus Universitarios - Elige tu Campus | PlatPal";
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-emerald-50">
-      <SEOHead
-        title="Campus Universitarios - Elige tu Campus | PlatPal"
-        description="Selecciona tu campus universitario en Cádiz: Jerez, Puerto Real, Cádiz Centro o Algeciras. Menús sostenibles desde 2,99€ en todas las cafeterías universitarias."
-        keywords="campus UCA, Universidad Cádiz campus, cafeterías Jerez, cafeterías Puerto Real, menús universidad Cádiz, comida campus Algeciras"
-        canonicalUrl="https://platpal.app/campus"
-        structuredData={structuredData}
-      />
       <div className="max-w-6xl mx-auto p-6 md:p-8">
         <div className="flex items-center gap-4 mb-8">
           <Link to={createPageUrl("Home")}>
