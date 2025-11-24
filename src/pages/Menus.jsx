@@ -133,6 +133,11 @@ export default function Menus() {
         filteredMenus = filteredMenus.filter(m => m.campus === selectedCampus.id);
     }
     
+    // Excluir menús de cafeterías de prueba
+    filteredMenus = filteredMenus.filter(m => 
+      !m.cafeteria?.toLowerCase().includes('prueba')
+    );
+    
     // Aplicar filtros adicionales (tipo cocina, vegetariano, etc)
     filteredMenus = applyFilters(filteredMenus);
     
