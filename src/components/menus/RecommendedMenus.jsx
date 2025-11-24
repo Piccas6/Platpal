@@ -27,7 +27,8 @@ export default function RecommendedMenus({
         const availableMenus = allMenus.filter(m => {
           const isToday = m.fecha === today;
           const hasStock = m.stock_disponible > 0;
-          return isToday && hasStock;
+          const notTestCafeteria = !m.cafeteria?.toLowerCase().includes('prueba');
+          return isToday && hasStock && notTestCafeteria;
         });
 
         if (availableMenus.length === 0) {
@@ -103,10 +104,10 @@ export default function RecommendedMenus({
           return { ...menu, recommendationScore: score };
         });
 
-        // Ordenar por puntuación y tomar los top 6
+        // Ordenar por puntuación y tomar solo 1
         const topRecommendations = scoredMenus
           .sort((a, b) => b.recommendationScore - a.recommendationScore)
-          .slice(0, 6);
+          .slice(0, 1);
 
         setRecommendations(topRecommendations);
       } catch (error) {
@@ -186,7 +187,7 @@ export default function RecommendedMenus({
         </p>
       </CardHeader>
       <CardContent>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="max-w-md mx-auto">
           {recommendations.map((menu) => {
             const reason = getRecommendationReason(menu);
             return (
