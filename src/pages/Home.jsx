@@ -321,7 +321,7 @@ export default function Home() {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link to={createPageUrl("Campus")}>
+            <Link to={createPageUrl("Menus")}>
               <Button size="lg" className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white px-10 sm:px-14 py-6 sm:py-7 rounded-full text-base sm:text-lg font-bold shadow-xl hover:shadow-2xl hover:scale-105 transition-all group">
                 {t.hero.cta}
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -469,7 +469,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-
+      
       {/* Featured Menus */}
       <section className="py-16 sm:py-20 md:py-24 bg-gradient-to-b from-white to-emerald-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
@@ -577,7 +577,7 @@ export default function Home() {
           <p className="text-lg sm:text-xl md:text-2xl text-white/90 mb-10 max-w-2xl mx-auto">
             {t.ctaEnd.subtitle}
           </p>
-          <Link to={createPageUrl("Campus")}>
+          <Link to={createPageUrl("Menus")}>
             <Button size="lg" className="bg-white text-emerald-600 hover:bg-gray-50 px-10 sm:px-12 py-6 sm:py-7 rounded-full text-base sm:text-lg font-bold shadow-2xl hover:scale-105 transition-all">
               {t.ctaEnd.cta}
               <ArrowRight className="ml-3 w-5 h-5 sm:w-6 sm:h-6" />
@@ -608,7 +608,7 @@ export default function Home() {
             <div>
               <h4 className="font-semibold mb-3 text-base">{t.footer.links}</h4>
               <div className="space-y-2 text-sm">
-                <Link to={createPageUrl("Campus")} className="block text-gray-400 hover:text-white transition-colors">{t.footer.campus}</Link>
+                <Link to={createPageUrl("Menus")} className="block text-gray-400 hover:text-white transition-colors">{t.footer.campus}</Link>
                 <Link to={createPageUrl("Impact")} className="block text-gray-400 hover:text-white transition-colors">{t.footer.impact}</Link>
                 <Link to={createPageUrl("FAQ")} className="block text-gray-400 hover:text-white transition-colors">{t.footer.faq}</Link>
               </div>
