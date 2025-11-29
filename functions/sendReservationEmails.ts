@@ -36,29 +36,47 @@ Deno.serve(async (req) => {
         });
 
         // Buscar el email de la cafetería
-        // Primero buscar en la entidad Cafeteria para obtener el nombre exacto
         const allCafeterias = await base44.asServiceRole.entities.Cafeteria.list();
         const cafeteriaEntity = allCafeterias.find(c => c.nombre === reserva.cafeteria);
         
-        let cafeteriaEmail = null;
+        let cafeteriaEmails = [];
         
-        // Buscar usuario administrador de la cafetería
+        // Buscar usuarios administradores de la cafetería
         if (cafeteriaEntity) {
+            console.log('📍 Cafetería encontrada:', cafeteriaEntity.nombre, 'ID:', cafeteriaEntity.id);
+            
             const allUsers = await base44.asServiceRole.entities.User.list();
             
-            // Buscar por cafeterias_asignadas (array de IDs)
-            const cafeteriaUser = allUsers.find(u => 
-                (u.app_role === 'cafeteria' || u.app_role === 'manager' || u.app_role === 'admin') &&
-                u.cafeterias_asignadas && 
-                Array.isArray(u.cafeterias_asignadas) &&
-                u.cafeterias_asignadas.includes(cafeteriaEntity.id)
-            );
+            // Buscar TODOS los usuarios con acceso a esta cafetería
+            const cafeteriaUsers = allUsers.filter(u => {
+                // Verificar por cafeterias_asignadas (array de IDs)
+                const hasAssigned = u.cafeterias_asignadas && 
+                    Array.isArray(u.cafeterias_asignadas) &&
+                    u.cafeterias_asignadas.includes(cafeteriaEntity.id);
+                
+                // Verificar por cafeteria_info (objeto con id o nombre)
+                const hasCafeteriaInfo = u.cafeteria_info && 
+                    (u.cafeteria_info.id === cafeteriaEntity.id || 
+                     u.cafeteria_info.nombre_cafeteria === cafeteriaEntity.nombre);
+                
+                // Verificar rol apropiado
+                const hasRole = u.app_role === 'cafeteria' || u.app_role === 'manager' || u.app_role === 'admin';
+                
+                return hasRole && (hasAssigned || hasCafeteriaInfo);
+            });
             
-            if (cafeteriaUser) {
-                cafeteriaEmail = cafeteriaUser.email;
-                console.log('✅ Email de cafetería encontrado:', cafeteriaEmail);
-            } else {
-                console.warn('⚠️ No se encontró usuario asignado a cafetería:', reserva.cafeteria, 'ID:', cafeteriaEntity.id);
+            cafeteriaEmails = cafeteriaUsers.map(u => u.email).filter(Boolean);
+            
+            console.log('📧 Emails de cafetería encontrados:', cafeteriaEmails);
+            
+            if (cafeteriaEmails.length === 0) {
+                console.warn('⚠️ No se encontraron usuarios asignados a cafetería:', reserva.cafeteria);
+                console.log('📋 Usuarios con roles de cafetería/manager:', allUsers.filter(u => u.app_role === 'cafeteria' || u.app_role === 'manager').map(u => ({
+                    email: u.email,
+                    role: u.app_role,
+                    cafeterias_asignadas: u.cafeterias_asignadas,
+                    cafeteria_info: u.cafeteria_info
+                })));
             }
         } else {
             console.warn('⚠️ No se encontró entidad Cafeteria para:', reserva.cafeteria);
@@ -158,8 +176,8 @@ Deno.serve(async (req) => {
             console.error('❌ Error enviando email al estudiante:', emailError.message);
         }
 
-        // EMAIL A LA CAFETERÍA
-        if (cafeteriaEmail) {
+        // EMAIL A LA CAFETERÍA (enviar a todos los usuarios asignados)
+        if (cafeteriaEmails.length > 0) {
             const emailCafeteria = `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9fafb;">
                 <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 30px; border-radius: 20px 20px 0 0; text-align: center;">
@@ -227,26 +245,30 @@ Deno.serve(async (req) => {
             </div>
             `;
 
-            try {
-                await base44.integrations.Core.SendEmail({
-                    from_name: 'PlatPal',
-                    to: cafeteriaEmail,
-                    subject: `🔔 Nuevo Pedido - ${reserva.student_name || reserva.student_email} - ${reserva.codigo_recogida}`,
-                    body: emailCafeteria
-                });
-                console.log('✅ Email enviado a la cafetería:', cafeteriaEmail);
-                emailsSent.cafeteria = true;
-            } catch (emailError) {
-                console.error('❌ Error enviando email a cafetería:', emailError.message);
+            // Enviar a todos los usuarios de la cafetería
+            for (const cafeteriaEmail of cafeteriaEmails) {
+                try {
+                    await base44.integrations.Core.SendEmail({
+                        from_name: 'PlatPal',
+                        to: cafeteriaEmail,
+                        subject: `🔔 Nuevo Pedido - ${reserva.student_name || reserva.student_email} - Código: ${reserva.codigo_recogida}`,
+                        body: emailCafeteria
+                    });
+                    console.log('✅ Email enviado a la cafetería:', cafeteriaEmail);
+                    emailsSent.cafeteria = true;
+                } catch (emailError) {
+                    console.error('❌ Error enviando email a cafetería:', cafeteriaEmail, emailError.message);
+                }
             }
         } else {
-            console.warn('⚠️ No se encontró email de cafetería para:', reserva.cafeteria);
+            console.warn('⚠️ No se encontró ningún email de cafetería para:', reserva.cafeteria);
         }
 
         return Response.json({ 
             success: true,
             emails_sent: emailsSent,
-            cafeteria_email: cafeteriaEmail || 'no encontrado'
+            cafeteria_emails: cafeteriaEmails.length > 0 ? cafeteriaEmails : ['no encontrado'],
+            reserva_codigo: reserva.codigo_recogida
         });
 
     } catch (error) {
