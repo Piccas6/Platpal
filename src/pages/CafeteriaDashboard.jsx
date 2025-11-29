@@ -72,6 +72,7 @@ export default function CafeteriaDashboard() {
   const [isGeneratingImage2, setIsGeneratingImage2] = useState(false);
   const [generatedImageUrl1, setGeneratedImageUrl1] = useState('');
   const [generatedImageUrl2, setGeneratedImageUrl2] = useState('');
+  const [autoGenerateTriggered, setAutoGenerateTriggered] = useState(false);
 
   // Cargar usuario y cafeterías
   useEffect(() => {
@@ -222,6 +223,36 @@ export default function CafeteriaDashboard() {
     }
   };
 
+  // Auto-generar imágenes cuando se completen los platos
+  useEffect(() => {
+    const shouldGenerate = publishFormData.es_sorpresa || 
+      (publishFormData.plato_principal && publishFormData.plato_secundario);
+    
+    if (showPublishModal && shouldGenerate && !autoGenerateTriggered && !generatedImageUrl1 && !generatedImageUrl2 && !isGeneratingImage1 && !isGeneratingImage2) {
+      const timer = setTimeout(async () => {
+        setAutoGenerateTriggered(true);
+        
+        if (publishFormData.es_sorpresa) {
+          await handleGenerateImage(1);
+          await handleGenerateImage(2);
+        } else {
+          // Generar ambas imágenes en paralelo
+          handleGenerateImage(1);
+          setTimeout(() => handleGenerateImage(2), 500);
+        }
+      }, 800);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [publishFormData.plato_principal, publishFormData.plato_secundario, publishFormData.es_sorpresa, showPublishModal, autoGenerateTriggered, generatedImageUrl1, generatedImageUrl2, isGeneratingImage1, isGeneratingImage2]);
+
+  // Reset auto-generate flag cuando cambian los platos
+  useEffect(() => {
+    if (publishFormData.plato_principal || publishFormData.plato_secundario || publishFormData.es_sorpresa) {
+      setAutoGenerateTriggered(false);
+    }
+  }, [publishFormData.plato_principal, publishFormData.plato_secundario, publishFormData.es_sorpresa]);
+
   const handleQuickPublish = async (e) => {
     e.preventDefault();
 
@@ -282,6 +313,7 @@ export default function CafeteriaDashboard() {
       });
       setGeneratedImageUrl1('');
       setGeneratedImageUrl2('');
+      setAutoGenerateTriggered(false);
 
       setShowPublishModal(false);
       loadData();
@@ -308,6 +340,7 @@ export default function CafeteriaDashboard() {
     }));
     setGeneratedImageUrl1('');
     setGeneratedImageUrl2('');
+    setAutoGenerateTriggered(false);
   };
 
   if (isLoading) {
