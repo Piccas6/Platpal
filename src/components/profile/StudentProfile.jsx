@@ -100,24 +100,28 @@ export default function StudentProfile({ user }) {
     setIsLoadingExtras(true);
     try {
       // Fetch cafeterías favoritas
-      if (user.cafeterias_favoritas?.length > 0) {
+      if (user?.cafeterias_favoritas?.length > 0) {
         const allCafeterias = await base44.entities.Cafeteria.list();
         const favorites = allCafeterias.filter(c => 
           user.cafeterias_favoritas.includes(c.nombre) || user.cafeterias_favoritas.includes(c.id)
         );
         setFavoriteCafeterias(favorites);
+      } else {
+        setFavoriteCafeterias([]);
       }
 
       // Fetch menús favoritos
-      if (user.menus_favoritos?.length > 0) {
+      if (user?.menus_favoritos?.length > 0) {
         const allMenus = await base44.entities.Menu.list('-created_date', 100);
         const favorites = allMenus.filter(m => user.menus_favoritos.includes(m.id));
         setFavoriteMenus(favorites);
+      } else {
+        setFavoriteMenus([]);
       }
 
       // Fetch estado del bono
       const bonoCompras = await base44.entities.BonoCompra.list('-created_date');
-      const userBono = bonoCompras.find(b => b.user_email === user.email && b.subscription_status === 'active');
+      const userBono = bonoCompras.find(b => b.user_email === user?.email && b.subscription_status === 'active');
       setBonoStatus(userBono || null);
 
     } catch (error) {
@@ -125,7 +129,7 @@ export default function StudentProfile({ user }) {
     } finally {
       setIsLoadingExtras(false);
     }
-  }, [user.email, user.cafeterias_favoritas, user.menus_favoritos]);
+  }, [user?.email]);
 
   const calculateStreak = useCallback(async () => {
     try {
@@ -217,9 +221,11 @@ export default function StudentProfile({ user }) {
     } catch (error) {
       console.error("Error calculating streak:", error);
     }
-  }, [user.email, userData.racha_actual, userData.racha_maxima, userData.ultima_compra_fecha]);
+  }, [user?.email]);
 
   useEffect(() => {
+    if (!user) return;
+    
     setUserData(user);
     setEditData({
       full_name: user?.full_name || '',
@@ -240,10 +246,15 @@ export default function StudentProfile({ user }) {
         push_disponibilidad: false
       }
     });
+  }, [user]);
+
+  useEffect(() => {
+    if (!user?.email) return;
+    
     fetchReservations();
     calculateStreak();
     fetchFavoritesAndBono();
-  }, [user, fetchReservations, calculateStreak, fetchFavoritesAndBono]);
+  }, [user?.email, fetchReservations, calculateStreak, fetchFavoritesAndBono]);
 
   const handleEditChange = (field, value) => {
     setEditData(prev => ({ ...prev, [field]: value }));
