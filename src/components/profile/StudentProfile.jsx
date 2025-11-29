@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
@@ -25,8 +24,13 @@ import {
   Calendar,
   Bell,
   Heart,
-  X, // Added X icon for cancel button
-  Flame // Added Flame icon for streak
+  X,
+  Flame,
+  Star,
+  Gift,
+  CreditCard,
+  Loader2,
+  Trash2
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -74,6 +78,10 @@ export default function StudentProfile({ user }) {
   const [reservations, setReservations] = useState([]);
   const [isLoadingReservations, setIsLoadingReservations] = useState(true);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [favoriteCafeterias, setFavoriteCafeterias] = useState([]);
+  const [favoriteMenus, setFavoriteMenus] = useState([]);
+  const [bonoStatus, setBonoStatus] = useState(null);
+  const [isLoadingExtras, setIsLoadingExtras] = useState(true);
 
   const fetchReservations = useCallback(async () => {
     setIsLoadingReservations(true);
@@ -87,6 +95,37 @@ export default function StudentProfile({ user }) {
       setIsLoadingReservations(false);
     }
   }, [user.email]);
+
+  const fetchFavoritesAndBono = useCallback(async () => {
+    setIsLoadingExtras(true);
+    try {
+      // Fetch cafeterías favoritas
+      if (user.cafeterias_favoritas?.length > 0) {
+        const allCafeterias = await base44.entities.Cafeteria.list();
+        const favorites = allCafeterias.filter(c => 
+          user.cafeterias_favoritas.includes(c.nombre) || user.cafeterias_favoritas.includes(c.id)
+        );
+        setFavoriteCafeterias(favorites);
+      }
+
+      // Fetch menús favoritos
+      if (user.menus_favoritos?.length > 0) {
+        const allMenus = await base44.entities.Menu.list('-created_date', 100);
+        const favorites = allMenus.filter(m => user.menus_favoritos.includes(m.id));
+        setFavoriteMenus(favorites);
+      }
+
+      // Fetch estado del bono
+      const bonoCompras = await base44.entities.BonoCompra.list('-created_date');
+      const userBono = bonoCompras.find(b => b.user_email === user.email && b.subscription_status === 'active');
+      setBonoStatus(userBono || null);
+
+    } catch (error) {
+      console.error("Error fetching favorites/bono:", error);
+    } finally {
+      setIsLoadingExtras(false);
+    }
+  }, [user.email, user.cafeterias_favoritas, user.menus_favoritos]);
 
   const calculateStreak = useCallback(async () => {
     try {
@@ -203,7 +242,8 @@ export default function StudentProfile({ user }) {
     });
     fetchReservations();
     calculateStreak();
-  }, [user, fetchReservations, calculateStreak]);
+    fetchFavoritesAndBono();
+  }, [user, fetchReservations, calculateStreak, fetchFavoritesAndBono]);
 
   const handleEditChange = (field, value) => {
     setEditData(prev => ({ ...prev, [field]: value }));
@@ -474,11 +514,76 @@ export default function StudentProfile({ user }) {
         </Card>
       </div>
 
+      {/* Bono Status Card */}
+      <Card className={`border-2 ${bonoStatus ? 'border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50' : 'border-gray-200'}`}>
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${bonoStatus ? 'bg-purple-500' : 'bg-gray-300'}`}>
+                <Gift className="w-7 h-7 text-white" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Bono PlatPal</h3>
+                {bonoStatus ? (
+                  <>
+                    <p className="text-sm text-purple-700 font-medium">
+                      ✅ Suscripción Activa
+                    </p>
+                    <p className="text-xs text-gray-600 mt-1">
+                      {bonoStatus.cantidad_menus - (bonoStatus.menus_usados_mes_actual || 0)} de {bonoStatus.cantidad_menus} menús disponibles este mes
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-sm text-gray-600">
+                    Sin suscripción activa
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="text-right">
+              {bonoStatus ? (
+                <>
+                  <p className="text-2xl font-bold text-purple-600">
+                    {bonoStatus.cantidad_menus - (bonoStatus.menus_usados_mes_actual || 0)}
+                  </p>
+                  <p className="text-xs text-gray-500">menús restantes</p>
+                  {bonoStatus.fecha_renovacion && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Renueva: {new Date(bonoStatus.fecha_renovacion).toLocaleDateString('es-ES')}
+                    </p>
+                  )}
+                </>
+              ) : (
+                <Link to={createPageUrl("Bonos")}>
+                  <Button className="bg-purple-600 hover:bg-purple-700">
+                    <CreditCard className="w-4 h-4 mr-2" />
+                    Obtener Bono
+                  </Button>
+                </Link>
+              )}
+            </div>
+          </div>
+          
+          {/* Barra de progreso del bono */}
+          {bonoStatus && (
+            <div className="mt-4">
+              <div className="w-full h-2 bg-purple-100 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all"
+                  style={{ width: `${((bonoStatus.cantidad_menus - (bonoStatus.menus_usados_mes_actual || 0)) / bonoStatus.cantidad_menus) * 100}%` }}
+                />
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Tabs de contenido */}
       <Tabs defaultValue="info" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="info">Información Personal</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="info">Info Personal</TabsTrigger>
           <TabsTrigger value="preferences">Preferencias</TabsTrigger>
+          <TabsTrigger value="favorites">Favoritos</TabsTrigger>
           <TabsTrigger value="streak">Racha</TabsTrigger>
           <TabsTrigger value="history">Historial</TabsTrigger>
         </TabsList>
@@ -685,7 +790,115 @@ export default function StudentProfile({ user }) {
           </Card>
         </TabsContent>
 
-        {/* Tab: Racha (NUEVO) */}
+        {/* Tab: Favoritos */}
+        <TabsContent value="favorites" className="space-y-6">
+          {/* Cafeterías Favoritas */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Star className="w-5 h-5 text-amber-500" />
+                Cafeterías Favoritas
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isLoadingExtras ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-emerald-600" />
+                </div>
+              ) : favoriteCafeterias.length > 0 ? (
+                <div className="grid md:grid-cols-2 gap-4">
+                  {favoriteCafeterias.map(cafe => (
+                    <div key={cafe.id} className="flex items-center justify-between p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border-2 border-amber-100">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center">
+                          <UtensilsCrossed className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-900">{cafe.nombre}</p>
+                          <p className="text-sm text-gray-600 capitalize">{cafe.campus?.replace('_', ' ')}</p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={async () => {
+                          const newFavorites = (userData.cafeterias_favoritas || []).filter(c => c !== cafe.nombre && c !== cafe.id);
+                          await base44.auth.updateMe({ cafeterias_favoritas: newFavorites });
+                          setUserData(prev => ({ ...prev, cafeterias_favoritas: newFavorites }));
+                          setFavoriteCafeterias(prev => prev.filter(c => c.id !== cafe.id));
+                        }}
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Star className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-600">No tienes cafeterías favoritas</p>
+                  <p className="text-sm text-gray-500 mt-1">Marca cafeterías como favoritas desde la página de menús</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Menús Favoritos */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Heart className="w-5 h-5 text-red-500" />
+                Menús Favoritos
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isLoadingExtras ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-emerald-600" />
+                </div>
+              ) : favoriteMenus.length > 0 ? (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {favoriteMenus.slice(0, 6).map(menu => (
+                    <div key={menu.id} className="relative overflow-hidden rounded-xl border-2 border-red-100 bg-gradient-to-br from-red-50 to-pink-50">
+                      {menu.imagen_url && (
+                        <img src={menu.imagen_url} alt={menu.plato_principal} className="w-full h-32 object-cover" />
+                      )}
+                      <div className="p-4">
+                        <p className="font-semibold text-gray-900 line-clamp-1">{menu.plato_principal}</p>
+                        <p className="text-sm text-gray-600 line-clamp-1">{menu.plato_secundario}</p>
+                        <div className="flex items-center justify-between mt-2">
+                          <p className="text-xs text-gray-500">{menu.cafeteria}</p>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={async () => {
+                              const newFavorites = (userData.menus_favoritos || []).filter(id => id !== menu.id);
+                              await base44.auth.updateMe({ menus_favoritos: newFavorites });
+                              setUserData(prev => ({ ...prev, menus_favoritos: newFavorites }));
+                              setFavoriteMenus(prev => prev.filter(m => m.id !== menu.id));
+                            }}
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50 h-7 w-7 p-0"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Heart className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-600">No tienes menús favoritos</p>
+                  <p className="text-sm text-gray-500 mt-1">Marca menús con ❤️ para guardarlos aquí</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Tab: Racha */}
         <TabsContent value="streak" className="space-y-6">
           <StreakMeter 
             currentStreak={userData.racha_actual || 0}
