@@ -579,6 +579,57 @@ export default function CafeteriaDashboard() {
           </Link>
         </div>
 
+        {/* Pedidos Pendientes de Recogida */}
+        <Card className="border-2 border-orange-200 bg-gradient-to-br from-orange-50 to-white">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <QrCode className="w-5 h-5 text-orange-600" />
+              Pedidos Pendientes de Recogida
+              {stats.pedidosPendientes > 0 && (
+                <Badge className="bg-orange-500 text-white ml-2">{stats.pedidosPendientes}</Badge>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {reservations.filter(r => r.estado === 'pagado' && r.created_date?.startsWith(new Date().toISOString().split('T')[0])).length > 0 ? (
+              <div className="space-y-3">
+                {reservations
+                  .filter(r => r.estado === 'pagado' && r.created_date?.startsWith(new Date().toISOString().split('T')[0]))
+                  .map((reserva) => (
+                    <div key={reserva.id} className="flex items-center justify-between p-4 bg-white rounded-xl border-2 border-orange-100 hover:border-orange-300 transition-all">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="bg-orange-100 px-3 py-2 rounded-lg">
+                            <span className="text-xl font-mono font-bold text-orange-700">{reserva.codigo_recogida}</span>
+                          </div>
+                          <Badge className="bg-green-100 text-green-800">Pagado</Badge>
+                          {reserva.pagado_con_bono && <Badge className="bg-purple-100 text-purple-800">🎁 Bono</Badge>}
+                        </div>
+                        <p className="font-semibold text-gray-900">{reserva.student_name || reserva.student_email}</p>
+                        <p className="text-sm text-gray-600">📧 {reserva.student_email}</p>
+                        <p className="text-sm text-gray-600 mt-1">🍽️ {reserva.menus_detalle}</p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          💰 {reserva.pagado_con_bono ? 'Gratis (Bono)' : `€${reserva.precio_total?.toFixed(2)}`}
+                          {reserva.envase_propio && <span className="ml-2">♻️ Envase propio</span>}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs text-gray-500">
+                          {new Date(reserva.created_date).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <QrCode className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                <p className="text-gray-600">No hay pedidos pendientes de recogida</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle>Menús de Hoy</CardTitle>
