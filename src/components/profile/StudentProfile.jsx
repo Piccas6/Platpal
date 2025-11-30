@@ -84,6 +84,7 @@ export default function StudentProfile({ user }) {
   const [isLoadingExtras, setIsLoadingExtras] = useState(true);
 
   const fetchReservations = useCallback(async () => {
+    if (!user?.email) return;
     setIsLoadingReservations(true);
     try {
       const allReservations = await base44.entities.Reserva.list('-created_date');
@@ -94,7 +95,7 @@ export default function StudentProfile({ user }) {
     } finally {
       setIsLoadingReservations(false);
     }
-  }, [user.email]);
+  }, [user?.email]);
 
   const fetchFavoritesAndBono = useCallback(async () => {
     setIsLoadingExtras(true);
@@ -132,6 +133,7 @@ export default function StudentProfile({ user }) {
   }, [user?.email]);
 
   const calculateStreak = useCallback(async () => {
+    if (!user?.email) return;
     try {
       const allReservations = await base44.entities.Reserva.list('-created_date');
       const userReservations = allReservations.filter(
