@@ -257,15 +257,12 @@ export default function StudentProfile({ user }) {
         push_disponibilidad: false
       }
     });
-  }, [user]);
 
-  useEffect(() => {
-    if (!user?.email) return;
-    
+    // Fetch all data when user changes
     fetchReservations();
     calculateStreak();
     fetchFavoritesAndBono();
-  }, [user?.email, fetchReservations, calculateStreak, fetchFavoritesAndBono]);
+  }, [user]);
 
   const handleEditChange = (field, value) => {
     setEditData(prev => ({ ...prev, [field]: value }));
