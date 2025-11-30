@@ -53,9 +53,9 @@ const alergenosOptions = [
 ];
 
 export default function StudentProfile({ user }) {
-  const [userData, setUserData] = useState(user);
+  const [userData, setUserData] = useState(user || {});
   const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState({
+  const [editData, setEditData] = useState(() => ({
     full_name: user?.full_name || '',
     email: user?.email || '',
     telefono: user?.telefono || '',
@@ -73,7 +73,7 @@ export default function StudentProfile({ user }) {
       email_recordatorios: true,
       push_disponibilidad: false
     }
-  });
+  }));
   const [isLoading, setIsLoading] = useState(false);
   const [reservations, setReservations] = useState([]);
   const [isLoadingReservations, setIsLoadingReservations] = useState(true);
@@ -82,6 +82,15 @@ export default function StudentProfile({ user }) {
   const [favoriteMenus, setFavoriteMenus] = useState([]);
   const [bonoStatus, setBonoStatus] = useState(null);
   const [isLoadingExtras, setIsLoadingExtras] = useState(true);
+
+  // Early return after all hooks
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
+      </div>
+    );
+  }
 
   const fetchReservations = useCallback(async () => {
     if (!user?.email) return;
