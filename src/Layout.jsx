@@ -26,7 +26,6 @@ import {
 
 const navigationItems = [
   { title: "Inicio", url: createPageUrl("Home"), icon: Home },
-  { title: "Campus", url: createPageUrl("Campus"), icon: MapPin },
   { title: "Menús", url: createPageUrl("Menus"), icon: UtensilsCrossed },
   { title: "Bonos", url: createPageUrl("Bonos"), icon: Gift },
   { title: "Panel Cafetería", url: createPageUrl("CafeteriaDashboard"), icon: ChefHat, requiresAuth: true },
@@ -160,6 +159,61 @@ export default function Layout({ children, currentPageName }) {
             --neutral-50: #F9FAFB; --neutral-100: #F3F4F6;
             --neutral-200: #E5E7EB; --neutral-600: #4B5563;
             --neutral-800: #1F2937; --neutral-900: #111827;
+          }
+
+          @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+
+          @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+          }
+
+          @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+          }
+
+          @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+          }
+
+          .animate-fade-in-up {
+            animation: fadeInUp 0.5s ease-out forwards;
+          }
+
+          .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+          }
+
+          .animate-scale-in {
+            animation: scaleIn 0.3s ease-out forwards;
+          }
+
+          .animate-slide-in-left {
+            animation: slideInLeft 0.4s ease-out forwards;
+          }
+
+          .stagger-1 { animation-delay: 0.1s; }
+          .stagger-2 { animation-delay: 0.2s; }
+          .stagger-3 { animation-delay: 0.3s; }
+          .stagger-4 { animation-delay: 0.4s; }
+          .stagger-5 { animation-delay: 0.5s; }
+
+          .hover-lift {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+          }
+
+          .hover-lift:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+          }
+
+          .smooth-transition {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           }
       `}</style>
       <div className="min-h-screen flex w-full bg-gradient-to-br from-gray-50 via-white to-emerald-50">
