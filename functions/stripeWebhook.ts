@@ -135,6 +135,10 @@ Deno.serve(async (req) => {
                 console.log(`${logPrefix} 🍽️ Procesando pago de menú...`);
                 
                 try {
+                    // Obtener la reserva para verificar si tiene código de referido
+                    const allReservas = await base44.asServiceRole.entities.Reserva.list();
+                    const reserva = allReservas.find(r => r.id === reservaId);
+                    
                     await base44.asServiceRole.entities.Reserva.update(reservaId, {
                         estado: 'pagado',
                         payment_status: 'completed',
@@ -142,6 +146,75 @@ Deno.serve(async (req) => {
                     });
                     
                     console.log(`${logPrefix} ✅ Reserva ${reservaId} actualizada`);
+
+                    // Procesar código de referido si existe
+                    if (reserva && reserva.referral_code) {
+                        console.log(`${logPrefix} 🎁 Procesando código de referido: ${reserva.referral_code}`);
+                        
+                        try {
+                            // Crear registro de uso del código
+                            await base44.asServiceRole.entities.ReferralUse.create({
+                                code: reserva.referral_code,
+                                user_email: reserva.student_email || session.customer_email,
+                                user_name: reserva.student_name || '',
+                                reserva_id: reservaId,
+                                status: 'completed',
+                                discount_applied: reserva.referral_discount || 0.20
+                            });
+                            console.log(`${logPrefix} ✅ ReferralUse creado`);
+
+                            // Actualizar contador del código
+                            const allCodes = await base44.asServiceRole.entities.ReferralCode.list();
+                            const refCode = allCodes.find(c => c.code === reserva.referral_code);
+                            
+                            if (refCode) {
+                                const newCompletedOrders = (refCode.completed_orders || 0) + 1;
+                                const newTotalUses = (refCode.total_uses || 0) + 1;
+                                
+                                // Calcular si se alcanzó un hito
+                                const threshold = refCode.reward_threshold || 10;
+                                const previousRewards = Math.floor((refCode.completed_orders || 0) / threshold);
+                                const newRewards = Math.floor(newCompletedOrders / threshold);
+                                
+                                await base44.asServiceRole.entities.ReferralCode.update(refCode.id, {
+                                    total_uses: newTotalUses,
+                                    completed_orders: newCompletedOrders,
+                                    rewards_earned: newRewards
+                                });
+                                console.log(`${logPrefix} ✅ ReferralCode actualizado: ${newCompletedOrders} pedidos completados`);
+
+                                // Si se alcanzó un nuevo hito, crear recompensa
+                                if (newRewards > previousRewards) {
+                                    console.log(`${logPrefix} 🎉 ¡Nuevo hito alcanzado! ${newCompletedOrders} referidos`);
+                                    
+                                    await base44.asServiceRole.entities.ReferralReward.create({
+                                        code: refCode.code,
+                                        partner_name: refCode.partner_name,
+                                        reward_type: 'menu_gratis',
+                                        trigger_count: newCompletedOrders,
+                                        delivered: false
+                                    });
+                                    console.log(`${logPrefix} ✅ ReferralReward creado`);
+
+                                    // Enviar notificación al partner
+                                    if (refCode.partner_email) {
+                                        try {
+                                            await base44.asServiceRole.integrations.Core.SendEmail({
+                                                to: refCode.partner_email,
+                                                subject: `🎉 ¡Hito alcanzado! ${newCompletedOrders} referidos en PlatPal`,
+                                                body: `¡Felicidades ${refCode.partner_name}!\n\nHas alcanzado ${newCompletedOrders} referidos con tu código ${refCode.code}.\n\n🎁 Has ganado ${newRewards} menú(s) gratis.\n\nContacta con PlatPal para canjear tu recompensa.\n\n¡Gracias por colaborar con nosotros!`
+                                            });
+                                            console.log(`${logPrefix} ✅ Email de hito enviado a ${refCode.partner_email}`);
+                                        } catch (emailErr) {
+                                            console.error(`${logPrefix} ⚠️ Error enviando email de hito:`, emailErr.message);
+                                        }
+                                    }
+                                }
+                            }
+                        } catch (refError) {
+                            console.error(`${logPrefix} ⚠️ Error procesando referido:`, refError.message);
+                        }
+                    }
 
                     // Enviar emails de confirmación después del pago
                     try {
