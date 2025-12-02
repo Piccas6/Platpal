@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import withAuth from "../components/auth/withAuth";
+import ReferralDashboard from "../components/admin/ReferralDashboard";
 import { 
   Shield, 
   Users, 
@@ -24,7 +25,8 @@ import {
   AlertCircle,
   MapPin,
   Phone,
-  Calendar
+  Calendar,
+  Gift
 } from "lucide-react";
 
 function AdminDashboard() {
@@ -313,7 +315,7 @@ function AdminDashboard() {
 
         {/* TABS */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3 h-14 bg-white shadow-lg rounded-2xl p-1">
+          <TabsList className="grid w-full grid-cols-4 h-14 bg-white shadow-lg rounded-2xl p-1">
             <TabsTrigger value="overview" className="rounded-xl data-[state=active]:bg-purple-100 data-[state=active]:text-purple-900 font-semibold">
               <BarChart3 className="w-4 h-4 mr-2" />
               Resumen
@@ -328,6 +330,10 @@ function AdminDashboard() {
             <TabsTrigger value="usuarios" className="rounded-xl data-[state=active]:bg-blue-100 data-[state=active]:text-blue-900 font-semibold">
               <Users className="w-4 h-4 mr-2" />
               Usuarios
+            </TabsTrigger>
+            <TabsTrigger value="referidos" className="rounded-xl data-[state=active]:bg-indigo-100 data-[state=active]:text-indigo-900 font-semibold">
+              <Gift className="w-4 h-4 mr-2" />
+              Referidos
             </TabsTrigger>
           </TabsList>
 
@@ -650,10 +656,15 @@ function AdminDashboard() {
                 <p className="text-center text-sm text-gray-600">
                   Mostrando {filteredUsers.length} de {users.length} usuarios
                 </p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                </CardContent>
+                </Card>
+                </TabsContent>
+
+                {/* TAB 4: REFERIDOS */}
+                <TabsContent value="referidos" className="mt-6">
+                <ReferralDashboard />
+                </TabsContent>
+                </Tabs>
       </div>
     </div>
   );
