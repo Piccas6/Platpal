@@ -364,14 +364,16 @@ export default function Layout({ children, currentPageName }) {
                 </div>
                 <h2 className="text-lg font-bold text-gray-900">PlatPal</h2>
               </div>
-              <div className="flex items-center gap-3">
-                <SidebarTrigger className="!w-10 !h-10 !bg-gradient-to-br !from-emerald-500 !to-emerald-600 !rounded-2xl !shadow-lg hover:!shadow-xl !transition-all !duration-300 !flex !items-center !justify-center group hover:!scale-105 !text-white !border-none" />
-              </div>
             </div>
           </header>
 
           <div className="flex-1 overflow-auto">
             {React.cloneElement(children, { testRole: testRole, user: currentUser, isLoggedIn: isLoggedIn })}
+          </div>
+
+          {/* Botón flotante inferior izquierdo para móviles */}
+          <div className="md:hidden fixed bottom-6 left-6 z-50">
+            <SidebarTrigger className="!w-14 !h-14 !bg-gradient-to-br !from-emerald-500 !to-emerald-600 !rounded-full !shadow-2xl hover:!shadow-emerald-500/50 !transition-all !duration-300 !flex !items-center !justify-center hover:!scale-110 !text-white !border-none" />
           </div>
         </main>
       </div>
