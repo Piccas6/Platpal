@@ -13,7 +13,9 @@ export default function NotificationManager({ currentUser }) {
     nuevos_menus: true,
     ofertas_especiales: true,
     recordatorios_recogida: true,
-    comunidad: false
+    comunidad: false,
+    ultimas_unidades: true,
+    cafeterias_favoritas_nuevos_menus: true
   });
 
   useEffect(() => {
@@ -194,7 +196,37 @@ export default function NotificationManager({ currentUser }) {
                     onCheckedChange={(checked) => updatePreference('comunidad', checked)}
                   />
                 </div>
+
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="ultimas_unidades" className="flex-1">
+                    <div className="font-medium">🔥 Últimas unidades</div>
+                    <div className="text-xs text-gray-500">Aviso cuando quedan pocas unidades de menús populares</div>
+                  </Label>
+                  <Switch
+                    id="ultimas_unidades"
+                    checked={preferences.ultimas_unidades}
+                    onCheckedChange={(checked) => updatePreference('ultimas_unidades', checked)}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="cafeterias_favoritas_nuevos_menus" className="flex-1">
+                    <div className="font-medium">⭐ Cafeterías favoritas</div>
+                    <div className="text-xs text-gray-500">Aviso cuando tus cafeterías favoritas publican menús nuevos</div>
+                  </Label>
+                  <Switch
+                    id="cafeterias_favoritas_nuevos_menus"
+                    checked={preferences.cafeterias_favoritas_nuevos_menus}
+                    onCheckedChange={(checked) => updatePreference('cafeterias_favoritas_nuevos_menus', checked)}
+                  />
+                </div>
               </div>
+            </div>
+
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-xl">
+              <p className="text-xs text-blue-800">
+                💡 <strong>Recordatorio automático:</strong> Te avisaremos 30 minutos antes de la hora límite de recogida de tus reservas activas.
+              </p>
             </div>
           </div>
         )}
