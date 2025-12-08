@@ -420,8 +420,8 @@ export default function Home() {
                 </div>
               </div>
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        </div>
       </section>
 
       {/* How it Works */}
