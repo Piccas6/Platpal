@@ -54,13 +54,15 @@ const adminNav = [
 ];
 
 function MobileMenuToggle() {
-  const { open, setOpen } = useSidebar();
+  const { open, setOpen, isMobile } = useSidebar();
+  
+  if (!isMobile) return null;
   
   return (
-    <div className="md:hidden fixed bottom-6 left-6 z-50">
+    <div className="fixed bottom-6 left-6 z-50">
       <button 
         onClick={() => setOpen(!open)}
-        className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full shadow-2xl hover:shadow-emerald-500/50 transition-all duration-300 flex items-center justify-center hover:scale-110 text-white border-none"
+        className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full shadow-2xl hover:shadow-emerald-500/50 transition-all duration-300 flex items-center justify-center hover:scale-110 text-white border-none active:scale-95"
       >
         <MenuToggleIcon open={open} className="w-8 h-8" duration={400} />
       </button>

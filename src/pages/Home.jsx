@@ -278,9 +278,9 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white w-full">
       {/* Hero Section */}
-      <section className="relative min-h-[85vh] md:min-h-[90vh] flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-[85vh] md:min-h-[90vh] w-full flex items-center justify-center overflow-hidden">
         <AuroraBackground className="absolute inset-0" showRadialGradient={true} />
 
         <motion.div 
