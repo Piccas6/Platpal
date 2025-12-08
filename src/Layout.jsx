@@ -3,6 +3,8 @@ import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Home, MapPin, UtensilsCrossed, HelpCircle, User, ChefHat, Target, Settings, UserCheck, BarChart3, Gift, Plus, Building2, Download, FileText } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { NotificationProvider } from "@/components/notifications/NotificationContext";
+import NotificationBell from "@/components/notifications/NotificationBell";
 import {
   Sidebar,
   SidebarContent,
@@ -152,7 +154,8 @@ export default function Layout({ children, currentPageName }) {
   const effectiveRole = testRole || currentUser?.app_role || 'user';
 
   return (
-    <SidebarProvider>
+    <NotificationProvider>
+      <SidebarProvider>
       <style>{`
           :root {
             --primary-green: #10B981; --primary-green-hover: #059669;
@@ -365,6 +368,7 @@ export default function Layout({ children, currentPageName }) {
                 </div>
                 <h2 className="text-lg font-bold text-gray-900">PlatPal</h2>
               </div>
+              {isLoggedIn && <NotificationBell />}
             </div>
           </header>
 
