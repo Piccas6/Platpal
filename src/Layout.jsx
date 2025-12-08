@@ -6,7 +6,6 @@ import { base44 } from "@/api/base44Client";
 import { NotificationProvider } from "@/components/notifications/NotificationContext";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import NotificationTriggers from "@/components/notifications/NotificationTriggers";
-import { MenuToggleIcon } from "@/components/ui/menu-toggle-icon";
 import {
   Sidebar,
   SidebarContent,
@@ -19,7 +18,6 @@ import {
   SidebarProvider,
   SidebarTrigger,
   SidebarFooter,
-  useSidebar,
 } from "@/components/ui/sidebar";
 import {
   Select,
@@ -52,23 +50,6 @@ const adminNav = [
     { title: "Gestionar Cafeterías", url: createPageUrl("GestionarCafeterias"), icon: Building2 },
     { title: "Crear Cafetería", url: createPageUrl("CrearCafeteria"), icon: Plus }
 ];
-
-function MobileMenuToggle() {
-  const { open, setOpen, isMobile } = useSidebar();
-  
-  if (!isMobile) return null;
-  
-  return (
-    <div className="fixed bottom-6 left-6 z-50">
-      <button 
-        onClick={() => setOpen(!open)}
-        className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full shadow-2xl hover:shadow-emerald-500/50 transition-all duration-300 flex items-center justify-center hover:scale-110 text-white border-none active:scale-95"
-      >
-        <MenuToggleIcon open={open} className="w-8 h-8" duration={400} />
-      </button>
-    </div>
-  );
-}
 
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
@@ -393,12 +374,14 @@ export default function Layout({ children, currentPageName }) {
             </div>
           </header>
 
-          <div className="flex-1 overflow-auto pb-24 md:pb-0">
+          <div className="flex-1 overflow-auto">
             {React.cloneElement(children, { testRole: testRole, user: currentUser, isLoggedIn: isLoggedIn })}
           </div>
 
           {/* Botón flotante inferior izquierdo para móviles */}
-          <MobileMenuToggle />
+          <div className="md:hidden fixed bottom-6 left-6 z-50">
+            <SidebarTrigger className="!w-14 !h-14 !bg-gradient-to-br !from-emerald-500 !to-emerald-600 !rounded-full !shadow-2xl hover:!shadow-emerald-500/50 !transition-all !duration-300 !flex !items-center !justify-center hover:!scale-110 !text-white !border-none" />
+          </div>
         </main>
       </div>
       </SidebarProvider>
