@@ -5,6 +5,7 @@ import { Home, MapPin, UtensilsCrossed, HelpCircle, User, ChefHat, Target, Setti
 import { base44 } from "@/api/base44Client";
 import { NotificationProvider } from "@/components/notifications/NotificationContext";
 import NotificationBell from "@/components/notifications/NotificationBell";
+import NotificationTriggers from "@/components/notifications/NotificationTriggers";
 import {
   Sidebar,
   SidebarContent,
@@ -155,6 +156,7 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <NotificationProvider>
+      <NotificationTriggers user={currentUser} />
       <SidebarProvider>
       <style>{`
           :root {
@@ -383,6 +385,5 @@ export default function Layout({ children, currentPageName }) {
         </main>
       </div>
     </SidebarProvider>
-  </NotificationProvider>
   );
 }
