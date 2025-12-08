@@ -11,13 +11,13 @@ import {
   Wallet,
   Sparkles,
   PartyPopper,
-  Loader2,
   Users,
   Leaf,
   ChevronRight,
   LogIn,
   Lock
 } from "lucide-react";
+import { OrbitalLoader } from "@/components/ui/orbital-loader";
 import { AuroraBackground } from "@/components/ui/aurora-background";
 import { motion } from "framer-motion";
 
@@ -366,7 +366,7 @@ export default function Home() {
                     <UtensilsCrossed className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                   </div>
                   {isLoading ? (
-                    <Loader2 className="w-8 h-8 animate-spin text-emerald-600 mx-auto" />
+                    <OrbitalLoader className="w-8 h-8" />
                   ) : (
                     <>
                       <div className="text-3xl sm:text-4xl md:text-5xl font-black text-gray-900 mb-2">
@@ -386,7 +386,7 @@ export default function Home() {
                     <Users className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                   </div>
                   {isLoading ? (
-                    <Loader2 className="w-8 h-8 animate-spin text-orange-600 mx-auto" />
+                    <OrbitalLoader className="w-8 h-8" />
                   ) : (
                     <>
                       <div className="text-3xl sm:text-4xl md:text-5xl font-black text-gray-900 mb-2">
@@ -406,7 +406,7 @@ export default function Home() {
                     <Leaf className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                   </div>
                   {isLoading ? (
-                    <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto" />
+                    <OrbitalLoader className="w-8 h-8" />
                   ) : (
                     <>
                       <div className="text-3xl sm:text-4xl md:text-5xl font-black text-gray-900 mb-2">
@@ -485,7 +485,7 @@ export default function Home() {
                   <Card key={i} className="rounded-3xl shadow-xl overflow-hidden border-2 border-gray-100">
                     <CardContent className="p-0">
                       <div className="aspect-[4/3] bg-gray-100 flex items-center justify-center">
-                        <Loader2 className="w-8 h-8 text-gray-300 animate-spin" />
+                        <OrbitalLoader />
                       </div>
                     </CardContent>
                   </Card>

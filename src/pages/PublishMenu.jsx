@@ -7,7 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, ChefHat, Calendar, Clock, Euro, Image as ImageIcon, Sparkles, Plus, Check, ArrowLeft, X, RefreshCw } from "lucide-react";
+import { ChefHat, Calendar, Clock, Euro, Image as ImageIcon, Sparkles, Plus, Check, ArrowLeft, X, RefreshCw } from "lucide-react";
+import { OrbitalLoader } from "@/components/ui/orbital-loader";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import withAuth from "../components/auth/withAuth";
@@ -521,10 +522,7 @@ function PublishMenu() {
                 </div>
               ) : isGenerating ? (
                 <div className="h-64 bg-gray-100 rounded-xl flex items-center justify-center">
-                  <div className="text-center">
-                    <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600">Generando imágenes con IA...</p>
-                  </div>
+                  <OrbitalLoader message="Generando imágenes con IA..." />
                 </div>
               ) : (
                 <div className="h-64 bg-gray-100 rounded-xl flex items-center justify-center border-2 border-dashed">
@@ -784,7 +782,7 @@ function PublishMenu() {
               className="flex-1 bg-gradient-to-r from-emerald-600 to-green-600 py-6 text-lg font-bold"
             >
               {isPublishing ? (
-                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                <OrbitalLoader className="w-5 h-5 mr-2" />
               ) : (
                 <Plus className="w-5 h-5 mr-2" />
               )}

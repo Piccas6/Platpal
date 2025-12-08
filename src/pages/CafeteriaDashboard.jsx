@@ -15,11 +15,11 @@ import {
   Edit,
   Trash2,
   QrCode,
-  Loader2,
   Building2,
   Sparkles,
   X
 } from "lucide-react";
+import { OrbitalLoader } from "@/components/ui/orbital-loader";
 import {
   Select,
   SelectContent,
@@ -347,10 +347,7 @@ export default function CafeteriaDashboard() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-amber-50 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-emerald-600 mx-auto mb-4" />
-          <p className="text-lg text-gray-700">Cargando panel...</p>
-        </div>
+        <OrbitalLoader message="Cargando panel..." />
       </div>
     );
   }
@@ -512,7 +509,7 @@ export default function CafeteriaDashboard() {
                           </div>
                         ) : (
                           <Button type="button" onClick={() => handleGenerateImage(1)} disabled={isGeneratingImage1} variant="outline" size="sm" className="w-full">
-                            {isGeneratingImage1 ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
+                            {isGeneratingImage1 ? <OrbitalLoader className="w-4 h-4" /> : <Sparkles className="w-4 h-4 mr-2" />}
                             Generar imagen
                           </Button>
                         )}
@@ -528,7 +525,7 @@ export default function CafeteriaDashboard() {
                           </div>
                         ) : (
                           <Button type="button" onClick={() => handleGenerateImage(2)} disabled={isGeneratingImage2} variant="outline" size="sm" className="w-full">
-                            {isGeneratingImage2 ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
+                            {isGeneratingImage2 ? <OrbitalLoader className="w-4 h-4" /> : <Sparkles className="w-4 h-4 mr-2" />}
                             Generar imagen
                           </Button>
                         )}
@@ -555,7 +552,7 @@ export default function CafeteriaDashboard() {
                         </div>
                       ) : (
                         <Button type="button" onClick={() => handleGenerateImage(1)} disabled={isGeneratingImage1 || !publishFormData.plato_principal} variant="outline" size="sm" className="w-full">
-                          {isGeneratingImage1 ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
+                          {isGeneratingImage1 ? <OrbitalLoader className="w-4 h-4 mr-2" /> : <Sparkles className="w-4 h-4 mr-2" />}
                           Generar imagen
                         </Button>
                       )}
@@ -579,7 +576,7 @@ export default function CafeteriaDashboard() {
                         </div>
                       ) : (
                         <Button type="button" onClick={() => handleGenerateImage(2)} disabled={isGeneratingImage2 || !publishFormData.plato_secundario} variant="outline" size="sm" className="w-full">
-                          {isGeneratingImage2 ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
+                          {isGeneratingImage2 ? <OrbitalLoader className="w-4 h-4 mr-2" /> : <Sparkles className="w-4 h-4 mr-2" />}
                           Generar imagen
                         </Button>
                       )}
@@ -603,7 +600,7 @@ export default function CafeteriaDashboard() {
                 <div className="flex gap-3 pt-2">
                   <Button type="button" variant="outline" onClick={() => setShowPublishModal(false)} className="flex-1">Cancelar</Button>
                   <Button type="submit" disabled={isPublishing} className="flex-1 bg-emerald-600">
-                    {isPublishing ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Publicar'}
+                    {isPublishing ? <OrbitalLoader className="w-4 h-4" /> : 'Publicar'}
                   </Button>
                 </div>
               </form>
