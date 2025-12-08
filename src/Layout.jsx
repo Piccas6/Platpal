@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Home, MapPin, UtensilsCrossed, HelpCircle, User, ChefHat, Target, Settings, UserCheck, BarChart3, Gift, Plus, Building2, Download } from "lucide-react";
+import { Home, MapPin, UtensilsCrossed, HelpCircle, User, ChefHat, Target, Settings, UserCheck, BarChart3, Gift, Plus, Building2, Download, FileText } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import {
   Sidebar,
@@ -34,7 +34,8 @@ const navigationItems = [
 ];
 
 const analyticsNav = [
-    { title: "Analíticas", url: createPageUrl("AnalyticsDashboard"), icon: BarChart3 }
+    { title: "Analíticas", url: createPageUrl("AnalyticsDashboard"), icon: BarChart3 },
+    { title: "Informes", url: createPageUrl("Reports"), icon: FileText }
 ];
 
 const managerNav = [
