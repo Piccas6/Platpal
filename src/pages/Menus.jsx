@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { TagsSelector } from "@/components/ui/tags-selector";
 import RecommendedMenus from "../components/menus/RecommendedMenus";
 import SurveyCard from "../components/surveys/SurveyCard";
 import SurveyManager from "../components/surveys/SurveyManager";
@@ -35,6 +36,14 @@ export default function Menus() {
     sin_gluten: false,
     solo_favoritos: false
   });
+
+  const [selectedDietTags, setSelectedDietTags] = useState([]);
+
+  const dietaryTags = [
+    { id: "vegetariano", label: "Vegetariano", icon: "🥗" },
+    { id: "vegano", label: "Vegano", icon: "🌱" },
+    { id: "sin_gluten", label: "Sin Gluten", icon: "🌾" },
+  ];
 
   const loadMenus = useCallback(async () => {
     setIsLoading(true);
@@ -105,13 +114,13 @@ export default function Menus() {
         filtered = filtered.filter(m => m.tipo_cocina === filters.tipo_cocina);
     }
     
-    if (filters.es_vegetariano) {
+    if (selectedDietTags.includes("vegetariano")) {
         filtered = filtered.filter(m => m.es_vegetariano === true);
     }
-    if (filters.es_vegano) {
+    if (selectedDietTags.includes("vegano")) {
         filtered = filtered.filter(m => m.es_vegano === true);
     }
-    if (filters.sin_gluten) {
+    if (selectedDietTags.includes("sin_gluten")) {
         filtered = filtered.filter(m => m.sin_gluten === true);
     }
     
@@ -120,7 +129,7 @@ export default function Menus() {
     }
     
     return filtered;
-  }, [filters, currentUser]);
+  }, [filters, currentUser, selectedDietTags]);
 
   useEffect(() => {
     const now = new Date();
@@ -446,72 +455,53 @@ export default function Menus() {
         <Card className="mb-6 border-2">
             <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-4">
-                    <Filter className="w-5 h-5 text-gray-600" />
+                    <Filter className="w-5 h-5 text-emerald-600" />
                     <h3 className="font-semibold text-gray-900">Filtrar Menús</h3>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <Label className="text-sm mb-2 block">Tipo de Cocina</Label>
                         <Select 
                             value={filters.tipo_cocina} 
                             onValueChange={(value) => setFilters(prev => ({...prev, tipo_cocina: value}))}
                         >
-                            <SelectTrigger>
+                            <SelectTrigger className="border-2 border-gray-200 hover:border-emerald-300">
                                 <SelectValue placeholder="Selecciona..." />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all">Todas</SelectItem>
-                                <SelectItem value="mediterranea">Mediterránea</SelectItem>
-                                <SelectItem value="italiana">Italiana</SelectItem>
-                                <SelectItem value="asiatica">Asiática</SelectItem>
-                                <SelectItem value="mexicana">Mexicana</SelectItem>
-                                <SelectItem value="vegetariana">Vegetariana</SelectItem>
-                                <SelectItem value="casera">Casera</SelectItem>
-                                <SelectItem value="internacional">Internacional</SelectItem>
-                                <SelectItem value="rapida">Comida Rápida</SelectItem>
-                                <SelectItem value="otra">Otra</SelectItem>
+                                <SelectItem value="mediterranea">🍋 Mediterránea</SelectItem>
+                                <SelectItem value="italiana">🍝 Italiana</SelectItem>
+                                <SelectItem value="asiatica">🍜 Asiática</SelectItem>
+                                <SelectItem value="mexicana">🌮 Mexicana</SelectItem>
+                                <SelectItem value="vegetariana">🥗 Vegetariana</SelectItem>
+                                <SelectItem value="casera">🏠 Casera</SelectItem>
+                                <SelectItem value="internacional">🌍 Internacional</SelectItem>
+                                <SelectItem value="rapida">⚡ Comida Rápida</SelectItem>
+                                <SelectItem value="otra">✨ Otra</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
-                    
-                    <div className="space-y-3">
-                        <Label className="text-sm block">Opciones Dietéticas</Label>
-                        <div className="flex flex-wrap gap-2">
-                            <Badge 
-                                variant={filters.es_vegetariano ? "default" : "outline"}
-                                className="cursor-pointer"
-                                onClick={() => setFilters(prev => ({...prev, es_vegetariano: !prev.es_vegetariano}))}
-                            >
-                                🥗 Vegetariano
-                            </Badge>
-                            <Badge 
-                                variant={filters.es_vegano ? "default" : "outline"}
-                                className="cursor-pointer"
-                                onClick={() => setFilters(prev => ({...prev, es_vegano: !prev.es_vegano}))}
-                            >
-                                🌱 Vegano
-                            </Badge>
-                            <Badge 
-                                variant={filters.sin_gluten ? "default" : "outline"}
-                                className="cursor-pointer"
-                                onClick={() => setFilters(prev => ({...prev, sin_gluten: !prev.sin_gluten}))}
-                            >
-                                🌾 Sin Gluten
-                            </Badge>
-                        </div>
+
+                    <div>
+                        <TagsSelector
+                          tags={dietaryTags}
+                          selectedTags={selectedDietTags}
+                          onTagsChange={setSelectedDietTags}
+                          title="Opciones Dietéticas"
+                        />
                     </div>
-                    
-                    <div className="space-y-3">
-                        <Label className="text-sm block">Otros</Label>
-                        <Badge 
-                            variant={filters.solo_favoritos ? "default" : "outline"}
-                            className="cursor-pointer"
-                            onClick={() => setFilters(prev => ({...prev, solo_favoritos: !prev.solo_favoritos}))}
-                        >
-                            {filters.solo_favoritos ? <Star className="w-3 h-3 mr-1 fill-current" /> : <StarOff className="w-3 h-3 mr-1" />}
-                            Solo Favoritos
-                        </Badge>
-                    </div>
+                </div>
+
+                <div className="mt-4 pt-4 border-t-2 border-gray-100">
+                    <Badge 
+                        variant={filters.solo_favoritos ? "default" : "outline"}
+                        className="cursor-pointer hover:scale-105 transition-transform"
+                        onClick={() => setFilters(prev => ({...prev, solo_favoritos: !prev.solo_favoritos}))}
+                    >
+                        {filters.solo_favoritos ? <Star className="w-3 h-3 mr-1 fill-current" /> : <StarOff className="w-3 h-3 mr-1" />}
+                        Solo Cafeterías Favoritas
+                    </Badge>
                 </div>
             </CardContent>
         </Card>

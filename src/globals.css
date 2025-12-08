@@ -1,3 +1,4 @@
+css
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -62,4 +63,13 @@
   to {
     background-position: 350% 50%, 350% 50%;
   }
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
