@@ -384,6 +384,7 @@ export default function Layout({ children, currentPageName }) {
           </div>
         </main>
       </div>
-    </SidebarProvider>
+      </SidebarProvider>
+    </NotificationProvider>
   );
 }
