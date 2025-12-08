@@ -391,7 +391,7 @@ export default function Layout({ children, currentPageName }) {
             </div>
           </header>
 
-          <div className="flex-1 overflow-auto">
+          <div className="flex-1 overflow-auto pb-24 md:pb-0">
             {React.cloneElement(children, { testRole: testRole, user: currentUser, isLoggedIn: isLoggedIn })}
           </div>
 
