@@ -3,7 +3,6 @@ import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Home, MapPin, UtensilsCrossed, HelpCircle, User, ChefHat, Target, Settings, UserCheck, BarChart3, Gift, Plus, Building2, Download } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { Helmet } from "react-helmet-async";
 import {
   Sidebar,
   SidebarContent,
@@ -153,14 +152,6 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <SidebarProvider>
-      <Helmet>
-        <meta httpEquiv="X-Frame-Options" content="DENY" />
-        <meta httpEquiv="Content-Security-Policy" content="frame-ancestors 'none'" />
-        <meta httpEquiv="X-Content-Type-Options" content="nosniff" />
-        <meta httpEquiv="X-XSS-Protection" content="1; mode=block" />
-        <meta httpEquiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
-      </Helmet>
       <style>{`
           :root {
             --primary-green: #10B981; --primary-green-hover: #059669;
