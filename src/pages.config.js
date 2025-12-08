@@ -33,6 +33,7 @@ import RegistroCafeteria from './pages/RegistroCafeteria';
 import UploadDocumentsCafeteria from './pages/UploadDocumentsCafeteria';
 import SEOBlog from './pages/SEOBlog';
 import Reports from './pages/Reports';
+import NotFound from './pages/NotFound';
 import __Layout from './Layout.jsx';
 
 
@@ -72,6 +73,7 @@ export const PAGES = {
     "UploadDocumentsCafeteria": UploadDocumentsCafeteria,
     "SEOBlog": SEOBlog,
     "Reports": Reports,
+    "NotFound": NotFound,
 }
 
 export const pagesConfig = {
