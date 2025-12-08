@@ -27,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { DropdownMenuCustom } from "@/components/ui/dropdown-menu-custom";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import {
@@ -393,24 +394,29 @@ export default function CafeteriaDashboard() {
             {availableCafeterias.length > 0 && (
               <div className="mt-4">
                 {availableCafeterias.length > 1 ? (
-                  <Select value={selectedCafeteriaId} onValueChange={handleCafeteriaChange}>
-                    <SelectTrigger className="w-full md:w-96 bg-white border-2 border-emerald-200 hover:border-emerald-300">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableCafeterias.map(cafe => (
-                        <SelectItem key={cafe.id} value={cafe.id}>
-                          <div className="flex items-center gap-3 py-1">
-                            <Building2 className="w-5 h-5 text-emerald-600" />
-                            <div>
-                              <p className="font-semibold">{cafe.nombre}</p>
-                              <p className="text-xs text-gray-500">Campus {cafe.campus}</p>
-                            </div>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <DropdownMenuCustom
+                    className="w-full md:w-96"
+                    options={availableCafeterias.map(cafe => ({
+                      value: cafe.id,
+                      label: cafe.nombre,
+                      onClick: () => handleCafeteriaChange(cafe.id),
+                      Icon: <Building2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />,
+                      content: (
+                        <div>
+                          <p className="font-semibold">{cafe.nombre}</p>
+                          <p className="text-xs text-gray-500">Campus {cafe.campus}</p>
+                        </div>
+                      )
+                    }))}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Building2 className="w-5 h-5 text-emerald-600" />
+                      <div>
+                        <p className="font-semibold">{selectedCafeteriaData?.nombre}</p>
+                        <p className="text-xs text-gray-500">Campus {selectedCafeteriaData?.campus}</p>
+                      </div>
+                    </div>
+                  </DropdownMenuCustom>
                 ) : (
                   <div className="inline-flex items-center gap-3 px-4 py-3 bg-emerald-50 border-2 border-emerald-200 rounded-xl">
                     <Building2 className="w-6 h-6 text-emerald-600" />
