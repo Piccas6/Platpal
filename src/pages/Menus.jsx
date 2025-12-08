@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Filter, Star, StarOff, Loader2, Clock } from "lucide-react";
+import { ArrowLeft, Filter, Star, StarOff, Clock } from "lucide-react";
+import { OrbitalLoader } from "@/components/ui/orbital-loader";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import MenuCard from "../components/menus/MenuCard";
@@ -509,7 +510,7 @@ export default function Menus() {
         {/* Lista de menús */}
         {isLoading ? (
           <div className="flex items-center justify-center h-64">
-            <Loader2 className="w-12 h-12 animate-spin text-emerald-600" />
+            <OrbitalLoader message="Cargando menús..." />
           </div>
         ) : menus.length > 0 ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
