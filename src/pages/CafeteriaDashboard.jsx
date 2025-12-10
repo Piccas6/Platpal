@@ -273,7 +273,35 @@ export default function CafeteriaDashboard() {
         imagen_url_secundaria: generatedImageUrl2 || undefined
       };
 
-      await base44.entities.Menu.create(menuData);
+      const newMenu = await base44.entities.Menu.create(menuData);
+
+      // Enviar notificación por email
+      try {
+        await base44.integrations.Core.SendEmail({
+          to: 'piccas.entrepreneurship@gmail.com',
+          subject: `🍽️ Nuevo Menú Publicado - ${selectedCafeteriaData.nombre}`,
+          body: `
+✅ Se ha publicado un nuevo menú:
+
+📍 Cafetería: ${selectedCafeteriaData.nombre}
+🏫 Campus: ${selectedCafeteriaData.campus}
+📅 Fecha: ${menuData.fecha}
+🍽️ Primer Plato: ${menuData.plato_principal}
+🍽️ Segundo Plato: ${menuData.plato_secundario}
+📦 Stock: ${menuData.stock_total} unidades
+💰 Precio: €${menuData.precio_descuento}
+${menuData.es_sorpresa ? '🎁 Menú Sorpresa' : ''}
+
+⏰ Reservas: ${menuData.hora_inicio_reserva} - ${menuData.hora_limite_reserva}
+⏰ Recogida: ${menuData.hora_inicio_recogida} - ${menuData.hora_limite}
+
+---
+PlatPal - Menús Sostenibles
+          `.trim()
+        });
+      } catch (emailError) {
+        console.error('Error enviando email de notificación:', emailError);
+      }
 
       setPublishFormData({
         plato_principal: "",

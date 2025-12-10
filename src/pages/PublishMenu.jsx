@@ -320,6 +320,34 @@ function PublishMenu() {
           await base44.entities.Menu.create(menuData);
         }
 
+        // Enviar email de notificación
+        try {
+          await base44.integrations.Core.SendEmail({
+            to: 'piccas.entrepreneurship@gmail.com',
+            subject: `🍽️ Menú Recurrente Publicado - ${cafe.nombre}`,
+            body: `
+✅ Se ha publicado un menú recurrente:
+
+📍 Cafetería: ${cafe.nombre}
+🏫 Campus: ${cafe.campus}
+📅 Duración: ${formData.duracion_recurrencia_dias} días
+📆 Días: ${formData.dias_semana.map(d => diasSemana.find(ds => ds.id === d)?.label).join(', ')}
+🍽️ Primer Plato: ${menuBase.plato_principal}
+🍽️ Segundo Plato: ${menuBase.plato_secundario}
+📦 Stock diario: ${menuBase.stock_total} unidades
+💰 Precio: €${menuBase.precio_descuento}
+${menuBase.es_sorpresa ? '🎁 Menú Sorpresa' : ''}
+
+📊 Total menús creados: ${menusToCreate.length + 1}
+
+---
+PlatPal - Menús Sostenibles
+            `.trim()
+          });
+        } catch (emailError) {
+          console.error('Error enviando email de notificación:', emailError);
+        }
+
         alert(`✅ Menú recurrente creado (1 inicial + ${menusToCreate.length} programados para ${formData.duracion_recurrencia_dias} días)`);
       } else {
         const menu = {
@@ -329,6 +357,35 @@ function PublishMenu() {
         };
 
         await base44.entities.Menu.create(menu);
+
+        // Enviar email de notificación
+        try {
+          await base44.integrations.Core.SendEmail({
+            to: 'piccas.entrepreneurship@gmail.com',
+            subject: `🍽️ Nuevo Menú Publicado - ${cafe.nombre}`,
+            body: `
+✅ Se ha publicado un nuevo menú:
+
+📍 Cafetería: ${cafe.nombre}
+🏫 Campus: ${cafe.campus}
+📅 Fecha: ${formData.fecha}
+🍽️ Primer Plato: ${menuBase.plato_principal}
+🍽️ Segundo Plato: ${menuBase.plato_secundario}
+📦 Stock: ${menuBase.stock_total} unidades
+💰 Precio: €${menuBase.precio_descuento}
+${menuBase.es_sorpresa ? '🎁 Menú Sorpresa' : ''}
+
+⏰ Reservas: ${formData.hora_inicio_reserva} - ${formData.hora_limite_reserva}
+⏰ Recogida: ${formData.hora_inicio_recogida} - ${formData.hora_limite}
+
+---
+PlatPal - Menús Sostenibles
+            `.trim()
+          });
+        } catch (emailError) {
+          console.error('Error enviando email de notificación:', emailError);
+        }
+
         alert(`✅ Menú publicado en ${cafe.nombre}`);
       }
 
