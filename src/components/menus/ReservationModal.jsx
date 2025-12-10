@@ -13,7 +13,6 @@ import {
 import { 
   Euro, 
   Package, 
-  Loader2, 
   Leaf, 
   CreditCard,
   Gift,
@@ -21,6 +20,7 @@ import {
   Check,
   X
 } from "lucide-react";
+import { OrbitalLoader } from "@/components/ui/orbital-loader";
 import { Input } from "@/components/ui/input";
 import { base44 } from "@/api/base44Client";
 
@@ -261,7 +261,7 @@ export default function ReservationModal({
                       className="bg-emerald-600 hover:bg-emerald-700"
                     >
                       {isValidatingCode ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <OrbitalLoader className="w-4 h-4" />
                       ) : (
                         "Aplicar"
                       )}
@@ -342,7 +342,7 @@ export default function ReservationModal({
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <OrbitalLoader className="w-4 h-4 mr-2" />
                   Procesando...
                 </>
               ) : usarBono ? (

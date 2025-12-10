@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Download, FileText, TrendingUp, Calendar, Filter, Sparkles, BarChart3 } from "lucide-react";
+import { Download, FileText, TrendingUp, Calendar, Filter, Sparkles, BarChart3 } from "lucide-react";
+import { OrbitalLoader } from "@/components/ui/orbital-loader";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import ReportVisualization from "../components/reports/ReportVisualization";
@@ -136,7 +137,7 @@ export default function Reports() {
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
+        <OrbitalLoader message="Cargando..." />
       </div>
     );
   }
@@ -272,7 +273,7 @@ export default function Reports() {
               >
                 {isGenerating ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    <OrbitalLoader className="w-4 h-4 mr-2" />
                     Generando...
                   </>
                 ) : (
@@ -304,11 +305,8 @@ export default function Reports() {
             {isGenerating && (
               <Card className="border-2">
                 <CardContent className="p-12 text-center">
-                  <Loader2 className="w-16 h-16 text-emerald-600 mx-auto mb-4 animate-spin" />
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">
-                    Generando informe inteligente...
-                  </h3>
-                  <p className="text-gray-600">
+                  <OrbitalLoader message="Generando informe inteligente..." />
+                  <p className="text-gray-600 mt-4">
                     Analizando datos y generando insights con IA
                   </p>
                 </CardContent>
