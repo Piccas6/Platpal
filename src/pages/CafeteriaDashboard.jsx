@@ -635,7 +635,7 @@ PlatPal - Menús Sostenibles
             </DialogContent>
           </Dialog>
 
-          <Link to={createPageUrl("PublishMenu")}>
+          <Link to={createPageUrl("PublishMenu")} state={{ selectedCafeteria: selectedCafeteriaData }}>
             <Button variant="outline">
               <Plus className="w-4 h-4 mr-2" />
               Formulario Completo

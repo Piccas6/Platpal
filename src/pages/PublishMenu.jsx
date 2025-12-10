@@ -86,7 +86,19 @@ function PublishMenu() {
 
         setCafeterias(userCafeterias);
 
-        if (userCafeterias.length > 0 && !formData.cafeteria_id) {
+        // Si viene de dashboard con cafetería seleccionada, usarla
+        if (location.state?.selectedCafeteria) {
+          const selectedCafe = location.state.selectedCafeteria;
+          setFormData(prev => ({
+            ...prev,
+            cafeteria_id: selectedCafe.id,
+            precio_original: selectedCafe.precio_original_default || 8.5,
+            hora_inicio_reserva: '15:30',
+            hora_limite_reserva: selectedCafe.hora_fin_reserva || '16:30',
+            hora_inicio_recogida: selectedCafe.hora_fin_reserva || '16:30',
+            hora_limite: selectedCafe.hora_fin_recogida || '18:00'
+          }));
+        } else if (userCafeterias.length > 0 && !formData.cafeteria_id) {
           const firstCafe = userCafeterias[0];
           setFormData(prev => ({
             ...prev,
