@@ -224,35 +224,8 @@ export default function CafeteriaDashboard() {
     }
   };
 
-  // Auto-generar imágenes cuando se completen los platos
-  useEffect(() => {
-    const shouldGenerate = publishFormData.es_sorpresa || 
-      (publishFormData.plato_principal && publishFormData.plato_secundario);
-    
-    if (showPublishModal && shouldGenerate && !autoGenerateTriggered && !generatedImageUrl1 && !generatedImageUrl2 && !isGeneratingImage1 && !isGeneratingImage2) {
-      const timer = setTimeout(async () => {
-        setAutoGenerateTriggered(true);
-        
-        if (publishFormData.es_sorpresa) {
-          await handleGenerateImage(1);
-          await handleGenerateImage(2);
-        } else {
-          // Generar ambas imágenes en paralelo
-          handleGenerateImage(1);
-          setTimeout(() => handleGenerateImage(2), 500);
-        }
-      }, 800);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [publishFormData.plato_principal, publishFormData.plato_secundario, publishFormData.es_sorpresa, showPublishModal, autoGenerateTriggered, generatedImageUrl1, generatedImageUrl2, isGeneratingImage1, isGeneratingImage2]);
-
-  // Reset auto-generate flag cuando cambian los platos
-  useEffect(() => {
-    if (publishFormData.plato_principal || publishFormData.plato_secundario || publishFormData.es_sorpresa) {
-      setAutoGenerateTriggered(false);
-    }
-  }, [publishFormData.plato_principal, publishFormData.plato_secundario, publishFormData.es_sorpresa]);
+  // Auto-generación desactivada para evitar problemas de renderizado
+  // Las imágenes se generan solo manualmente
 
   const handleQuickPublish = async (e) => {
     e.preventDefault();
@@ -500,7 +473,13 @@ export default function CafeteriaDashboard() {
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-2">
                         <Label>Primer Plato Sorpresa</Label>
-                        {generatedImageUrl1 ? (
+                        {isGeneratingImage1 ? (
+                          <div className="w-full h-32 bg-gray-100 rounded-xl flex items-center justify-center">
+                            <div className="w-8 h-8 relative">
+                              <div className="absolute inset-0 border-2 border-transparent border-t-emerald-600 rounded-full animate-spin"></div>
+                            </div>
+                          </div>
+                        ) : generatedImageUrl1 ? (
                           <div className="relative">
                             <img src={generatedImageUrl1} alt="Sorpresa 1" className="w-full h-32 object-cover rounded-xl" />
                             <button type="button" onClick={() => setGeneratedImageUrl1('')} className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center">
@@ -508,15 +487,21 @@ export default function CafeteriaDashboard() {
                             </button>
                           </div>
                         ) : (
-                          <Button type="button" onClick={() => handleGenerateImage(1)} disabled={isGeneratingImage1} variant="outline" size="sm" className="w-full">
-                            {isGeneratingImage1 ? <OrbitalLoader className="w-4 h-4" /> : <Sparkles className="w-4 h-4 mr-2" />}
+                          <Button type="button" onClick={() => handleGenerateImage(1)} variant="outline" size="sm" className="w-full">
+                            <Sparkles className="w-4 h-4 mr-2" />
                             Generar imagen
                           </Button>
                         )}
                       </div>
                       <div className="space-y-2">
                         <Label>Segundo Plato Sorpresa</Label>
-                        {generatedImageUrl2 ? (
+                        {isGeneratingImage2 ? (
+                          <div className="w-full h-32 bg-gray-100 rounded-xl flex items-center justify-center">
+                            <div className="w-8 h-8 relative">
+                              <div className="absolute inset-0 border-2 border-transparent border-t-emerald-600 rounded-full animate-spin"></div>
+                            </div>
+                          </div>
+                        ) : generatedImageUrl2 ? (
                           <div className="relative">
                             <img src={generatedImageUrl2} alt="Sorpresa 2" className="w-full h-32 object-cover rounded-xl" />
                             <button type="button" onClick={() => setGeneratedImageUrl2('')} className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center">
@@ -524,8 +509,8 @@ export default function CafeteriaDashboard() {
                             </button>
                           </div>
                         ) : (
-                          <Button type="button" onClick={() => handleGenerateImage(2)} disabled={isGeneratingImage2} variant="outline" size="sm" className="w-full">
-                            {isGeneratingImage2 ? <OrbitalLoader className="w-4 h-4" /> : <Sparkles className="w-4 h-4 mr-2" />}
+                          <Button type="button" onClick={() => handleGenerateImage(2)} variant="outline" size="sm" className="w-full">
+                            <Sparkles className="w-4 h-4 mr-2" />
                             Generar imagen
                           </Button>
                         )}
@@ -543,7 +528,13 @@ export default function CafeteriaDashboard() {
                         required
                       />
                       
-                      {generatedImageUrl1 ? (
+                      {isGeneratingImage1 ? (
+                        <div className="w-full h-32 bg-gray-100 rounded-xl flex items-center justify-center">
+                          <div className="w-8 h-8 relative">
+                            <div className="absolute inset-0 border-2 border-transparent border-t-emerald-600 rounded-full animate-spin"></div>
+                          </div>
+                        </div>
+                      ) : generatedImageUrl1 ? (
                         <div className="relative">
                           <img src={generatedImageUrl1} alt="Primer plato" className="w-full h-32 object-cover rounded-xl border-2" />
                           <button type="button" onClick={() => setGeneratedImageUrl1('')} className="absolute top-2 right-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center">
@@ -551,8 +542,8 @@ export default function CafeteriaDashboard() {
                           </button>
                         </div>
                       ) : (
-                        <Button type="button" onClick={() => handleGenerateImage(1)} disabled={isGeneratingImage1 || !publishFormData.plato_principal} variant="outline" size="sm" className="w-full">
-                          {isGeneratingImage1 ? <OrbitalLoader className="w-4 h-4 mr-2" /> : <Sparkles className="w-4 h-4 mr-2" />}
+                        <Button type="button" onClick={() => handleGenerateImage(1)} disabled={!publishFormData.plato_principal} variant="outline" size="sm" className="w-full">
+                          <Sparkles className="w-4 h-4 mr-2" />
                           Generar imagen
                         </Button>
                       )}
@@ -567,7 +558,13 @@ export default function CafeteriaDashboard() {
                         required
                       />
                       
-                      {generatedImageUrl2 ? (
+                      {isGeneratingImage2 ? (
+                        <div className="w-full h-32 bg-gray-100 rounded-xl flex items-center justify-center">
+                          <div className="w-8 h-8 relative">
+                            <div className="absolute inset-0 border-2 border-transparent border-t-emerald-600 rounded-full animate-spin"></div>
+                          </div>
+                        </div>
+                      ) : generatedImageUrl2 ? (
                         <div className="relative">
                           <img src={generatedImageUrl2} alt="Segundo plato" className="w-full h-32 object-cover rounded-xl border-2" />
                           <button type="button" onClick={() => setGeneratedImageUrl2('')} className="absolute top-2 right-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center">
@@ -575,8 +572,8 @@ export default function CafeteriaDashboard() {
                           </button>
                         </div>
                       ) : (
-                        <Button type="button" onClick={() => handleGenerateImage(2)} disabled={isGeneratingImage2 || !publishFormData.plato_secundario} variant="outline" size="sm" className="w-full">
-                          {isGeneratingImage2 ? <OrbitalLoader className="w-4 h-4 mr-2" /> : <Sparkles className="w-4 h-4 mr-2" />}
+                        <Button type="button" onClick={() => handleGenerateImage(2)} disabled={!publishFormData.plato_secundario} variant="outline" size="sm" className="w-full">
+                          <Sparkles className="w-4 h-4 mr-2" />
                           Generar imagen
                         </Button>
                       )}
@@ -600,7 +597,10 @@ export default function CafeteriaDashboard() {
                 <div className="flex gap-3 pt-2">
                   <Button type="button" variant="outline" onClick={() => setShowPublishModal(false)} className="flex-1">Cancelar</Button>
                   <Button type="submit" disabled={isPublishing} className="flex-1 bg-emerald-600">
-                    {isPublishing ? <OrbitalLoader className="w-4 h-4" /> : 'Publicar'}
+                    {isPublishing ? (
+                      <div className="w-4 h-4 border-2 border-transparent border-t-white rounded-full animate-spin mr-2"></div>
+                    ) : null}
+                    Publicar
                   </Button>
                 </div>
               </form>
