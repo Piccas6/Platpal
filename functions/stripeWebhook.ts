@@ -226,6 +226,37 @@ Deno.serve(async (req) => {
                     } catch (emailError) {
                         console.error(`${logPrefix} ⚠️ Error enviando emails:`, emailError.message);
                     }
+
+                    // Enviar notificación personal al administrador
+                    try {
+                        if (reserva) {
+                            await base44.asServiceRole.integrations.Core.SendEmail({
+                                to: 'piccas.entrepreneurship@gmail.com',
+                                subject: `✅ Pago Confirmado - ${reserva.cafeteria}`,
+                                body: `
+✅ Pago confirmado para reserva:
+
+👤 Usuario: ${reserva.student_name || reserva.student_email}
+📧 Email: ${reserva.student_email}
+📍 Cafetería: ${reserva.cafeteria}
+🏫 Campus: ${reserva.campus}
+🍽️ Menú: ${reserva.menus_detalle}
+💰 Precio: €${reserva.precio_total.toFixed(2)}
+🔢 Código: ${reserva.codigo_recogida}
+${reserva.envase_propio ? '♻️ Con envase propio' : ''}
+${reserva.referral_code ? '🎟️ Código referido: ' + reserva.referral_code : ''}
+
+💳 Estado: Pagado y confirmado
+
+---
+PlatPal - Menús Sostenibles
+                                `.trim()
+                            });
+                            console.log(`${logPrefix} ✅ Notificación personal enviada`);
+                        }
+                    } catch (notifError) {
+                        console.error(`${logPrefix} ⚠️ Error enviando notificación personal:`, notifError.message);
+                    }
                     
                     return Response.json({ received: true, success: true, type: 'menu_payment' }, { status: 200 });
                 } catch (error) {
