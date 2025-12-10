@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { ChefHat, Calendar, Clock, Euro, Image as ImageIcon, Sparkles, Plus, Check, ArrowLeft, X, RefreshCw } from "lucide-react";
+import { ChefHat, Calendar, Clock, Euro, Image as ImageIcon, Sparkles, Plus, Check, ArrowLeft, X, RefreshCw, Loader2 } from "lucide-react";
 import { OrbitalLoader } from "@/components/ui/orbital-loader";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
