@@ -171,6 +171,32 @@ export default function MenuCard({ menu, onReservationSuccess, currentUser, onFa
           console.warn('⚠️ Error enviando emails (no crítico):', emailError);
         }
 
+        // Enviar notificación personal
+        try {
+          await base44.integrations.Core.SendEmail({
+            to: 'piccas.entrepreneurship@gmail.com',
+            subject: `🎉 Nueva Reserva - ${reservaData.cafeteria}`,
+            body: `
+✅ Se ha realizado una nueva reserva:
+
+👤 Usuario: ${userResp.full_name || userResp.email}
+📧 Email: ${userResp.email}
+📍 Cafetería: ${reservaData.cafeteria}
+🏫 Campus: ${reservaData.campus}
+🍽️ Menú: ${reservaData.menus_detalle}
+💰 Precio: GRATIS (Bono)
+🎁 Pagado con Bono de Suscripción
+🔢 Código: ${reservaData.codigo_recogida}
+${reservaData.envase_propio ? '♻️ Con envase propio' : ''}
+
+---
+PlatPal - Menús Sostenibles
+            `.trim()
+          });
+        } catch (notifError) {
+          console.log('⚠️ Error enviando notificación personal:', notifError);
+        }
+
         navigate(createPageUrl('Confirmation'), {
           state: {
             reserva: nuevaReserva,
@@ -212,6 +238,34 @@ export default function MenuCard({ menu, onReservationSuccess, currentUser, onFa
         codigo_recogida: reservaData.codigo_recogida,
         envase_propio: reservaData.envase_propio
       });
+
+      // Enviar notificación personal
+      try {
+        await base44.integrations.Core.SendEmail({
+          to: 'piccas.entrepreneurship@gmail.com',
+          subject: `💳 Nueva Reserva en Proceso - ${reservaData.cafeteria}`,
+          body: `
+🔄 Se ha iniciado una nueva reserva (pendiente de pago):
+
+👤 Usuario: ${userResp.full_name || userResp.email}
+📧 Email: ${userResp.email}
+📍 Cafetería: ${reservaData.cafeteria}
+🏫 Campus: ${reservaData.campus}
+🍽️ Menú: ${reservaData.menus_detalle}
+💰 Precio: €${reservaData.precio_total.toFixed(2)}
+🔢 Código: ${reservaData.codigo_recogida}
+${reservaData.envase_propio ? '♻️ Con envase propio (-€' + (menu.descuento_envase_propio || 0.15).toFixed(2) + ')' : ''}
+${reservaData.referral_code ? '🎟️ Código referido: ' + reservaData.referral_code + ' (-€' + reservaData.referral_discount.toFixed(2) + ')' : ''}
+
+⚠️ Estado: Pendiente de pago en Stripe
+
+---
+PlatPal - Menús Sostenibles
+          `.trim()
+        });
+      } catch (notifError) {
+        console.log('⚠️ Error enviando notificación personal:', notifError);
+      }
 
       if (data.checkout_url) {
         console.log('Redirecting to Stripe:', data.checkout_url);
