@@ -15,7 +15,8 @@ import {
   Leaf,
   ChevronRight,
   LogIn,
-  Lock
+  Lock,
+  Download
 } from "lucide-react";
 import { OrbitalLoader } from "@/components/ui/orbital-loader";
 import { AuroraBackground } from "@/components/ui/aurora-background";
@@ -750,7 +751,7 @@ function NewsletterForm({ language }) {
           disabled={isSubmitting}
           className="w-full bg-emerald-600 hover:bg-emerald-700 text-sm py-2"
         >
-          {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : t.button}
+          {isSubmitting ? <OrbitalLoader className="w-4 h-4" /> : t.button}
         </Button>
         {message && (
           <p className={`text-xs mt-2 ${message.includes('Error') || message.includes('inválido') || message.includes('Invalid') ? 'text-red-400' : 'text-emerald-400'}`}>
