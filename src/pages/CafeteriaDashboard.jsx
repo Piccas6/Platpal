@@ -612,7 +612,17 @@ PlatPal - Menús Sostenibles
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <Label>Cantidad *</Label>
-                    <Input type="number" value={publishFormData.stock_total} onChange={(e) => setPublishFormData(prev => ({ ...prev, stock_total: e.target.value }))} min="1" required />
+                    <Input 
+                      type="number" 
+                      value={publishFormData.stock_total} 
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setPublishFormData(prev => ({ ...prev, stock_total: value }));
+                      }} 
+                      min="1" 
+                      required 
+                      placeholder="Ej: 20"
+                    />
                   </div>
                   <div>
                     <Label>Precio PlatPal</Label>
