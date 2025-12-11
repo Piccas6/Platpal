@@ -332,9 +332,8 @@ PlatPal - Menús Sostenibles
     const cafe = availableCafeterias.find(c => c.id === id);
     if (!cafe) return;
 
-    // Forzar actualización del estado
     setSelectedCafeteriaId(id);
-    setSelectedCafeteriaData({...cafe}); // Crear nuevo objeto para forzar re-render
+    setSelectedCafeteriaData(cafe);
     setPublishFormData(prev => ({
       ...prev,
       precio_original: cafe.precio_original_default || 8.50,
