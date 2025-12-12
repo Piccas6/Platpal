@@ -267,6 +267,48 @@ function PublishMenu() {
     setIsPublishing(true);
 
     try {
+      // Generar imágenes automáticamente si no existen
+      let finalImageUrl = generatedImageUrl;
+      let finalImageUrl2 = generatedImageUrl2;
+
+      if (formData.es_sorpresa && !finalImageUrl) {
+        setIsGenerating(true);
+        try {
+          const prompt = 'A surprise mystery meal box for university students, featuring a beautifully arranged takeaway container with question mark decorations, colorful food presentation, eco-friendly packaging, professional food photography, appetizing and intriguing';
+          const result = await base44.integrations.Core.GenerateImage({ prompt });
+          if (result.url) finalImageUrl = result.url;
+        } catch (error) {
+          console.error('Error generando imagen sorpresa:', error);
+        } finally {
+          setIsGenerating(false);
+        }
+      } else if (!formData.es_sorpresa) {
+        if (!finalImageUrl && formData.plato_principal) {
+          setIsGenerating(true);
+          try {
+            const prompt1 = `Foto profesional de comida: ${formData.plato_principal}. Plato apetitoso, bien iluminado, presentación de restaurante, fondo neutro, alta calidad`;
+            const result1 = await base44.integrations.Core.GenerateImage({ prompt: prompt1 });
+            if (result1.url) finalImageUrl = result1.url;
+          } catch (error) {
+            console.error('Error generando imagen principal:', error);
+          } finally {
+            setIsGenerating(false);
+          }
+        }
+        if (!finalImageUrl2 && formData.plato_secundario) {
+          setIsGenerating(true);
+          try {
+            const prompt2 = `Foto profesional de comida: ${formData.plato_secundario}. Plato apetitoso, bien iluminado, presentación de restaurante, fondo neutro, alta calidad`;
+            const result2 = await base44.integrations.Core.GenerateImage({ prompt: prompt2 });
+            if (result2.url) finalImageUrl2 = result2.url;
+          } catch (error) {
+            console.error('Error generando imagen secundaria:', error);
+          } finally {
+            setIsGenerating(false);
+          }
+        }
+      }
+
       const menuBase = {
         plato_principal: formData.es_sorpresa ? 'Plato Sorpresa' : formData.plato_principal,
         plato_secundario: formData.es_sorpresa ? '2º Plato Sorpresa' : formData.plato_secundario,
@@ -289,8 +331,8 @@ function PublishMenu() {
         es_vegano: formData.es_vegano,
         sin_gluten: formData.sin_gluten,
         alergenos: formData.alergenos.length > 0 ? formData.alergenos : ['ninguno'],
-        imagen_url: generatedImageUrl || undefined,
-        imagen_url_secundaria: generatedImageUrl2 || undefined
+        imagen_url: finalImageUrl || undefined,
+        imagen_url_secundaria: finalImageUrl2 || undefined
       };
 
       console.log('📝 Creando menú(s) con datos:', menuBase);
