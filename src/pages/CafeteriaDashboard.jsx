@@ -248,47 +248,34 @@ export default function CafeteriaDashboard() {
     setIsPublishing(true);
 
     try {
-      // Generar imágenes automáticamente en paralelo si no existen
-      let finalImageUrl1 = generatedImageUrl1;
-      let finalImageUrl2 = generatedImageUrl2;
+      let finalImageUrl1 = generatedImageUrl1 || '';
+      let finalImageUrl2 = generatedImageUrl2 || '';
 
-      const generatePromises = [];
-
-      if (publishFormData.es_sorpresa) {
-        if (!finalImageUrl1) {
-          generatePromises.push(
-            base44.integrations.Core.GenerateImage({
-              prompt: `Comida universitaria para llevar en envase eco-friendly. Presentación apetitosa de menú del día universitario, plato equilibrado y nutritivo, estilo cafetería universitaria moderna, iluminación natural, fondo neutro profesional`
-            }).then(result => { finalImageUrl1 = result.url; }).catch(err => console.error('Error imagen 1:', err))
-          );
-        }
-        if (!finalImageUrl2) {
-          generatePromises.push(
-            base44.integrations.Core.GenerateImage({
-              prompt: `Comida universitaria para llevar en envase eco-friendly. Presentación apetitosa de menú del día universitario, plato equilibrado y nutritivo, estilo cafetería universitaria moderna, iluminación natural, fondo neutro profesional`
-            }).then(result => { finalImageUrl2 = result.url; }).catch(err => console.error('Error imagen 2:', err))
-          );
-        }
-      } else {
-        if (!finalImageUrl1 && publishFormData.plato_principal) {
-          generatePromises.push(
-            base44.integrations.Core.GenerateImage({
-              prompt: `${publishFormData.plato_principal} - comida universitaria para llevar en envase eco-friendly. Presentación apetitosa de cafetería universitaria, plato equilibrado, iluminación natural, fondo neutro profesional, comida recién preparada`
-            }).then(result => { finalImageUrl1 = result.url; }).catch(err => console.error('Error imagen 1:', err))
-          );
-        }
-        if (!finalImageUrl2 && publishFormData.plato_secundario) {
-          generatePromises.push(
-            base44.integrations.Core.GenerateImage({
-              prompt: `${publishFormData.plato_secundario} - comida universitaria para llevar en envase eco-friendly. Presentación apetitosa de cafetería universitaria, plato equilibrado, iluminación natural, fondo neutro profesional, comida recién preparada`
-            }).then(result => { finalImageUrl2 = result.url; }).catch(err => console.error('Error imagen 2:', err))
-          );
+      // Generar imágenes si no existen (sin actualizar estado visual)
+      if (!finalImageUrl1) {
+        try {
+          const prompt = publishFormData.es_sorpresa 
+            ? `Comida universitaria para llevar en envase eco-friendly. Presentación apetitosa de menú del día universitario, plato equilibrado y nutritivo, estilo cafetería universitaria moderna, iluminación natural, fondo neutro profesional`
+            : `${publishFormData.plato_principal} - comida universitaria para llevar en envase eco-friendly. Presentación apetitosa de cafetería universitaria, plato equilibrado, iluminación natural, fondo neutro profesional, comida recién preparada`;
+          
+          const result = await base44.integrations.Core.GenerateImage({ prompt });
+          if (result?.url) finalImageUrl1 = result.url;
+        } catch (err) {
+          console.error('Error generando imagen 1:', err);
         }
       }
 
-      // Esperar a que todas las imágenes se generen en paralelo
-      if (generatePromises.length > 0) {
-        await Promise.all(generatePromises);
+      if (!finalImageUrl2) {
+        try {
+          const prompt = publishFormData.es_sorpresa 
+            ? `Comida universitaria para llevar en envase eco-friendly. Presentación apetitosa de menú del día universitario, plato equilibrado y nutritivo, estilo cafetería universitaria moderna, iluminación natural, fondo neutro profesional`
+            : `${publishFormData.plato_secundario} - comida universitaria para llevar en envase eco-friendly. Presentación apetitosa de cafetería universitaria, plato equilibrado, iluminación natural, fondo neutro profesional, comida recién preparada`;
+          
+          const result = await base44.integrations.Core.GenerateImage({ prompt });
+          if (result?.url) finalImageUrl2 = result.url;
+        } catch (err) {
+          console.error('Error generando imagen 2:', err);
+        }
       }
 
       const menuData = {
@@ -316,7 +303,7 @@ export default function CafeteriaDashboard() {
         imagen_url_secundaria: finalImageUrl2 || undefined
       };
 
-      const newMenu = await base44.entities.Menu.create(menuData);
+      await base44.entities.Menu.create(menuData);
 
       // Enviar notificación por email
       try {
