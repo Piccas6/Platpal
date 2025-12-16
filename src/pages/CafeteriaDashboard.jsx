@@ -515,6 +515,24 @@ PlatPal - Menús Sostenibles
               </DialogHeader>
 
               <form onSubmit={handleQuickPublish} className="space-y-4 mt-4">
+                {availableCafeterias.length > 1 && (
+                  <div className="space-y-2">
+                    <Label>Cafetería</Label>
+                    <Select value={selectedCafeteriaId} onValueChange={handleCafeteriaChange}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableCafeterias.map(cafe => (
+                          <SelectItem key={cafe.id} value={cafe.id}>
+                            {cafe.nombre} - {cafe.campus}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
                 <div className="flex items-center justify-between p-3 bg-purple-50 rounded-xl">
                   <Label className="font-semibold">Plato Sorpresa</Label>
                   <Switch
