@@ -17,8 +17,10 @@ import {
   Save,
   Eye,
   EyeOff,
-  CheckCircle
+  CheckCircle,
+  ExternalLink
 } from "lucide-react";
+import GooglePlacesSelector from "@/components/cafeteria/GooglePlacesSelector";
 
 export default function CafeteriaProfile({ user }) {
   const [cafeterias, setCafeterias] = useState([]);
@@ -27,12 +29,25 @@ export default function CafeteriaProfile({ user }) {
   const [isSaving, setIsSaving] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [savedMessage, setSavedMessage] = useState('');
+  const [editingLocationFor, setEditingLocationFor] = useState(null);
   
   const [credentialsForm, setCredentialsForm] = useState({
     email: user?.email || '',
     full_name: user?.full_name || '',
     newPassword: ''
   });
+
+  const reloadCafeterias = async () => {
+    try {
+      const allCafeterias = await base44.entities.Cafeteria.list();
+      const userCafeterias = allCafeterias.filter(c => 
+        user.cafeterias_asignadas.includes(c.id)
+      );
+      setCafeterias(userCafeterias);
+    } catch (error) {
+      console.error("Error reloading cafeterias:", error);
+    }
+  };
 
   useEffect(() => {
     const loadCafeterias = async () => {
@@ -289,6 +304,53 @@ export default function CafeteriaProfile({ user }) {
                       "{cafe.descripcion}"
                     </p>
                   )}
+
+                  {cafe.google_maps_url && (
+                    <div className="mt-3 pt-3 border-t border-emerald-200">
+                      <a 
+                        href={cafe.google_maps_url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 font-medium"
+                      >
+                        <MapPin className="w-4 h-4" />
+                        Ver en Google Maps
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
+                  )}
+
+                  <div className="mt-4 pt-4 border-t border-emerald-200">
+                    {editingLocationFor === cafe.id ? (
+                      <div>
+                        <GooglePlacesSelector 
+                          cafeteria={cafe} 
+                          onUpdate={() => {
+                            reloadCafeterias();
+                            setEditingLocationFor(null);
+                          }}
+                        />
+                        <Button
+                          onClick={() => setEditingLocationFor(null)}
+                          variant="outline"
+                          size="sm"
+                          className="mt-3"
+                        >
+                          Cerrar
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        onClick={() => setEditingLocationFor(cafe.id)}
+                        variant="outline"
+                        size="sm"
+                        className="w-full"
+                      >
+                        <MapPin className="w-4 h-4 mr-2" />
+                        {cafe.google_place_id ? 'Cambiar ubicación Google Maps' : 'Vincular con Google Maps'}
+                      </Button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
