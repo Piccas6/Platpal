@@ -1,79 +1,91 @@
-import Home from './pages/Home';
-import Campus from './pages/Campus';
-import Menus from './pages/Menus';
-import Confirmation from './pages/Confirmation';
-import FAQ from './pages/FAQ';
-import CafeteriaDashboard from './pages/CafeteriaDashboard';
-import PublishMenu from './pages/PublishMenu';
-import ImpactDashboard from './pages/ImpactDashboard';
-import Profile from './pages/Profile';
+import AdminCafeteriaApproval from './pages/AdminCafeteriaApproval';
 import AdminDashboard from './pages/AdminDashboard';
-import Impact from './pages/Impact';
-import ManagerDashboard from './pages/ManagerDashboard';
 import AnalyticsDashboard from './pages/AnalyticsDashboard';
-import InvestorForm from './pages/InvestorForm';
-import EditMenu from './pages/EditMenu';
-import Community from './pages/Community';
-import PaymentFlow from './pages/PaymentFlow';
-import PickupPanel from './pages/PickupPanel';
-import BulkUpload from './pages/BulkUpload';
-import TestPayments from './pages/TestPayments';
-import MenuTemplates from './pages/MenuTemplates';
-import Bonos from './pages/Bonos';
 import BonoSuccess from './pages/BonoSuccess';
+import Bonos from './pages/Bonos';
+import BulkUpload from './pages/BulkUpload';
+import CafeteriaDashboard from './pages/CafeteriaDashboard';
 import CafeteriaDetails from './pages/CafeteriaDetails';
-import PrivacyPolicy from './pages/PrivacyPolicy';
-import TermsOfService from './pages/TermsOfService';
+import CafeteriaOnboarding from './pages/CafeteriaOnboarding';
+import Campus from './pages/Campus';
+import Community from './pages/Community';
+import Confirmation from './pages/Confirmation';
 import CrearCafeteria from './pages/CrearCafeteria';
+import EditMenu from './pages/EditMenu';
+import FAQ from './pages/FAQ';
 import GestionarCafeterias from './pages/GestionarCafeterias';
+import Home from './pages/Home';
+import Impact from './pages/Impact';
+import ImpactDashboard from './pages/ImpactDashboard';
+import InvestorForm from './pages/InvestorForm';
+import ManagerDashboard from './pages/ManagerDashboard';
+import MenuTemplates from './pages/MenuTemplates';
+import Menus from './pages/Menus';
+import NotFound from './pages/NotFound';
 import OfficeHome from './pages/OfficeHome';
 import OfficeMenus from './pages/OfficeMenus';
 import OfficePacks from './pages/OfficePacks';
+import PaymentFlow from './pages/PaymentFlow';
+import PickupPanel from './pages/PickupPanel';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import Profile from './pages/Profile';
+import PublishMenu from './pages/PublishMenu';
 import RegistroCafeteria from './pages/RegistroCafeteria';
-import UploadDocumentsCafeteria from './pages/UploadDocumentsCafeteria';
-import SEOBlog from './pages/SEOBlog';
 import Reports from './pages/Reports';
-import NotFound from './pages/NotFound';
+import SEOBlog from './pages/SEOBlog';
+import SolicitarCafeteria from './pages/SolicitarCafeteria';
+import SystemCheck from './pages/SystemCheck';
+import TermsOfService from './pages/TermsOfService';
+import TestPayments from './pages/TestPayments';
+import UploadDocumentsCafeteria from './pages/UploadDocumentsCafeteria';
+import OfficeDashboard from './pages/OfficeDashboard';
+import OfficeSuccess from './pages/OfficeSuccess';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "Home": Home,
-    "Campus": Campus,
-    "Menus": Menus,
-    "Confirmation": Confirmation,
-    "FAQ": FAQ,
-    "CafeteriaDashboard": CafeteriaDashboard,
-    "PublishMenu": PublishMenu,
-    "ImpactDashboard": ImpactDashboard,
-    "Profile": Profile,
+    "AdminCafeteriaApproval": AdminCafeteriaApproval,
     "AdminDashboard": AdminDashboard,
-    "Impact": Impact,
-    "ManagerDashboard": ManagerDashboard,
     "AnalyticsDashboard": AnalyticsDashboard,
-    "InvestorForm": InvestorForm,
-    "EditMenu": EditMenu,
-    "Community": Community,
-    "PaymentFlow": PaymentFlow,
-    "PickupPanel": PickupPanel,
-    "BulkUpload": BulkUpload,
-    "TestPayments": TestPayments,
-    "MenuTemplates": MenuTemplates,
-    "Bonos": Bonos,
     "BonoSuccess": BonoSuccess,
+    "Bonos": Bonos,
+    "BulkUpload": BulkUpload,
+    "CafeteriaDashboard": CafeteriaDashboard,
     "CafeteriaDetails": CafeteriaDetails,
-    "PrivacyPolicy": PrivacyPolicy,
-    "TermsOfService": TermsOfService,
+    "CafeteriaOnboarding": CafeteriaOnboarding,
+    "Campus": Campus,
+    "Community": Community,
+    "Confirmation": Confirmation,
     "CrearCafeteria": CrearCafeteria,
+    "EditMenu": EditMenu,
+    "FAQ": FAQ,
     "GestionarCafeterias": GestionarCafeterias,
+    "Home": Home,
+    "Impact": Impact,
+    "ImpactDashboard": ImpactDashboard,
+    "InvestorForm": InvestorForm,
+    "ManagerDashboard": ManagerDashboard,
+    "MenuTemplates": MenuTemplates,
+    "Menus": Menus,
+    "NotFound": NotFound,
     "OfficeHome": OfficeHome,
     "OfficeMenus": OfficeMenus,
     "OfficePacks": OfficePacks,
+    "PaymentFlow": PaymentFlow,
+    "PickupPanel": PickupPanel,
+    "PrivacyPolicy": PrivacyPolicy,
+    "Profile": Profile,
+    "PublishMenu": PublishMenu,
     "RegistroCafeteria": RegistroCafeteria,
-    "UploadDocumentsCafeteria": UploadDocumentsCafeteria,
-    "SEOBlog": SEOBlog,
     "Reports": Reports,
-    "NotFound": NotFound,
+    "SEOBlog": SEOBlog,
+    "SolicitarCafeteria": SolicitarCafeteria,
+    "SystemCheck": SystemCheck,
+    "TermsOfService": TermsOfService,
+    "TestPayments": TestPayments,
+    "UploadDocumentsCafeteria": UploadDocumentsCafeteria,
+    "OfficeDashboard": OfficeDashboard,
+    "OfficeSuccess": OfficeSuccess,
 }
 
 export const pagesConfig = {

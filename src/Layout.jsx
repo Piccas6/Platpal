@@ -46,10 +46,16 @@ const managerNav = [
 ];
 
 const adminNav = [
-    { title: "Admin Dashboard", url: createPageUrl("AdminDashboard"), icon: Settings },
-    { title: "Gestionar Cafeterías", url: createPageUrl("GestionarCafeterias"), icon: Building2 },
-    { title: "Crear Cafetería", url: createPageUrl("CrearCafeteria"), icon: Plus }
-];
+          { title: "Admin Dashboard", url: createPageUrl("AdminDashboard"), icon: Settings },
+          { title: "Gestionar Cafeterías", url: createPageUrl("GestionarCafeterias"), icon: Building2 },
+          { title: "Crear Cafetería", url: createPageUrl("CrearCafeteria"), icon: Plus }
+      ];
+
+const officeNav = [
+          { title: "Dashboard Office", url: createPageUrl("OfficeDashboard"), icon: Building2 },
+          { title: "Menús Office", url: createPageUrl("OfficeMenus"), icon: UtensilsCrossed },
+          { title: "Packs Office", url: createPageUrl("OfficePacks"), icon: Package }
+      ];
 
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
@@ -286,6 +292,14 @@ export default function Layout({ children, currentPageName }) {
                   {isLoggedIn && effectiveRole === 'admin' && adminNav.map((item) => (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild className={`group hover:bg-purple-50 hover:text-purple-700 transition-all duration-300 rounded-2xl mb-2 text-gray-700 font-medium ${location.pathname === item.url ? 'bg-purple-50 text-purple-700 shadow-sm' : ''}`}>
+                        <Link to={item.url} className="flex items-center gap-4 px-4 py-3"><item.icon className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" /><span>{item.title}</span></Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+
+                  {officeNav.map((item) => (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton asChild className={`group hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-300 rounded-2xl mb-2 text-gray-700 font-medium ${location.pathname === item.url ? 'bg-indigo-50 text-indigo-700 shadow-sm' : ''}`}>
                         <Link to={item.url} className="flex items-center gap-4 px-4 py-3"><item.icon className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" /><span>{item.title}</span></Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
