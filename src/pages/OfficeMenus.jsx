@@ -48,11 +48,14 @@ function OfficeMenus() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+            <h1 className="text-3xl md:text-4xl font-black text-gray-900">
               Menús Office Disponibles Hoy
             </h1>
-            <p className="text-gray-600 mt-1">
-              Entrega a partir de las 15:30 • Precios desde 4,50€
+            <p className="text-gray-600 mt-2 text-lg">
+              Comida de calidad recuperada de cafeterías locales
+            </p>
+            <p className="text-sm text-gray-500 mt-1">
+              Entrega a partir de las 15:30 • Sin compromiso
             </p>
           </div>
         </div>
@@ -65,12 +68,12 @@ function OfficeMenus() {
                 <Building2 className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="font-bold text-gray-900 mb-2">Servicio Office</h3>
+                <h3 className="font-bold text-gray-900 mb-2">Menús recuperados, no sobras</h3>
                 <ul className="text-sm text-gray-700 space-y-1">
-                  <li>✅ <strong>Sin bebida:</strong> 4,50€ (incluye entrega)</li>
-                  <li>✅ <strong>Con bebida:</strong> 5,30€ (incluye entrega)</li>
-                  <li>✅ Entrega vía Glovo/JustEat a partir de las 15:30</li>
-                  <li>✅ Perfecto para oficinas, coworkings y equipos</li>
+                  <li>✅ Comida de calidad de cafeterías locales</li>
+                  <li>✅ Recuperada antes de que caduque</li>
+                  <li>✅ Entrega vía Glovo (gestionamos todo) o recogida</li>
+                  <li>✅ Dashboard corporativo con informes de impacto</li>
                 </ul>
               </div>
             </div>

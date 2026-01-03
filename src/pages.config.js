@@ -22,9 +22,11 @@ import ManagerDashboard from './pages/ManagerDashboard';
 import MenuTemplates from './pages/MenuTemplates';
 import Menus from './pages/Menus';
 import NotFound from './pages/NotFound';
+import OfficeDashboard from './pages/OfficeDashboard';
 import OfficeHome from './pages/OfficeHome';
 import OfficeMenus from './pages/OfficeMenus';
 import OfficePacks from './pages/OfficePacks';
+import OfficeSuccess from './pages/OfficeSuccess';
 import PaymentFlow from './pages/PaymentFlow';
 import PickupPanel from './pages/PickupPanel';
 import PrivacyPolicy from './pages/PrivacyPolicy';
@@ -38,8 +40,6 @@ import SystemCheck from './pages/SystemCheck';
 import TermsOfService from './pages/TermsOfService';
 import TestPayments from './pages/TestPayments';
 import UploadDocumentsCafeteria from './pages/UploadDocumentsCafeteria';
-import OfficeDashboard from './pages/OfficeDashboard';
-import OfficeSuccess from './pages/OfficeSuccess';
 import __Layout from './Layout.jsx';
 
 
@@ -68,9 +68,11 @@ export const PAGES = {
     "MenuTemplates": MenuTemplates,
     "Menus": Menus,
     "NotFound": NotFound,
+    "OfficeDashboard": OfficeDashboard,
     "OfficeHome": OfficeHome,
     "OfficeMenus": OfficeMenus,
     "OfficePacks": OfficePacks,
+    "OfficeSuccess": OfficeSuccess,
     "PaymentFlow": PaymentFlow,
     "PickupPanel": PickupPanel,
     "PrivacyPolicy": PrivacyPolicy,
@@ -84,8 +86,6 @@ export const PAGES = {
     "TermsOfService": TermsOfService,
     "TestPayments": TestPayments,
     "UploadDocumentsCafeteria": UploadDocumentsCafeteria,
-    "OfficeDashboard": OfficeDashboard,
-    "OfficeSuccess": OfficeSuccess,
 }
 
 export const pagesConfig = {

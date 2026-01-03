@@ -76,11 +76,14 @@ function OfficePacks() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-              Packs y Suscripciones Office
+            <h1 className="text-3xl md:text-4xl font-black text-gray-900">
+              Packs Corporativos
             </h1>
-            <p className="text-gray-600 mt-1">
-              Ahorra hasta un 15% con nuestros packs • Envío no incluido
+            <p className="text-gray-600 mt-2 text-lg">
+              Alimentación sostenible para tu equipo con descuentos por volumen
+            </p>
+            <p className="text-sm text-gray-500 mt-1">
+              Sin permanencia • Cancela cuando quieras
             </p>
           </div>
         </div>
@@ -93,13 +96,13 @@ function OfficePacks() {
                 <Building2 className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="font-bold text-gray-900 mb-2">Información de Packs</h3>
+                <h3 className="font-bold text-gray-900 mb-2">Inversión con impacto</h3>
                 <ul className="text-sm text-gray-700 space-y-1">
-                  <li>📦 Pedido mínimo por pack (ej: 5, 10, 20, 40 menús)</li>
-                  <li>💰 Descuentos progresivos del 5% al 15%</li>
-                  <li>🚚 <strong>Coste de envío por cuenta del cliente</strong> (Glovo/JustEat)</li>
-                  <li>⏰ Entrega programada a partir de las 15:30</li>
-                  <li>✅ Válidos para uso semanal o mensual</li>
+                  <li>📦 Packs flexibles adaptados a tu equipo</li>
+                  <li>💰 Ahorra hasta 15% vs menús individuales</li>
+                  <li>🚚 <strong>Entrega gestionada</strong> o recogida en cafetería</li>
+                  <li>📊 Dashboard + informes de impacto mensuales</li>
+                  <li>✅ Sin permanencia, cancela cuando quieras</li>
                 </ul>
               </div>
             </div>
