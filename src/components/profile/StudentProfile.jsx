@@ -1,595 +1,136 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  User as UserIcon, 
-  MapPin, 
-  Award, 
-  Pencil, 
-  Save, 
-  UtensilsCrossed,
-  Camera,
-  Mail,
-  Phone,
-  Sparkles,
-  TrendingUp,
-  Calendar,
-  Bell,
-  Heart,
-  X,
-  Flame,
-  Star,
-  Gift,
-  CreditCard,
-  Loader2,
-  Trash2
+  User as UserIcon, MapPin, Pencil, Save, UtensilsCrossed,
+  Mail, Phone, TrendingUp, Calendar, Flame, X, Gift, Loader2
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import StreakMeter from './StreakMeter'; // Added StreakMeter import
 
 const campusOptions = [
-  { id: 'jerez', name: 'Campus Jerez', emoji: '🏛️' },
-  { id: 'puerto_real', name: 'Campus de Puerto Real', emoji: '🌊' },
-  { id: 'cadiz', name: 'Campus de Cádiz', emoji: '🏖️' },
-  { id: 'algeciras', name: 'Campus Bahía de Algeciras', emoji: '⛰️' }
-];
-
-const alergenosOptions = [
-  { id: 'gluten', name: 'Gluten', emoji: '🌾' },
-  { id: 'lacteos', name: 'Lácteos', emoji: '🥛' },
-  { id: 'huevos', name: 'Huevos', emoji: '🥚' },
-  { id: 'pescado', name: 'Pescado', emoji: '🐟' },
-  { id: 'frutos_secos', name: 'Frutos Secos', emoji: '🥜' },
-  { id: 'soja', name: 'Soja', emoji: '🫘' }
+  { id: 'jerez', name: 'Campus Jerez' },
+  { id: 'puerto_real', name: 'Campus de Puerto Real' },
+  { id: 'cadiz', name: 'Campus de Cádiz' },
+  { id: 'algeciras', name: 'Campus Bahía de Algeciras' }
 ];
 
 export default function StudentProfile({ user }) {
-  const [userData, setUserData] = useState(user || {});
   const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState(() => ({
+  const [editData, setEditData] = useState({
     full_name: user?.full_name || '',
-    email: user?.email || '',
-    telefono: user?.telefono || '',
-    bio: user?.bio || '',
-    campus: user?.campus || '',
-    avatar_url: user?.avatar_url || '',
-    preferencias_dieta: user?.preferencias_dieta || {
-      es_vegetariano: false,
-      es_vegano: false,
-      sin_gluten: false,
-      alergenos_evitar: []
-    },
-    notificaciones: user?.notificaciones || {
-      email_nuevos_menus: true,
-      email_recordatorios: true,
-      push_disponibilidad: false
-    }
-  }));
+    telefono: user?.telefono || ''
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [reservations, setReservations] = useState([]);
-  const [isLoadingReservations, setIsLoadingReservations] = useState(true);
-  const [uploadingAvatar, setUploadingAvatar] = useState(false);
-  const [favoriteCafeterias, setFavoriteCafeterias] = useState([]);
-  const [favoriteMenus, setFavoriteMenus] = useState([]);
   const [bonoStatus, setBonoStatus] = useState(null);
-  const [isLoadingExtras, setIsLoadingExtras] = useState(true);
-
-  // Early return after all hooks
-  if (!user) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
-      </div>
-    );
-  }
-
-  const fetchReservations = useCallback(async () => {
-    if (!user?.email) return;
-    setIsLoadingReservations(true);
-    try {
-      const allReservations = await base44.entities.Reserva.list('-created_date');
-      const userReservations = allReservations.filter(r => r.created_by === user.email);
-      setReservations(userReservations);
-    } catch (error) {
-      console.error("Error fetching reservations:", error);
-    } finally {
-      setIsLoadingReservations(false);
-    }
-  }, [user?.email]);
-
-  const fetchFavoritesAndBono = useCallback(async () => {
-    setIsLoadingExtras(true);
-    try {
-      // Fetch cafeterías favoritas
-      if (user?.cafeterias_favoritas?.length > 0) {
-        const allCafeterias = await base44.entities.Cafeteria.list();
-        const favorites = allCafeterias.filter(c => 
-          user.cafeterias_favoritas.includes(c.nombre) || user.cafeterias_favoritas.includes(c.id)
-        );
-        setFavoriteCafeterias(favorites);
-      } else {
-        setFavoriteCafeterias([]);
-      }
-
-      // Fetch menús favoritos
-      if (user?.menus_favoritos?.length > 0) {
-        const allMenus = await base44.entities.Menu.list('-created_date', 100);
-        const favorites = allMenus.filter(m => user.menus_favoritos.includes(m.id));
-        setFavoriteMenus(favorites);
-      } else {
-        setFavoriteMenus([]);
-      }
-
-      // Fetch estado del bono
-      const bonoCompras = await base44.entities.BonoCompra.list('-created_date');
-      const userBono = bonoCompras.find(b => b.user_email === user?.email && b.subscription_status === 'active');
-      setBonoStatus(userBono || null);
-
-    } catch (error) {
-      console.error("Error fetching favorites/bono:", error);
-    } finally {
-      setIsLoadingExtras(false);
-    }
-  }, [user?.email]);
-
-  const calculateStreak = useCallback(async () => {
-    if (!user?.email) return;
-    try {
-      const allReservations = await base44.entities.Reserva.list('-created_date');
-      const userReservations = allReservations.filter(
-        r => r.created_by === user.email && 
-        (r.payment_status === 'completed' || r.estado === 'recogido')
-      );
-
-      // If no valid reservations, streak should be 0.
-      if (userReservations.length === 0) {
-        if (userData.racha_actual !== 0) { // Only update if it's not already 0
-          await base44.auth.updateMe({ racha_actual: 0, racha_maxima: userData.racha_maxima || 0, ultima_compra_fecha: null });
-          setUserData(prev => ({ ...prev, racha_actual: 0, ultima_compra_fecha: null }));
-        }
-        return;
-      }
-
-      // Agrupar reservas por fecha (normalizadas a UTC para evitar problemas de zona horaria)
-      const reservasPorFecha = {};
-      let latestPurchaseDate = null; // To track the very last purchase date
-
-      userReservations.forEach(r => {
-        const date = new Date(r.created_date);
-        // Normalize to UTC date to prevent timezone issues with day boundaries
-        const utcDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-        const fechaStr = utcDate.toISOString().split('T')[0];
-        reservasPorFecha[fechaStr] = true;
-        
-        // Track the actual latest purchase date from valid reservations
-        if (!latestPurchaseDate || utcDate.getTime() > latestPurchaseDate.getTime()) {
-            latestPurchaseDate = utcDate;
-        }
-      });
-      
-      const today = new Date();
-      const todayStr = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())).toISOString().split('T')[0];
-      
-      const yesterday = new Date(today);
-      yesterday.setDate(today.getDate() - 1);
-      const yesterdayStr = new Date(Date.UTC(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate())).toISOString().split('T')[0];
-
-      let rachaActual = 0;
-      let checkDate = new Date(); // Start checking from today
-      checkDate = new Date(Date.UTC(checkDate.getFullYear(), checkDate.getMonth(), checkDate.getDate())); // Normalize to UTC
-
-      // Determine the starting point for streak calculation based on today/yesterday
-      if (reservasPorFecha[todayStr]) {
-          rachaActual = 1;
-          checkDate.setDate(checkDate.getDate() - 1); // Move to check yesterday
-      } else if (reservasPorFecha[yesterdayStr]) {
-          rachaActual = 1; // Purchase yesterday, considered active for today (grace period)
-          checkDate.setDate(checkDate.getDate() - 1); // Move to check two days ago
-      } else {
-          rachaActual = 0; // No purchase today or yesterday, streak is broken.
-      }
-
-      // Continue checking backwards if an active streak was initiated
-      if (rachaActual > 0) {
-          // Loop through previous days to extend streak
-          for (let i = 0; i < 365; i++) { // Limit the loop to a reasonable number of days (e.g., 1 year)
-              const dateStr = checkDate.toISOString().split('T')[0];
-              if (reservasPorFecha[dateStr]) {
-                  rachaActual++;
-                  checkDate.setDate(checkDate.getDate() - 1);
-              } else {
-                  break; // Streak broken
-              }
-          }
-      }
-      
-      const actualRachaMaxima = Math.max(rachaActual, userData.racha_maxima || 0);
-      const ultimaCompraFechaStr = latestPurchaseDate ? latestPurchaseDate.toISOString().split('T')[0] : null;
-
-      // Only update if there's a change to avoid unnecessary backend calls
-      if (rachaActual !== userData.racha_actual || actualRachaMaxima !== userData.racha_maxima || ultimaCompraFechaStr !== userData.ultima_compra_fecha) {
-        await base44.auth.updateMe({ 
-          racha_actual: rachaActual,
-          racha_maxima: actualRachaMaxima,
-          ultima_compra_fecha: ultimaCompraFechaStr
-        });
-        setUserData(prev => ({
-          ...prev, 
-          racha_actual: rachaActual,
-          racha_maxima: actualRachaMaxima,
-          ultima_compra_fecha: ultimaCompraFechaStr
-        }));
-      }
-    } catch (error) {
-      console.error("Error calculating streak:", error);
-    }
-  }, [user?.email]);
 
   useEffect(() => {
-    if (!user) return;
-    
-    setUserData(user);
-    setEditData({
-      full_name: user?.full_name || '',
-      email: user?.email || '',
-      telefono: user?.telefono || '',
-      bio: user?.bio || '',
-      campus: user?.campus || '',
-      avatar_url: user?.avatar_url || '',
-      preferencias_dieta: user?.preferencias_dieta || {
-        es_vegetariano: false,
-        es_vegano: false,
-        sin_gluten: false,
-        alergenos_evitar: []
-      },
-      notificaciones: user?.notificaciones || {
-        email_nuevos_menus: true,
-        email_recordatorios: true,
-        push_disponibilidad: false
-      }
-    });
-
-    // Fetch all data when user changes
-    fetchReservations();
-    calculateStreak();
-    fetchFavoritesAndBono();
+    if (!user?.email) return;
+    loadData();
   }, [user]);
 
-  const handleEditChange = (field, value) => {
-    setEditData(prev => ({ ...prev, [field]: value }));
+  const loadData = async () => {
+    try {
+      const [allReservations, bonoCompras] = await Promise.all([
+        base44.entities.Reserva.list('-created_date'),
+        base44.entities.BonoCompra.list('-created_date')
+      ]);
+
+      const userReservations = allReservations.filter(r => r.created_by === user.email);
+      setReservations(userReservations);
+
+      const userBono = bonoCompras.find(b => b.user_email === user?.email && b.subscription_status === 'active');
+      setBonoStatus(userBono || null);
+    } catch (error) {
+      console.error("Error loading data:", error);
+    }
   };
 
   const handleSave = async () => {
     setIsLoading(true);
     try {
-      // Do not include email in the update, as it cannot be changed
-      const { email, ...dataToUpdate } = editData;
-      
-      // Updated to use base44.auth.updateMe
-      await base44.auth.updateMe(dataToUpdate);
-      
-      // Update the local userData state with the saved changes
-      setUserData({ ...userData, ...dataToUpdate });
+      await base44.auth.updateMe(editData);
       setIsEditing(false);
-      
-      alert('✅ Perfil actualizado correctamente');
+      alert('✅ Perfil actualizado');
     } catch (error) {
-      console.error("Error updating profile:", error);
-      alert('❌ Error al actualizar el perfil. Por favor, inténtalo de nuevo.');
+      alert('❌ Error al actualizar');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleCancel = () => {
-    // Restore editData to the current userData state and exit editing mode
-    setEditData({
-      full_name: userData?.full_name || '',
-      email: userData?.email || '',
-      telefono: userData?.telefono || '',
-      bio: userData?.bio || '',
-      campus: userData?.campus || '',
-      avatar_url: userData?.avatar_url || '',
-      preferencias_dieta: userData?.preferencias_dieta || {
-        es_vegetariano: false,
-        es_vegano: false,
-        sin_gluten: false,
-        alergenos_evitar: []
-      },
-      notificaciones: userData?.notificaciones || {
-        email_nuevos_menus: true,
-        email_recordatorios: true,
-        push_disponibilidad: false
-      }
-    });
-    setIsEditing(false);
-  };
-
-  const handleAvatarUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setUploadingAvatar(true);
-    try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      setEditData(prev => ({ ...prev, avatar_url: file_url }));
-      
-      // Save avatar_url automatically
-      // Updated to use base44.auth.updateMe
-      await base44.auth.updateMe({ avatar_url: file_url });
-      setUserData(prev => ({ ...prev, avatar_url: file_url }));
-      alert('✅ Foto de perfil actualizada');
-    } catch (error) {
-      console.error("Error uploading avatar:", error);
-      alert('❌ Error al subir la foto');
-    } finally {
-      setUploadingAvatar(false);
-    }
-  };
-
-  const handleAlergenoToggle = (alergeno) => {
-    if (!isEditing) return; // Prevent toggling when not in editing mode
-
-    setEditData(prev => {
-      const currentAlergenos = prev.preferencias_dieta?.alergenos_evitar || [];
-      const newAlergenos = currentAlergenos.includes(alergeno)
-        ? currentAlergenos.filter(a => a !== alergeno)
-        : [...currentAlergenos, alergeno];
-      
-      return {
-        ...prev,
-        preferencias_dieta: {
-          ...prev.preferencias_dieta,
-          alergenos_evitar: newAlergenos
-        }
-      };
-    });
-  };
-
-  const getEstadoBadge = (estado) => {
-    const badges = {
-      'reservado': <Badge variant="outline" className="bg-blue-50 text-blue-700">Reservado</Badge>,
-      'pagado': <Badge variant="outline" className="bg-green-50 text-green-700">Pagado</Badge>,
-      'recogido': <Badge variant="outline" className="bg-emerald-50 text-emerald-700">Recogido</Badge>,
-      'cancelado': <Badge variant="outline" className="bg-red-50 text-red-700">Cancelado</Badge>
-    };
-    return badges[estado] || <Badge>{estado}</Badge>;
-  };
-
-  // Calcular estadísticas
   const stats = {
     totalReservas: reservations.length,
     totalGastado: reservations.reduce((sum, r) => sum + (r.precio_total || 0), 0),
     menusEsteMes: reservations.filter(r => {
-      const reservaDate = new Date(r.created_date);
+      const d = new Date(r.created_date);
       const now = new Date();
-      return reservaDate.getMonth() === now.getMonth() && reservaDate.getFullYear() === now.getFullYear();
-    }).length,
-    ahorroTotal: reservations.reduce((sum, r) => {
-      const precioOriginal = 8.5; // Precio promedio de un menú normal
-      return sum + (precioOriginal - (r.precio_total || 0));
-    }, 0)
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    }).length
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
-      {/* Header con Avatar */}
+    <div className="max-w-5xl mx-auto space-y-6">
+      {/* Header */}
       <Card className="border-2 border-emerald-100">
         <CardContent className="p-8">
-          <div className="flex flex-col md:flex-row items-center gap-6">
-            {/* Avatar */}
-            <div className="relative group">
-              <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-emerald-400 to-blue-500 flex items-center justify-center text-white text-4xl font-bold shadow-lg">
-                {editData.avatar_url ? (
-                  <img src={editData.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
-                ) : (
-                  userData.full_name?.[0]?.toUpperCase() || 'U'
-                )}
-              </div>
-              {isEditing && (
-                <label className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                  <Camera className="w-8 h-8 text-white" />
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleAvatarUpload}
-                    disabled={uploadingAvatar}
-                  />
-                </label>
-              )}
-              {uploadingAvatar && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-full">
-                  <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                </div>
-              )}
-            </div>
-
-            {/* Info básica */}
-            <div className="flex-1 text-center md:text-left">
-              <div className="flex items-center gap-3 justify-center md:justify-start mb-2">
-                <h1 className="text-3xl font-bold text-gray-900">{userData.full_name || 'Usuario'}</h1>
-                <Badge className="bg-emerald-100 text-emerald-700">Estudiante</Badge>
-              </div>
-              <div className="flex flex-wrap items-center gap-4 text-gray-600 justify-center md:justify-start">
-                <span className="flex items-center gap-2">
-                  <Mail className="w-4 h-4" />
-                  {userData.email}
-                </span>
-                {userData.telefono && (
-                  <span className="flex items-center gap-2">
-                    <Phone className="w-4 h-4" />
-                    {userData.telefono}
-                  </span>
-                )}
-                {userData.campus && (
-                  <span className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4" />
-                    {campusOptions.find(c => c.id === userData.campus)?.name}
-                  </span>
-                )}
-              </div>
-              {userData.bio && !isEditing && (
-                <p className="mt-3 text-gray-700 italic">"{userData.bio}"</p>
-              )}
-            </div>
-
-            {/* Botones editar/guardar/cancelar */}
-            <div className="flex gap-2">
-              {isEditing ? (
-                <>
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    onClick={handleCancel}
-                    disabled={isLoading}
-                    className="rounded-2xl"
-                  >
-                    <X className="w-4 h-4 mr-2" />
-                    Cancelar
-                  </Button>
-                  <Button
-                    size="lg"
-                    onClick={handleSave}
-                    disabled={isLoading}
-                    className="rounded-2xl bg-emerald-600 hover:bg-emerald-700"
-                  >
-                    {isLoading ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                        Guardando...
-                      </>
-                    ) : (
-                      <>
-                        <Save className="w-4 h-4 mr-2" />
-                        Guardar Cambios
-                      </>
-                    )}
-                  </Button>
-                </>
-              ) : (
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={() => setIsEditing(true)}
-                  className="rounded-2xl"
-                >
-                  <Pencil className="w-4 h-4 mr-2" />
-                  Editar Perfil
-                </Button>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Estadísticas rápidas + Racha */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <Card>
-          <CardContent className="p-6 text-center">
-            <UtensilsCrossed className="w-8 h-8 text-emerald-600 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-gray-900">{stats.totalReservas}</p>
-            <p className="text-sm text-gray-600">Menús Salvados</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6 text-center">
-            <TrendingUp className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-gray-900">€{stats.totalGastado.toFixed(2)}</p>
-            <p className="text-sm text-gray-600">Total Gastado</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6 text-center">
-            <Calendar className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-gray-900">{stats.menusEsteMes}</p>
-            <p className="text-sm text-gray-600">Este Mes</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6 text-center">
-            <Sparkles className="w-8 h-8 text-amber-600 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-gray-900">€{stats.ahorroTotal.toFixed(2)}</p>
-            <p className="text-sm text-gray-600">Ahorro Total</p>
-          </CardContent>
-        </Card>
-        
-        {/* Racha compacta */}
-        <Card className="bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-200">
-          <CardContent className="p-6 text-center">
-            <Flame className={`w-8 h-8 mx-auto mb-2 ${userData.racha_actual > 0 ? 'text-orange-500' : 'text-gray-400'}`} />
-            <p className="text-2xl font-bold text-gray-900">{userData.racha_actual || 0}</p>
-            <p className="text-sm text-gray-600">Racha Actual</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Bono Status Card */}
-      <Card className={`border-2 ${bonoStatus ? 'border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50' : 'border-gray-200'}`}>
-        <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${bonoStatus ? 'bg-purple-500' : 'bg-gray-300'}`}>
-                <Gift className="w-7 h-7 text-white" />
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-400 to-blue-500 flex items-center justify-center text-white text-3xl font-bold shadow-lg">
+                {user?.full_name?.[0]?.toUpperCase() || 'U'}
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Bono PlatPal</h3>
-                {bonoStatus ? (
-                  <>
-                    <p className="text-sm text-purple-700 font-medium">
-                      ✅ Suscripción Activa
-                    </p>
-                    <p className="text-xs text-gray-600 mt-1">
-                      {bonoStatus.cantidad_menus - (bonoStatus.menus_usados_mes_actual || 0)} de {bonoStatus.cantidad_menus} menús disponibles este mes
-                    </p>
-                  </>
-                ) : (
-                  <p className="text-sm text-gray-600">
-                    Sin suscripción activa
-                  </p>
+                <h1 className="text-3xl font-bold text-gray-900">{user?.full_name || 'Usuario'}</h1>
+                <p className="text-gray-600">{user?.email}</p>
+                {user?.campus && (
+                  <Badge className="mt-2">
+                    <MapPin className="w-3 h-3 mr-1" />
+                    {campusOptions.find(c => c.id === user.campus)?.name}
+                  </Badge>
                 )}
               </div>
             </div>
-            <div className="text-right">
-              {bonoStatus ? (
-                <>
-                  <p className="text-2xl font-bold text-purple-600">
-                    {bonoStatus.cantidad_menus - (bonoStatus.menus_usados_mes_actual || 0)}
-                  </p>
-                  <p className="text-xs text-gray-500">menús restantes</p>
-                  {bonoStatus.fecha_renovacion && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      Renueva: {new Date(bonoStatus.fecha_renovacion).toLocaleDateString('es-ES')}
-                    </p>
-                  )}
-                </>
-              ) : (
-                <Link to={createPageUrl("Bonos")}>
-                  <Button className="bg-purple-600 hover:bg-purple-700">
-                    <CreditCard className="w-4 h-4 mr-2" />
-                    Obtener Bono
-                  </Button>
-                </Link>
-              )}
-            </div>
+            
+            {isEditing ? (
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setIsEditing(false)}>
+                  <X className="w-4 h-4 mr-2" />
+                  Cancelar
+                </Button>
+                <Button onClick={handleSave} disabled={isLoading} className="bg-emerald-600">
+                  <Save className="w-4 h-4 mr-2" />
+                  Guardar
+                </Button>
+              </div>
+            ) : (
+              <Button variant="outline" onClick={() => setIsEditing(true)}>
+                <Pencil className="w-4 h-4 mr-2" />
+                Editar
+              </Button>
+            )}
           </div>
-          
-          {/* Barra de progreso del bono */}
-          {bonoStatus && (
-            <div className="mt-4">
-              <div className="w-full h-2 bg-purple-100 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all"
-                  style={{ width: `${((bonoStatus.cantidad_menus - (bonoStatus.menus_usados_mes_actual || 0)) / bonoStatus.cantidad_menus) * 100}%` }}
+
+          {isEditing && (
+            <div className="grid md:grid-cols-2 gap-4 mt-6 pt-6 border-t">
+              <div>
+                <label className="text-sm font-medium">Nombre</label>
+                <Input
+                  value={editData.full_name}
+                  onChange={(e) => setEditData({...editData, full_name: e.target.value})}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Teléfono</label>
+                <Input
+                  value={editData.telefono}
+                  onChange={(e) => setEditData({...editData, telefono: e.target.value})}
+                  placeholder="+34 123 456 789"
+                  className="mt-1"
                 />
               </div>
             </div>
@@ -597,438 +138,97 @@ export default function StudentProfile({ user }) {
         </CardContent>
       </Card>
 
-      {/* Tabs de contenido */}
-      <Tabs defaultValue="info" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="info">Info Personal</TabsTrigger>
-          <TabsTrigger value="preferences">Preferencias</TabsTrigger>
-          <TabsTrigger value="favorites">Favoritos</TabsTrigger>
-          <TabsTrigger value="streak">Racha</TabsTrigger>
-          <TabsTrigger value="history">Historial</TabsTrigger>
-        </TabsList>
+      {/* Stats */}
+      <div className="grid md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-6 text-center">
+            <UtensilsCrossed className="w-8 h-8 text-emerald-600 mx-auto mb-2" />
+            <p className="text-2xl font-bold">{stats.totalReservas}</p>
+            <p className="text-sm text-gray-600">Menús Salvados</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-6 text-center">
+            <TrendingUp className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+            <p className="text-2xl font-bold">€{stats.totalGastado.toFixed(2)}</p>
+            <p className="text-sm text-gray-600">Total Gastado</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-6 text-center">
+            <Calendar className="w-8 h-8 text-purple-600 mx-auto mb-2" />
+            <p className="text-2xl font-bold">{stats.menusEsteMes}</p>
+            <p className="text-sm text-gray-600">Este Mes</p>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-200">
+          <CardContent className="p-6 text-center">
+            <Flame className={`w-8 h-8 mx-auto mb-2 ${user?.racha_actual > 0 ? 'text-orange-500' : 'text-gray-400'}`} />
+            <p className="text-2xl font-bold">{user?.racha_actual || 0}</p>
+            <p className="text-sm text-gray-600">Racha Actual</p>
+          </CardContent>
+        </Card>
+      </div>
 
-        {/* Tab: Información Personal */}
-        <TabsContent value="info" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Datos Personales</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="full_name">Nombre Completo *</Label>
-                  <Input
-                    id="full_name"
-                    value={editData.full_name} // Always bind to editData when editing is possible
-                    onChange={(e) => handleEditChange('full_name', e.target.value)}
-                    disabled={!isEditing}
-                    className={!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={userData.email} // Email is display-only, always from userData
-                    disabled // Always disabled
-                    className="bg-gray-100 cursor-not-allowed"
-                  />
-                  <p className="text-xs text-gray-500">El email no se puede cambiar</p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="telefono">Teléfono (opcional)</Label>
-                  <Input
-                    id="telefono"
-                    type="tel"
-                    value={editData.telefono} // Bind to editData
-                    onChange={(e) => handleEditChange('telefono', e.target.value)}
-                    placeholder="+34 123 456 789"
-                    disabled={!isEditing}
-                    className={!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="campus">Mi Campus Principal</Label>
-                  {isEditing ? (
-                    <Select
-                      value={editData.campus} // Bind to editData
-                      onValueChange={(value) => handleEditChange('campus', value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecciona tu campus" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {campusOptions.map(campus => (
-                          <SelectItem key={campus.id} value={campus.id}>
-                            {campus.emoji} {campus.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <Input
-                      value={campusOptions.find(c => c.id === userData.campus)?.name || 'No especificado'} // Display from userData
-                      disabled
-                      className="bg-gray-50 cursor-not-allowed"
-                    />
-                  )}
+      {/* Bono Status */}
+      {bonoStatus && (
+        <Card className="border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Gift className="w-10 h-10 text-purple-600" />
+                <div>
+                  <h3 className="font-bold text-gray-900">Bono Activo</h3>
+                  <p className="text-sm text-purple-700">
+                    {bonoStatus.cantidad_menus - (bonoStatus.menus_usados_mes_actual || 0)} de {bonoStatus.cantidad_menus} menús disponibles
+                  </p>
                 </div>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-              <div className="space-y-2">
-                <Label htmlFor="bio">Biografía (opcional)</Label>
-                <Textarea
-                  id="bio"
-                  value={editData.bio} // Bind to editData
-                  onChange={(e) => handleEditChange('bio', e.target.value)}
-                  placeholder="Cuéntanos algo sobre ti..."
-                  disabled={!isEditing}
-                  className={!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}
-                  rows={3}
-                />
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Tab: Preferencias */}
-        <TabsContent value="preferences" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Preferencias Dietéticas</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid md:grid-cols-3 gap-4">
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border-2 border-gray-100">
-                  <Label htmlFor="pref_vegetariano" className="text-sm font-medium cursor-pointer">
-                    🥗 Vegetariano
-                  </Label>
-                  <Switch
-                    id="pref_vegetariano"
-                    checked={editData.preferencias_dieta?.es_vegetariano || false}
-                    onCheckedChange={(checked) => setEditData(prev => ({
-                      ...prev,
-                      preferencias_dieta: { ...(prev.preferencias_dieta || {}), es_vegetariano: checked }
-                    }))}
-                    disabled={!isEditing}
-                  />
-                </div>
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border-2 border-gray-100">
-                  <Label htmlFor="pref_vegano" className="text-sm font-medium cursor-pointer">
-                    🌱 Vegano
-                  </Label>
-                  <Switch
-                    id="pref_vegano"
-                    checked={editData.preferencias_dieta?.es_vegano || false}
-                    onCheckedChange={(checked) => setEditData(prev => ({
-                      ...prev,
-                      preferencias_dieta: { ...(prev.preferencias_dieta || {}), es_vegano: checked }
-                    }))}
-                    disabled={!isEditing}
-                  />
-                </div>
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border-2 border-gray-100">
-                  <Label htmlFor="pref_sin_gluten" className="text-sm font-medium cursor-pointer">
-                    🌾 Sin Gluten
-                  </Label>
-                  <Switch
-                    id="pref_sin_gluten"
-                    checked={editData.preferencias_dieta?.sin_gluten || false}
-                    onCheckedChange={(checked) => setEditData(prev => ({
-                      ...prev,
-                      preferencias_dieta: { ...(prev.preferencias_dieta || {}), sin_gluten: checked }
-                    }))}
-                    disabled={!isEditing}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <Label>Alérgenos a Evitar</Label>
-                <div className="flex flex-wrap gap-2">
-                  {alergenosOptions.map(alergeno => (
-                    <Badge
-                      key={alergeno.id}
-                      variant={(editData.preferencias_dieta?.alergenos_evitar || []).includes(alergeno.id) ? "default" : "outline"}
-                      className={`px-4 py-2 text-sm ${isEditing ? 'cursor-pointer hover:scale-105' : 'cursor-default'} transition-all`}
-                      onClick={() => isEditing && handleAlergenoToggle(alergeno.id)} // Only allow click when editing
-                    >
-                      {alergeno.emoji} {alergeno.name}
+      {/* Historial */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Historial de Reservas</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {reservations.length > 0 ? (
+            <div className="space-y-3 max-h-96 overflow-y-auto">
+              {reservations.slice(0, 10).map(r => (
+                <div key={r.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                  <div>
+                    <p className="font-semibold text-gray-900">{r.menus_detalle}</p>
+                    <p className="text-sm text-gray-600">{r.cafeteria}</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {new Date(r.created_date).toLocaleDateString('es-ES')}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <Badge variant={r.estado === 'recogido' ? 'default' : 'outline'}>
+                      {r.estado}
                     </Badge>
-                  ))}
+                    <p className="text-lg font-bold text-emerald-600 mt-1">€{r.precio_total?.toFixed(2)}</p>
+                  </div>
                 </div>
-                <p className="text-xs text-gray-500 mt-2">
-                  Los menús con estos alérgenos se marcarán claramente para tu seguridad.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Bell className="w-5 h-5" />
-                Notificaciones
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                <div>
-                  <Label className="font-medium">Nuevos menús por email</Label>
-                  <p className="text-sm text-gray-600">Recibe un email cuando haya menús nuevos</p>
-                </div>
-                <Switch
-                  checked={editData.notificaciones?.email_nuevos_menus ?? true}
-                  onCheckedChange={(checked) => setEditData(prev => ({
-                    ...prev,
-                    notificaciones: { ...(prev.notificaciones || {}), email_nuevos_menus: checked }
-                  }))}
-                  disabled={!isEditing}
-                />
-              </div>
-
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                <div>
-                  <Label className="font-medium">Recordatorios de recogida</Label>
-                  <p className="text-sm text-gray-600">Te avisaremos antes de que expire tu reserva</p>
-                </div>
-                <Switch
-                  checked={editData.notificaciones?.email_recordatorios ?? true}
-                  onCheckedChange={(checked) => setEditData(prev => ({
-                    ...prev,
-                    notificaciones: { ...(prev.notificaciones || {}), email_recordatorios: checked }
-                  }))}
-                  disabled={!isEditing}
-                />
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Tab: Favoritos */}
-        <TabsContent value="favorites" className="space-y-6">
-          {/* Cafeterías Favoritas */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Star className="w-5 h-5 text-amber-500" />
-                Cafeterías Favoritas
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isLoadingExtras ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="w-6 h-6 animate-spin text-emerald-600" />
-                </div>
-              ) : favoriteCafeterias.length > 0 ? (
-                <div className="grid md:grid-cols-2 gap-4">
-                  {favoriteCafeterias.map(cafe => (
-                    <div key={cafe.id} className="flex items-center justify-between p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border-2 border-amber-100">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center">
-                          <UtensilsCrossed className="w-5 h-5 text-white" />
-                        </div>
-                        <div>
-                          <p className="font-semibold text-gray-900">{cafe.nombre}</p>
-                          <p className="text-sm text-gray-600 capitalize">{cafe.campus?.replace('_', ' ')}</p>
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={async () => {
-                          const newFavorites = (userData.cafeterias_favoritas || []).filter(c => c !== cafe.nombre && c !== cafe.id);
-                          await base44.auth.updateMe({ cafeterias_favoritas: newFavorites });
-                          setUserData(prev => ({ ...prev, cafeterias_favoritas: newFavorites }));
-                          setFavoriteCafeterias(prev => prev.filter(c => c.id !== cafe.id));
-                        }}
-                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <Star className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-600">No tienes cafeterías favoritas</p>
-                  <p className="text-sm text-gray-500 mt-1">Marca cafeterías como favoritas desde la página de menús</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Menús Favoritos */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Heart className="w-5 h-5 text-red-500" />
-                Menús Favoritos
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isLoadingExtras ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="w-6 h-6 animate-spin text-emerald-600" />
-                </div>
-              ) : favoriteMenus.length > 0 ? (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {favoriteMenus.slice(0, 6).map(menu => (
-                    <div key={menu.id} className="relative overflow-hidden rounded-xl border-2 border-red-100 bg-gradient-to-br from-red-50 to-pink-50">
-                      {menu.imagen_url && (
-                        <img src={menu.imagen_url} alt={menu.plato_principal} className="w-full h-32 object-cover" />
-                      )}
-                      <div className="p-4">
-                        <p className="font-semibold text-gray-900 line-clamp-1">{menu.plato_principal}</p>
-                        <p className="text-sm text-gray-600 line-clamp-1">{menu.plato_secundario}</p>
-                        <div className="flex items-center justify-between mt-2">
-                          <p className="text-xs text-gray-500">{menu.cafeteria}</p>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={async () => {
-                              const newFavorites = (userData.menus_favoritos || []).filter(id => id !== menu.id);
-                              await base44.auth.updateMe({ menus_favoritos: newFavorites });
-                              setUserData(prev => ({ ...prev, menus_favoritos: newFavorites }));
-                              setFavoriteMenus(prev => prev.filter(m => m.id !== menu.id));
-                            }}
-                            className="text-red-500 hover:text-red-700 hover:bg-red-50 h-7 w-7 p-0"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <Heart className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-600">No tienes menús favoritos</p>
-                  <p className="text-sm text-gray-500 mt-1">Marca menús con ❤️ para guardarlos aquí</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Tab: Racha */}
-        <TabsContent value="streak" className="space-y-6">
-          <StreakMeter 
-            currentStreak={userData.racha_actual || 0}
-            maxStreak={userData.racha_maxima || 0}
-            size="large"
-          />
-          
-          <Card>
-            <CardHeader>
-              <CardTitle>¿Cómo funciona la racha?</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <span className="text-lg">1️⃣</span>
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-900">Compra menús regularmente</p>
-                  <p className="text-sm text-gray-600">Cada día que compres al menos un menú, tu racha aumenta</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <span className="text-lg">2️⃣</span>
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-900">Mantén el ritmo</p>
-                  <p className="text-sm text-gray-600">Si pasas un día sin comprar, tu racha se reinicia a 0</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <span className="text-lg">3️⃣</span>
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-900">Alcanza hitos</p>
-                  <p className="text-sm text-gray-600">Desbloquea niveles especiales: 3, 7, 14, 30 días consecutivos</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Tab: Historial */}
-        <TabsContent value="history" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <UtensilsCrossed className="w-5 h-5 text-emerald-600" />
-                Mis Reservas
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isLoadingReservations ? (
-                <div className="text-center py-8 text-gray-500">Cargando historial...</div>
-              ) : reservations.length > 0 ? (
-                <div className="space-y-3 max-h-[500px] overflow-y-auto">
-                  {reservations.map(reserva => (
-                    <div key={reserva.id} className="p-5 border-2 rounded-2xl bg-gradient-to-r from-gray-50 to-emerald-50/30 hover:shadow-md transition-all">
-                      <div className="flex justify-between items-start gap-4">
-                        <div className="flex-1 space-y-2">
-                          <div className="flex items-center gap-2">
-                            <p className="font-bold text-gray-900 text-lg">{reserva.menus_detalle}</p>
-                            {getEstadoBadge(reserva.estado)}
-                          </div>
-                          <p className="text-sm text-gray-600 flex items-center gap-2">
-                            <MapPin className="w-4 h-4" />
-                            {reserva.cafeteria} • {campusOptions.find(c => c.id === reserva.campus)?.name || reserva.campus}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            📅 {new Date(reserva.created_date).toLocaleDateString('es-ES', { 
-                              day: 'numeric', 
-                              month: 'long', 
-                              year: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
-                          </p>
-                          {reserva.codigo_recogida && (
-                            <Badge variant="outline" className="font-mono text-sm">
-                              Código: {reserva.codigo_recogida}
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="text-right">
-                          <p className="text-2xl font-bold text-emerald-600">€{reserva.precio_total?.toFixed(2)}</p>
-                          {reserva.descuento_aplicado > 0 && (
-                            <p className="text-xs text-gray-500">Ahorraste €{reserva.descuento_aplicado.toFixed(2)}</p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-16">
-                  <UtensilsCrossed className="w-20 h-20 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-600 text-lg mb-2">Aún no has reservado ningún menú</p>
-                  <p className="text-gray-500 text-sm mb-6">¡Empieza a salvar comida y ahorrar dinero hoy!</p>
-                  <Link to={createPageUrl("Campus")}>
-                    <Button className="bg-emerald-600 hover:bg-emerald-700">
-                      <Heart className="w-4 h-4 mr-2" />
-                      Explorar Menús
-                    </Button>
-                  </Link>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <UtensilsCrossed className="w-16 h-16 text-gray-300 mx-auto mb-3" />
+              <p className="text-gray-600">No has hecho reservas aún</p>
+              <Link to={createPageUrl("Menus")}>
+                <Button className="mt-4 bg-emerald-600">Explorar Menús</Button>
+              </Link>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
