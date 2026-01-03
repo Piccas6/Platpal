@@ -213,10 +213,16 @@ Responde desde el panel de admin o directamente al email del cliente.
                 <p className="text-xs text-blue-700 mb-3">
                   Consultas sobre packs, facturación, pruebas piloto, o cualquier duda sobre PlatPal Oficinas.
                 </p>
-                <div className="text-xs text-blue-800 space-y-1 border-t border-blue-200 pt-3">
-                  <p className="font-semibold">También puedes contactarnos directamente:</p>
-                  <p>📧 <a href="mailto:piccas.entrepreneurship@gmail.com" className="underline hover:text-blue-900">piccas.entrepreneurship@gmail.com</a></p>
-                  <p>📱 <a href="https://wa.me/34624297636" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-900">+34 624 29 76 36</a></p>
+                <div className="text-xs text-blue-800 space-y-1.5 border-t border-blue-200 pt-3">
+                  <p className="font-semibold mb-2">Contacto directo:</p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-blue-600">✉️</span>
+                    <a href="mailto:piccas.entrepreneurship@gmail.com" className="underline hover:text-blue-900">piccas.entrepreneurship@gmail.com</a>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-blue-600">📞</span>
+                    <a href="tel:+34624297636" className="hover:text-blue-900">+34 624 29 76 36</a>
+                  </div>
                 </div>
               </div>
 
