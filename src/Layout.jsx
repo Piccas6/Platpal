@@ -275,7 +275,15 @@ export default function Layout({ children, currentPageName }) {
                     </SidebarMenuItem>
                   ))}
                   
-                  {isLoggedIn && (effectiveRole === 'manager' || effectiveRole === 'admin') && managerNav.map((item) => (
+                  {isLoggedIn && (effectiveRole === 'office_user') && officeNav.map((item) => (
+          <SidebarMenuItem key={item.title}>
+            <SidebarMenuButton asChild className={`group hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-300 rounded-2xl mb-2 text-gray-700 font-medium ${location.pathname === item.url ? 'bg-indigo-50 text-indigo-700 shadow-sm' : ''}`}>
+              <Link to={item.url} className="flex items-center gap-4 px-4 py-3"><item.icon className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" /><span>{item.title}</span></Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        ))}
+
+        {isLoggedIn && (effectiveRole === 'manager' || effectiveRole === 'admin') && managerNav.map((item) => (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild className={`group hover:bg-teal-50 hover:text-teal-700 transition-all duration-300 rounded-2xl mb-2 text-gray-700 font-medium ${location.pathname === item.url ? 'bg-teal-50 text-teal-700 shadow-sm' : ''}`}>
                         <Link to={item.url} className="flex items-center gap-4 px-4 py-3"><item.icon className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" /><span>{item.title}</span></Link>
@@ -294,14 +302,6 @@ export default function Layout({ children, currentPageName }) {
                   {isLoggedIn && effectiveRole === 'admin' && adminNav.map((item) => (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild className={`group hover:bg-purple-50 hover:text-purple-700 transition-all duration-300 rounded-2xl mb-2 text-gray-700 font-medium ${location.pathname === item.url ? 'bg-purple-50 text-purple-700 shadow-sm' : ''}`}>
-                        <Link to={item.url} className="flex items-center gap-4 px-4 py-3"><item.icon className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" /><span>{item.title}</span></Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-
-                  {officeNav.map((item) => (
-                    <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton asChild className={`group hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-300 rounded-2xl mb-2 text-gray-700 font-medium ${location.pathname === item.url ? 'bg-indigo-50 text-indigo-700 shadow-sm' : ''}`}>
                         <Link to={item.url} className="flex items-center gap-4 px-4 py-3"><item.icon className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" /><span>{item.title}</span></Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -335,11 +335,12 @@ export default function Layout({ children, currentPageName }) {
               </div>
 
             {isLoggedIn && (currentUser?.app_role === 'admin') && (
-                <div className="flex items-center gap-2 p-1 bg-gray-100 rounded-xl">
-                    <button onClick={() => setTestRole('user')} className={`flex-1 py-1 px-2 rounded-lg text-xs font-semibold transition-all duration-300 flex items-center justify-center gap-1 ${effectiveRole === 'user' ? 'bg-white shadow-sm text-emerald-700' : 'text-gray-500 hover:bg-gray-200'}`}><User className="w-3 h-3" />Est.</button>
-                    <button onClick={() => setTestRole('manager')} className={`flex-1 py-1 px-2 rounded-lg text-xs font-semibold transition-all duration-300 flex items-center justify-center gap-1 ${effectiveRole === 'manager' ? 'bg-white shadow-sm text-emerald-700' : 'text-gray-500 hover:bg-gray-200'}`}><UserCheck className="w-3 h-3" />Man.</button>
-                    <button onClick={() => setTestRole('cafeteria')} className={`flex-1 py-1 px-2 rounded-lg text-xs font-semibold transition-all duration-300 flex items-center justify-center gap-1 ${effectiveRole === 'cafeteria' ? 'bg-white shadow-sm text-emerald-700' : 'text-gray-500 hover:bg-gray-200'}`}><ChefHat className="w-3 h-3" />Caf.</button>
-                    <button onClick={() => setTestRole('admin')} className={`flex-1 py-1 px-2 rounded-lg text-xs font-semibold transition-all duration-300 flex items-center justify-center gap-1 ${effectiveRole === 'admin' ? 'bg-white shadow-sm text-emerald-700' : 'text-gray-500 hover:bg-gray-200'}`}><Settings className="w-3 h-3" />Admin</button>
+                <div className="grid grid-cols-3 gap-1 p-1 bg-gray-100 rounded-xl">
+                    <button onClick={() => setTestRole('user')} className={`py-1 px-1 rounded-lg text-xs font-semibold transition-all duration-300 flex items-center justify-center gap-1 ${effectiveRole === 'user' ? 'bg-white shadow-sm text-emerald-700' : 'text-gray-500 hover:bg-gray-200'}`}><User className="w-3 h-3" />Est.</button>
+                    <button onClick={() => setTestRole('office_user')} className={`py-1 px-1 rounded-lg text-xs font-semibold transition-all duration-300 flex items-center justify-center gap-1 ${effectiveRole === 'office_user' ? 'bg-white shadow-sm text-indigo-700' : 'text-gray-500 hover:bg-gray-200'}`}><Building2 className="w-3 h-3" />Off.</button>
+                    <button onClick={() => setTestRole('manager')} className={`py-1 px-1 rounded-lg text-xs font-semibold transition-all duration-300 flex items-center justify-center gap-1 ${effectiveRole === 'manager' ? 'bg-white shadow-sm text-emerald-700' : 'text-gray-500 hover:bg-gray-200'}`}><UserCheck className="w-3 h-3" />Man.</button>
+                    <button onClick={() => setTestRole('cafeteria')} className={`py-1 px-1 rounded-lg text-xs font-semibold transition-all duration-300 flex items-center justify-center gap-1 ${effectiveRole === 'cafeteria' ? 'bg-white shadow-sm text-emerald-700' : 'text-gray-500 hover:bg-gray-200'}`}><ChefHat className="w-3 h-3" />Caf.</button>
+                    <button onClick={() => setTestRole('admin')} className={`col-span-2 py-1 px-1 rounded-lg text-xs font-semibold transition-all duration-300 flex items-center justify-center gap-1 ${effectiveRole === 'admin' ? 'bg-white shadow-sm text-emerald-700' : 'text-gray-500 hover:bg-gray-200'}`}><Settings className="w-3 h-3" />Admin</button>
                 </div>
             )}
             
