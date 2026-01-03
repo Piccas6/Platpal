@@ -6,6 +6,7 @@ import { base44 } from "@/api/base44Client";
 import { NotificationProvider } from "@/components/notifications/NotificationContext";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import NotificationTriggers from "@/components/notifications/NotificationTriggers";
+import RoleDetector from "@/components/auth/RoleDetector";
 import {
   Sidebar,
   SidebarContent,
@@ -162,6 +163,7 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <NotificationProvider>
+      <RoleDetector />
       <NotificationTriggers user={currentUser} />
       <SidebarProvider>
       <style>{`
