@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import OfficeChatWidget from "@/components/office/OfficeChatWidget";
 import { 
   ArrowRight, 
   Building2,
@@ -540,6 +541,9 @@ export default function OfficeHome() {
           </Link>
         </div>
       </section>
+
+      {/* Chat Widget */}
+      <OfficeChatWidget />
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { ArrowLeft, Package, CheckCircle, Building2, Truck, Calendar, Euro } fro
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import withOfficeAuth from "../components/auth/withOfficeAuth";
+import OfficeChatWidget from "../components/office/OfficeChatWidget";
 
 function OfficePacks() {
   const [selectedPack, setSelectedPack] = useState(null);
@@ -250,6 +251,9 @@ function OfficePacks() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Chat Widget */}
+        <OfficeChatWidget />
       </div>
     </div>
   );

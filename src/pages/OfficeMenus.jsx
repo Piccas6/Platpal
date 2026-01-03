@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import withOfficeAuth from "../components/auth/withOfficeAuth";
 import OfficeMenuCard from "../components/office/OfficeMenuCard";
+import OfficeChatWidget from "../components/office/OfficeChatWidget";
 
 function OfficeMenus() {
   const [menus, setMenus] = useState([]);
@@ -110,6 +111,9 @@ function OfficeMenus() {
             </Link>
           </Card>
         )}
+
+        {/* Chat Widget */}
+        <OfficeChatWidget />
       </div>
     </div>
   );

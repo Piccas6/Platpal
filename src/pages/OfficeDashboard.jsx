@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import OfficeChatWidget from "@/components/office/OfficeChatWidget";
 import {
   Package,
   Clock,
@@ -371,6 +372,9 @@ export default function OfficeDashboard() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Chat Widget */}
+        <OfficeChatWidget />
       </div>
     </div>
   );
