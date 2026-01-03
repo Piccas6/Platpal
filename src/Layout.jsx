@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Home, MapPin, UtensilsCrossed, HelpCircle, User, ChefHat, Target, Settings, UserCheck, BarChart3, Gift, Plus, Building2, Download, FileText } from "lucide-react";
+import { Home, MapPin, UtensilsCrossed, HelpCircle, User, ChefHat, Target, Settings, UserCheck, BarChart3, Gift, Plus, Building2, Download, FileText, Package } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { NotificationProvider } from "@/components/notifications/NotificationContext";
 import NotificationBell from "@/components/notifications/NotificationBell";
