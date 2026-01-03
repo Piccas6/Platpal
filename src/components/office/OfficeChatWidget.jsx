@@ -210,9 +210,14 @@ Responde desde el panel de admin o directamente al email del cliente.
                 <p className="text-sm text-blue-900 font-medium mb-2">
                   👋 ¡Hola! Cuéntanos en qué podemos ayudarte
                 </p>
-                <p className="text-xs text-blue-700">
+                <p className="text-xs text-blue-700 mb-3">
                   Consultas sobre packs, facturación, pruebas piloto, o cualquier duda sobre PlatPal Oficinas.
                 </p>
+                <div className="text-xs text-blue-800 space-y-1 border-t border-blue-200 pt-3">
+                  <p className="font-semibold">También puedes contactarnos directamente:</p>
+                  <p>📧 <a href="mailto:piccas.entrepreneurship@gmail.com" className="underline hover:text-blue-900">piccas.entrepreneurship@gmail.com</a></p>
+                  <p>📱 <a href="https://wa.me/34624297636" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-900">+34 624 29 76 36</a></p>
+                </div>
               </div>
 
               <div>

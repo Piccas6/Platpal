@@ -25,6 +25,7 @@ import NotFound from './pages/NotFound';
 import OfficeDashboard from './pages/OfficeDashboard';
 import OfficeHome from './pages/OfficeHome';
 import OfficeMenus from './pages/OfficeMenus';
+import OfficeOnboarding from './pages/OfficeOnboarding';
 import OfficePacks from './pages/OfficePacks';
 import OfficeSuccess from './pages/OfficeSuccess';
 import PaymentFlow from './pages/PaymentFlow';
@@ -40,7 +41,6 @@ import SystemCheck from './pages/SystemCheck';
 import TermsOfService from './pages/TermsOfService';
 import TestPayments from './pages/TestPayments';
 import UploadDocumentsCafeteria from './pages/UploadDocumentsCafeteria';
-import OfficeOnboarding from './pages/OfficeOnboarding';
 import __Layout from './Layout.jsx';
 
 
@@ -72,6 +72,7 @@ export const PAGES = {
     "OfficeDashboard": OfficeDashboard,
     "OfficeHome": OfficeHome,
     "OfficeMenus": OfficeMenus,
+    "OfficeOnboarding": OfficeOnboarding,
     "OfficePacks": OfficePacks,
     "OfficeSuccess": OfficeSuccess,
     "PaymentFlow": PaymentFlow,
@@ -87,7 +88,6 @@ export const PAGES = {
     "TermsOfService": TermsOfService,
     "TestPayments": TestPayments,
     "UploadDocumentsCafeteria": UploadDocumentsCafeteria,
-    "OfficeOnboarding": OfficeOnboarding,
 }
 
 export const pagesConfig = {

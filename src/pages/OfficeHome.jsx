@@ -52,14 +52,18 @@ export default function OfficeHome() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-            <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-10 py-7 rounded-full text-lg font-bold shadow-xl hover:shadow-2xl hover:scale-105 transition-all group">
-              Solicitar prueba gratuita
-              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Button>
+            <a href="mailto:piccas.entrepreneurship@gmail.com?subject=Solicitud%20de%20prueba%20gratuita%20-%20PlatPal%20Oficinas">
+              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-10 py-7 rounded-full text-lg font-bold shadow-xl hover:shadow-2xl hover:scale-105 transition-all group">
+                Solicitar prueba gratuita
+                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </a>
             
-            <Button size="lg" variant="outline" className="border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-10 py-7 rounded-full text-lg font-semibold shadow-lg hover:shadow-xl transition-all">
-              Ver cómo funciona
-            </Button>
+            <a href="https://wa.me/34624297636?text=Hola,%20quiero%20información%20sobre%20PlatPal%20Oficinas" target="_blank" rel="noopener noreferrer">
+              <Button size="lg" variant="outline" className="border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-10 py-7 rounded-full text-lg font-semibold shadow-lg hover:shadow-xl transition-all">
+                Hablar por WhatsApp
+              </Button>
+            </a>
           </div>
 
           {/* Trust Signals */}
@@ -506,14 +510,18 @@ export default function OfficeHome() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-50 px-12 py-7 rounded-full text-lg font-bold shadow-2xl hover:scale-105 transition-all">
-              Solicitar prueba gratuita
-              <ArrowRight className="ml-3 w-6 h-6" />
-            </Button>
+            <a href="mailto:piccas.entrepreneurship@gmail.com?subject=Solicitud%20de%20prueba%20gratuita%20-%20PlatPal%20Oficinas">
+              <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-50 px-12 py-7 rounded-full text-lg font-bold shadow-2xl hover:scale-105 transition-all">
+                Solicitar prueba gratuita
+                <ArrowRight className="ml-3 w-6 h-6" />
+              </Button>
+            </a>
             
-            <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white/10 px-12 py-7 rounded-full text-lg font-semibold">
-              Hablar con el equipo
-            </Button>
+            <a href="https://wa.me/34624297636?text=Hola,%20quiero%20información%20sobre%20PlatPal%20Oficinas" target="_blank" rel="noopener noreferrer">
+              <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white/10 px-12 py-7 rounded-full text-lg font-semibold">
+                Hablar con el equipo
+              </Button>
+            </a>
           </div>
 
           <div className="mt-12 flex flex-wrap justify-center gap-8 text-sm text-white/80">
