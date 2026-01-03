@@ -34,7 +34,7 @@ export default function OfficeHome() {
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-16 text-center">
           <div className="mb-6 flex justify-center">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
-              <Leaf className="w-4 h-4" />
+              <Building2 className="w-4 h-4" />
               Sostenibilidad empresarial real
             </div>
           </div>
