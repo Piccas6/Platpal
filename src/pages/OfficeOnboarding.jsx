@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { OrbitalLoader } from '@/components/ui/orbital-loader';
-import OfficeProfileSetup from '../components/office/OfficeProfileSetup';
+import OfficeOnboardingWizard from '../components/office/OfficeOnboardingWizard';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 
@@ -39,5 +39,5 @@ export default function OfficeOnboarding() {
     );
   }
 
-  return <OfficeProfileSetup user={user} />;
+  return <OfficeOnboardingWizard user={user} />;
 }
