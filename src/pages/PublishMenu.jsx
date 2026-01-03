@@ -12,6 +12,7 @@ import { OrbitalLoader } from "@/components/ui/orbital-loader";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import withAuth from "../components/auth/withAuth";
+import DemandPredictor from "../components/cafeteria/DemandPredictor";
 
 function PublishMenu() {
   const location = useLocation();
@@ -662,6 +663,19 @@ PlatPal - Menús Sostenibles
               )}
             </CardContent>
           </Card>
+
+          {/* Predictor de Demanda IA */}
+          {formData.cafeteria_id && formData.plato_principal && formData.fecha && (
+            <DemandPredictor
+              cafeteriaName={cafeterias.find(c => c.id === formData.cafeteria_id)?.nombre}
+              platoData={{
+                plato_principal: formData.plato_principal,
+                plato_secundario: formData.plato_secundario,
+                fecha: formData.fecha
+              }}
+              onStockSuggestion={(stock) => setFormData(prev => ({ ...prev, stock_total: stock }))}
+            />
+          )}
 
           <Card className="border-2 border-amber-200">
             <CardHeader className="bg-amber-50">
