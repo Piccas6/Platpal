@@ -30,6 +30,9 @@ import {
 import { DropdownMenuCustom } from "@/components/ui/dropdown-menu-custom";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import ImpactMetrics from "@/components/cafeteria/ImpactMetrics";
+import RevenueMetrics from "@/components/cafeteria/RevenueMetrics";
+import QuickStockEditor from "@/components/cafeteria/QuickStockEditor";
 import {
   Dialog,
   DialogContent,
@@ -492,6 +495,27 @@ PlatPal - Menús Sostenibles
             </CardContent>
           </Card>
         </div>
+
+        {/* Métricas de Impacto */}
+        {selectedCafeteriaData && (
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold text-gray-900">Impacto Ambiental</h2>
+            <ImpactMetrics cafeteriaName={selectedCafeteriaData.nombre} dateRange="month" />
+          </div>
+        )}
+
+        {/* Métricas de Revenue */}
+        {selectedCafeteriaData && (
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold text-gray-900">Ingresos y Ventas</h2>
+            <RevenueMetrics cafeteriaName={selectedCafeteriaData.nombre} dateRange="month" />
+          </div>
+        )}
+
+        {/* Editor Rápido de Stock */}
+        {menus.length > 0 && (
+          <QuickStockEditor menus={menus} onUpdate={loadData} />
+        )}
 
         <div className="flex flex-wrap gap-3">
           <Link to={createPageUrl("PickupPanel")}>
