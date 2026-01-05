@@ -41,6 +41,7 @@ import SystemCheck from './pages/SystemCheck';
 import TermsOfService from './pages/TermsOfService';
 import TestPayments from './pages/TestPayments';
 import UploadDocumentsCafeteria from './pages/UploadDocumentsCafeteria';
+import PWASetup from './pages/PWASetup';
 import __Layout from './Layout.jsx';
 
 
@@ -88,6 +89,7 @@ export const PAGES = {
     "TermsOfService": TermsOfService,
     "TestPayments": TestPayments,
     "UploadDocumentsCafeteria": UploadDocumentsCafeteria,
+    "PWASetup": PWASetup,
 }
 
 export const pagesConfig = {
