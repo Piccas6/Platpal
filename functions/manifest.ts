@@ -18,16 +18,28 @@ Deno.serve(async (req) => {
     prefer_related_applications: false,
     icons: [
       {
-        src: "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68a77c0a8a0286e1f5d59edb/icon-192.png",
+        src: "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68a77c0a8a0286e1f5d59edb/ca5d210a4_ChatGPTImage17sept202520_10_05.png",
         sizes: "192x192",
         type: "image/png",
-        purpose: "any maskable"
+        purpose: "any"
       },
       {
-        src: "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68a77c0a8a0286e1f5d59edb/icon-512.png",
+        src: "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68a77c0a8a0286e1f5d59edb/ca5d210a4_ChatGPTImage17sept202520_10_05.png",
         sizes: "512x512",
         type: "image/png",
-        purpose: "any maskable"
+        purpose: "any"
+      },
+      {
+        src: "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68a77c0a8a0286e1f5d59edb/ca5d210a4_ChatGPTImage17sept202520_10_05.png",
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "maskable"
+      },
+      {
+        src: "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68a77c0a8a0286e1f5d59edb/ca5d210a4_ChatGPTImage17sept202520_10_05.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "maskable"
       }
     ],
     screenshots: [],
@@ -39,12 +51,16 @@ Deno.serve(async (req) => {
         url: "/Menus",
         icons: [
           {
-            src: "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68a77c0a8a0286e1f5d59edb/icon-192.png",
+            src: "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68a77c0a8a0286e1f5d59edb/ca5d210a4_ChatGPTImage17sept202520_10_05.png",
             sizes: "192x192"
           }
         ]
       }
-    ]
+    ],
+    id: "/",
+    launch_handler: {
+      client_mode: ["navigate-existing", "auto"]
+    }
   };
 
   return new Response(JSON.stringify(manifest, null, 2), {
