@@ -198,8 +198,25 @@ export default function Layout({ children, currentPageName }) {
     if (!document.querySelector('link[rel="apple-touch-icon"]')) {
       const appleTouchIcon = document.createElement('link');
       appleTouchIcon.rel = 'apple-touch-icon';
-      appleTouchIcon.href = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68a77c0a8a0286e1f5d59edb/icon-192.png';
+      appleTouchIcon.sizes = '192x192';
+      appleTouchIcon.href = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68a77c0a8a0286e1f5d59edb/ca5d210a4_ChatGPTImage17sept202520_10_05.png';
       document.head.appendChild(appleTouchIcon);
+    }
+
+    // Application name meta
+    if (!document.querySelector('meta[name="application-name"]')) {
+      const appName = document.createElement('meta');
+      appName.name = 'application-name';
+      appName.content = 'Platpal';
+      document.head.appendChild(appName);
+    }
+
+    // Mobile web app capable
+    if (!document.querySelector('meta[name="mobile-web-app-capable"]')) {
+      const mobileWebApp = document.createElement('meta');
+      mobileWebApp.name = 'mobile-web-app-capable';
+      mobileWebApp.content = 'yes';
+      document.head.appendChild(mobileWebApp);
     }
 
     // Registrar Service Worker desde la URL de la función backend

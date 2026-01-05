@@ -52,7 +52,7 @@ export default function PWAHead() {
       const appleTouchIcon = document.createElement('link');
       appleTouchIcon.rel = 'apple-touch-icon';
       appleTouchIcon.sizes = '192x192';
-      appleTouchIcon.href = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68a77c0a8a0286e1f5d59edb/icon-192.png';
+      appleTouchIcon.href = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68a77c0a8a0286e1f5d59edb/ca5d210a4_ChatGPTImage17sept202520_10_05.png';
       document.head.appendChild(appleTouchIcon);
     }
 
