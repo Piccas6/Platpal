@@ -163,69 +163,54 @@ export default function Layout({ children, currentPageName }) {
 
   // PWA Setup: Inyectar manifest y registrar service worker
   useEffect(() => {
-    // Inyectar link al manifest.json servido desde backend function
+    const baseUrl = window.location.origin;
+    
+    // Link al manifest usando función backend
     let manifestLink = document.querySelector('link[rel="manifest"]');
     if (!manifestLink) {
       manifestLink = document.createElement('link');
       manifestLink.rel = 'manifest';
-      manifestLink.href = '/api/manifest';
+      manifestLink.href = `${baseUrl}/api/invoke/manifest`;
+      manifestLink.crossOrigin = 'use-credentials';
       document.head.appendChild(manifestLink);
     }
 
-    // Meta tags para PWA - theme-color negro para PWABuilder
-    if (!document.querySelector('meta[name="theme-color"]')) {
-      const themeColorMeta = document.createElement('meta');
-      themeColorMeta.name = 'theme-color';
-      themeColorMeta.content = '#000000';
-      document.head.appendChild(themeColorMeta);
-    }
+    // Meta tags esenciales para PWA
+    const metaTags = [
+      { name: 'theme-color', content: '#10B981' },
+      { name: 'apple-mobile-web-app-capable', content: 'yes' },
+      { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
+      { name: 'apple-mobile-web-app-title', content: 'PlatPal' },
+      { name: 'mobile-web-app-capable', content: 'yes' },
+      { name: 'application-name', content: 'PlatPal' }
+    ];
 
-    if (!document.querySelector('meta[name="apple-mobile-web-app-capable"]')) {
-      const appleMeta = document.createElement('meta');
-      appleMeta.name = 'apple-mobile-web-app-capable';
-      appleMeta.content = 'yes';
-      document.head.appendChild(appleMeta);
-    }
-
-    if (!document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]')) {
-      const appleStatusMeta = document.createElement('meta');
-      appleStatusMeta.name = 'apple-mobile-web-app-status-bar-style';
-      appleStatusMeta.content = 'black';
-      document.head.appendChild(appleStatusMeta);
-    }
+    metaTags.forEach(tag => {
+      if (!document.querySelector(`meta[name="${tag.name}"]`)) {
+        const meta = document.createElement('meta');
+        meta.name = tag.name;
+        meta.content = tag.content;
+        document.head.appendChild(meta);
+      }
+    });
 
     // Apple touch icon
     if (!document.querySelector('link[rel="apple-touch-icon"]')) {
       const appleTouchIcon = document.createElement('link');
       appleTouchIcon.rel = 'apple-touch-icon';
-      appleTouchIcon.sizes = '192x192';
       appleTouchIcon.href = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68a77c0a8a0286e1f5d59edb/ca5d210a4_ChatGPTImage17sept202520_10_05.png';
       document.head.appendChild(appleTouchIcon);
     }
 
-    // Application name meta
-    if (!document.querySelector('meta[name="application-name"]')) {
-      const appName = document.createElement('meta');
-      appName.name = 'application-name';
-      appName.content = 'Platpal';
-      document.head.appendChild(appName);
-    }
-
-    // Mobile web app capable
-    if (!document.querySelector('meta[name="mobile-web-app-capable"]')) {
-      const mobileWebApp = document.createElement('meta');
-      mobileWebApp.name = 'mobile-web-app-capable';
-      mobileWebApp.content = 'yes';
-      document.head.appendChild(mobileWebApp);
-    }
-
-    // Registrar Service Worker desde la URL de la función backend
+    // Registrar Service Worker desde función backend
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/api/serviceWorker', { scope: '/' })
-        .then((registration) => {
-          console.log('✅ Service Worker registrado para PWA con scope:', registration.scope);
+      navigator.serviceWorker.register(`${baseUrl}/api/invoke/serviceWorker`)
+        .then(registration => {
+          console.log('✅ SW registrado:', registration.scope);
         })
-        .catch((err) => console.log('❌ Error registrando SW:', err));
+        .catch(err => {
+          console.error('❌ Error SW:', err);
+        });
     }
   }, []);
 
