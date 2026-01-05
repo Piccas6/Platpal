@@ -28,6 +28,7 @@ import OfficeMenus from './pages/OfficeMenus';
 import OfficeOnboarding from './pages/OfficeOnboarding';
 import OfficePacks from './pages/OfficePacks';
 import OfficeSuccess from './pages/OfficeSuccess';
+import PWASetup from './pages/PWASetup';
 import PaymentFlow from './pages/PaymentFlow';
 import PickupPanel from './pages/PickupPanel';
 import PrivacyPolicy from './pages/PrivacyPolicy';
@@ -41,7 +42,6 @@ import SystemCheck from './pages/SystemCheck';
 import TermsOfService from './pages/TermsOfService';
 import TestPayments from './pages/TestPayments';
 import UploadDocumentsCafeteria from './pages/UploadDocumentsCafeteria';
-import PWASetup from './pages/PWASetup';
 import __Layout from './Layout.jsx';
 
 
@@ -76,6 +76,7 @@ export const PAGES = {
     "OfficeOnboarding": OfficeOnboarding,
     "OfficePacks": OfficePacks,
     "OfficeSuccess": OfficeSuccess,
+    "PWASetup": PWASetup,
     "PaymentFlow": PaymentFlow,
     "PickupPanel": PickupPanel,
     "PrivacyPolicy": PrivacyPolicy,
@@ -89,7 +90,6 @@ export const PAGES = {
     "TermsOfService": TermsOfService,
     "TestPayments": TestPayments,
     "UploadDocumentsCafeteria": UploadDocumentsCafeteria,
-    "PWASetup": PWASetup,
 }
 
 export const pagesConfig = {

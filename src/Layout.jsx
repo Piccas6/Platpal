@@ -163,43 +163,20 @@ export default function Layout({ children, currentPageName }) {
 
   // PWA Setup: Inyectar manifest y registrar service worker
   useEffect(() => {
-    // Crear e inyectar manifest.json
-    const manifestData = {
-      name: "PlatPal - Menús Sostenibles",
-      short_name: "PlatPal",
-      description: "Rescata menús deliciosos por solo 2,99€ y ayuda al planeta",
-      start_url: "/",
-      scope: "/",
-      display: "standalone",
-      orientation: "portrait",
-      theme_color: "#10B981",
-      background_color: "#FFFFFF",
-      icons: [
-        { src: "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68a77c0a8a0286e1f5d59edb/ca5d210a4_ChatGPTImage17sept202520_10_05.png", sizes: "48x48", type: "image/png", purpose: "any maskable" },
-        { src: "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68a77c0a8a0286e1f5d59edb/ca5d210a4_ChatGPTImage17sept202520_10_05.png", sizes: "72x72", type: "image/png", purpose: "any maskable" },
-        { src: "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68a77c0a8a0286e1f5d59edb/ca5d210a4_ChatGPTImage17sept202520_10_05.png", sizes: "96x96", type: "image/png", purpose: "any maskable" },
-        { src: "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68a77c0a8a0286e1f5d59edb/ca5d210a4_ChatGPTImage17sept202520_10_05.png", sizes: "144x144", type: "image/png", purpose: "any maskable" },
-        { src: "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68a77c0a8a0286e1f5d59edb/ca5d210a4_ChatGPTImage17sept202520_10_05.png", sizes: "192x192", type: "image/png", purpose: "any maskable" },
-        { src: "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68a77c0a8a0286e1f5d59edb/ca5d210a4_ChatGPTImage17sept202520_10_05.png", sizes: "512x512", type: "image/png", purpose: "any maskable" }
-      ]
-    };
-
-    // Crear link al manifest si no existe
+    // Inyectar link al manifest.json servido desde backend function
     let manifestLink = document.querySelector('link[rel="manifest"]');
     if (!manifestLink) {
       manifestLink = document.createElement('link');
       manifestLink.rel = 'manifest';
-      const manifestBlob = new Blob([JSON.stringify(manifestData)], { type: 'application/json' });
-      const manifestURL = URL.createObjectURL(manifestBlob);
-      manifestLink.href = manifestURL;
+      manifestLink.href = '/api/manifest';
       document.head.appendChild(manifestLink);
     }
 
-    // Meta tags para PWA
+    // Meta tags para PWA - theme-color negro para PWABuilder
     if (!document.querySelector('meta[name="theme-color"]')) {
       const themeColorMeta = document.createElement('meta');
       themeColorMeta.name = 'theme-color';
-      themeColorMeta.content = '#10B981';
+      themeColorMeta.content = '#000000';
       document.head.appendChild(themeColorMeta);
     }
 
@@ -213,59 +190,24 @@ export default function Layout({ children, currentPageName }) {
     if (!document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]')) {
       const appleStatusMeta = document.createElement('meta');
       appleStatusMeta.name = 'apple-mobile-web-app-status-bar-style';
-      appleStatusMeta.content = 'black-translucent';
+      appleStatusMeta.content = 'black';
       document.head.appendChild(appleStatusMeta);
     }
 
-    // Registrar Service Worker
+    // Apple touch icon
+    if (!document.querySelector('link[rel="apple-touch-icon"]')) {
+      const appleTouchIcon = document.createElement('link');
+      appleTouchIcon.rel = 'apple-touch-icon';
+      appleTouchIcon.href = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68a77c0a8a0286e1f5d59edb/icon-192.png';
+      document.head.appendChild(appleTouchIcon);
+    }
+
+    // Registrar Service Worker desde la URL de la función backend
     if ('serviceWorker' in navigator) {
-      const swCode = `
-const CACHE_NAME = 'platpal-v1';
-const RUNTIME_CACHE = 'platpal-runtime';
-
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(['/'])).then(() => self.skipWaiting())
-  );
-});
-
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME && cacheName !== RUNTIME_CACHE) {
-            return caches.delete(cacheName);
-          }
+      navigator.serviceWorker.register('/api/serviceWorker', { scope: '/' })
+        .then((registration) => {
+          console.log('✅ Service Worker registrado para PWA con scope:', registration.scope);
         })
-      );
-    }).then(() => self.clients.claim())
-  );
-});
-
-self.addEventListener('fetch', (event) => {
-  const { request } = event;
-  const url = new URL(request.url);
-  if (url.origin !== location.origin || request.url.includes('/api/')) return;
-  event.respondWith(
-    fetch(request)
-      .then((response) => {
-        if (response && response.status === 200) {
-          const responseToCache = response.clone();
-          caches.open(RUNTIME_CACHE).then((cache) => cache.put(request, responseToCache));
-        }
-        return response;
-      })
-      .catch(() => caches.match(request).then(r => r || caches.match('/')))
-  );
-});
-      `;
-
-      const swBlob = new Blob([swCode], { type: 'application/javascript' });
-      const swURL = URL.createObjectURL(swBlob);
-      
-      navigator.serviceWorker.register(swURL)
-        .then(() => console.log('✅ Service Worker registrado para PWA'))
         .catch((err) => console.log('❌ Error registrando SW:', err));
     }
   }, []);
