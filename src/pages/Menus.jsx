@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Filter, Star, StarOff, Clock, Sparkles } from "lucide-react";
+import { ArrowLeft, Filter, Star, StarOff, Clock, Sparkles, ChevronDown } from "lucide-react";
 import { OrbitalLoader } from "@/components/ui/orbital-loader";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -40,6 +40,7 @@ export default function Menus() {
   });
 
   const [selectedDietTags, setSelectedDietTags] = useState([]);
+  const [showFilters, setShowFilters] = useState(false);
 
   const dietaryTags = [
     { id: "vegetariano", label: "Vegetariano", icon: "🥗" },
@@ -453,27 +454,32 @@ export default function Menus() {
           />
         )}
 
-        {/* Botón Menú Sorpresa */}
-        <div className="mb-6 flex justify-center">
-          <Link to={createPageUrl("SurpriseMenu")}>
-            <Button 
-              size="lg"
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-xl hover:shadow-2xl hover:scale-105 transition-all text-lg px-8 py-6"
-            >
-              <Sparkles className="w-5 h-5 mr-2" />
-              ✨ Solicitar Menú Sorpresa ✨
-            </Button>
-          </Link>
-        </div>
-
-        {/* Filtros */}
+        {/* Filtros desplegables */}
         <Card className="mb-6 border-2">
             <CardContent className="p-4">
-                <div className="flex items-center gap-2 mb-4">
+                <div className="flex items-center justify-between">
+                  <button 
+                    onClick={() => setShowFilters(!showFilters)}
+                    className="flex items-center gap-2 hover:opacity-70 transition-opacity"
+                  >
                     <Filter className="w-5 h-5 text-emerald-600" />
                     <h3 className="font-semibold text-gray-900">Filtrar Menús</h3>
+                    <ChevronDown className={`w-4 h-4 text-gray-600 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
+                  </button>
+                  <Link to={createPageUrl("SurpriseMenu")}>
+                    <Button 
+                      variant="outline"
+                      size="sm"
+                      className="border-purple-300 text-purple-600 hover:bg-purple-50"
+                    >
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      Menú Sorpresa
+                    </Button>
+                  </Link>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                {showFilters && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4 pt-4 border-t-2 border-gray-100">
                     <div>
                         <Label className="text-sm mb-2 block">Tipo de Cocina</Label>
                         <Select 
@@ -508,16 +514,18 @@ export default function Menus() {
                     </div>
                 </div>
 
-                <div className="mt-4 pt-4 border-t-2 border-gray-100">
-                    <Badge 
-                        variant={filters.solo_favoritos ? "default" : "outline"}
-                        className="cursor-pointer hover:scale-105 transition-transform"
-                        onClick={() => setFilters(prev => ({...prev, solo_favoritos: !prev.solo_favoritos}))}
-                    >
-                        {filters.solo_favoritos ? <Star className="w-3 h-3 mr-1 fill-current" /> : <StarOff className="w-3 h-3 mr-1" />}
-                        Solo Cafeterías Favoritas
-                    </Badge>
+                  <div className="mt-4 pt-4 border-t-2 border-gray-100 md:col-span-2">
+                      <Badge 
+                          variant={filters.solo_favoritos ? "default" : "outline"}
+                          className="cursor-pointer hover:scale-105 transition-transform"
+                          onClick={() => setFilters(prev => ({...prev, solo_favoritos: !prev.solo_favoritos}))}
+                      >
+                          {filters.solo_favoritos ? <Star className="w-3 h-3 mr-1 fill-current" /> : <StarOff className="w-3 h-3 mr-1" />}
+                          Solo Cafeterías Favoritas
+                      </Badge>
+                  </div>
                 </div>
+                )}
             </CardContent>
         </Card>
 
