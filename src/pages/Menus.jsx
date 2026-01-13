@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Filter, Star, StarOff, Clock } from "lucide-react";
+import { ArrowLeft, Filter, Star, StarOff, Clock, Sparkles } from "lucide-react";
 import { OrbitalLoader } from "@/components/ui/orbital-loader";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -452,6 +452,19 @@ export default function Menus() {
             }}
           />
         )}
+
+        {/* Botón Menú Sorpresa */}
+        <div className="mb-6 flex justify-center">
+          <Link to={createPageUrl("SurpriseMenu")}>
+            <Button 
+              size="lg"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-xl hover:shadow-2xl hover:scale-105 transition-all text-lg px-8 py-6"
+            >
+              <Sparkles className="w-5 h-5 mr-2" />
+              ✨ Solicitar Menú Sorpresa ✨
+            </Button>
+          </Link>
+        </div>
 
         {/* Filtros */}
         <Card className="mb-6 border-2">
