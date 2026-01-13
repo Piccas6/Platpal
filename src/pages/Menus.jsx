@@ -512,20 +512,19 @@ export default function Menus() {
                           title="Opciones Dietéticas"
                         />
                     </div>
-                </div>
 
-                  <div className="mt-4 pt-4 border-t-2 border-gray-100 md:col-span-2">
-                      <Badge 
-                          variant={filters.solo_favoritos ? "default" : "outline"}
-                          className="cursor-pointer hover:scale-105 transition-transform"
-                          onClick={() => setFilters(prev => ({...prev, solo_favoritos: !prev.solo_favoritos}))}
-                      >
-                          {filters.solo_favoritos ? <Star className="w-3 h-3 mr-1 fill-current" /> : <StarOff className="w-3 h-3 mr-1" />}
-                          Solo Cafeterías Favoritas
-                      </Badge>
-                  </div>
-                </div>
-                )}
+                    <div className="mt-4 pt-4 border-t-2 border-gray-100 md:col-span-2">
+                       <Badge 
+                           variant={filters.solo_favoritos ? "default" : "outline"}
+                           className="cursor-pointer hover:scale-105 transition-transform"
+                           onClick={() => setFilters(prev => ({...prev, solo_favoritos: !prev.solo_favoritos}))}
+                       >
+                           {filters.solo_favoritos ? <Star className="w-3 h-3 mr-1 fill-current" /> : <StarOff className="w-3 h-3 mr-1" />}
+                           Solo Cafeterías Favoritas
+                       </Badge>
+                    </div>
+                    </div>
+                    )}
             </CardContent>
         </Card>
 
