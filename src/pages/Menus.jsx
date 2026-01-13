@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Filter, Star, StarOff, Clock } from "lucide-react";
 import { OrbitalLoader } from "@/components/ui/orbital-loader";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import MenuCard from "../components/menus/MenuCard";
 import ReservationModal from "../components/menus/ReservationModal";
@@ -18,6 +18,7 @@ import SurveyManager from "../components/surveys/SurveyManager";
 
 export default function Menus() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [menus, setMenus] = useState([]);
   const [selectedCampus, setSelectedCampus] = useState(null);
   const [selectedMenu, setSelectedMenu] = useState(null);

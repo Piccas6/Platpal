@@ -8,6 +8,7 @@ import { createPageUrl } from "@/utils";
 import { Plus, ChefHat, Package, TrendingUp, Euro, QrCode, Building2 } from "lucide-react";
 import { OrbitalLoader } from "@/components/ui/orbital-loader";
 import { DropdownMenuCustom } from "@/components/ui/dropdown-menu-custom";
+import SurpriseRequestsPanel from "@/components/cafeteria/SurpriseRequestsPanel";
 
 export default function CafeteriaDashboard() {
   const navigate = useNavigate();
@@ -230,6 +231,9 @@ export default function CafeteriaDashboard() {
             </Button>
           </Link>
         </div>
+
+        {/* Solicitudes de Menú Sorpresa */}
+        <SurpriseRequestsPanel cafeteriaName={selectedCafeteriaData?.nombre} />
 
         {/* Pedidos Pendientes */}
         <Card className="border-2 border-orange-200">

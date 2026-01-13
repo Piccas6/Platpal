@@ -42,6 +42,7 @@ import SystemCheck from './pages/SystemCheck';
 import TermsOfService from './pages/TermsOfService';
 import TestPayments from './pages/TestPayments';
 import UploadDocumentsCafeteria from './pages/UploadDocumentsCafeteria';
+import SurpriseMenu from './pages/SurpriseMenu';
 import __Layout from './Layout.jsx';
 
 
@@ -90,6 +91,7 @@ export const PAGES = {
     "TermsOfService": TermsOfService,
     "TestPayments": TestPayments,
     "UploadDocumentsCafeteria": UploadDocumentsCafeteria,
+    "SurpriseMenu": SurpriseMenu,
 }
 
 export const pagesConfig = {
