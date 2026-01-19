@@ -45,7 +45,12 @@ export default function SurpriseMenu() {
         base44.entities.SurpriseMenuRequest.list('-created_date', 50)
       ]);
 
-      const activeCafeterias = allCafeterias.filter(c => c.activa && c.aprobada);
+      const allowedCafeterias = ['jerez', 'casem', 'facultad de ciencias', 'esi'];
+      const activeCafeterias = allCafeterias.filter(c => 
+        c.activa && 
+        c.aprobada && 
+        allowedCafeterias.some(name => c.nombre.toLowerCase().includes(name))
+      );
       setCafeterias(activeCafeterias);
 
       const today = new Date().toISOString().split('T')[0];

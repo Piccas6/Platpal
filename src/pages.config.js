@@ -38,11 +38,11 @@ import RegistroCafeteria from './pages/RegistroCafeteria';
 import Reports from './pages/Reports';
 import SEOBlog from './pages/SEOBlog';
 import SolicitarCafeteria from './pages/SolicitarCafeteria';
+import SurpriseMenu from './pages/SurpriseMenu';
 import SystemCheck from './pages/SystemCheck';
 import TermsOfService from './pages/TermsOfService';
 import TestPayments from './pages/TestPayments';
 import UploadDocumentsCafeteria from './pages/UploadDocumentsCafeteria';
-import SurpriseMenu from './pages/SurpriseMenu';
 import __Layout from './Layout.jsx';
 
 
@@ -87,11 +87,11 @@ export const PAGES = {
     "Reports": Reports,
     "SEOBlog": SEOBlog,
     "SolicitarCafeteria": SolicitarCafeteria,
+    "SurpriseMenu": SurpriseMenu,
     "SystemCheck": SystemCheck,
     "TermsOfService": TermsOfService,
     "TestPayments": TestPayments,
     "UploadDocumentsCafeteria": UploadDocumentsCafeteria,
-    "SurpriseMenu": SurpriseMenu,
 }
 
 export const pagesConfig = {
