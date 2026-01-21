@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Plus, ChefHat, Package, TrendingUp, Euro, QrCode, Building2 } from "lucide-react";
 import { OrbitalLoader } from "@/components/ui/orbital-loader";
@@ -12,6 +12,7 @@ import SurpriseRequestsPanel from "@/components/cafeteria/SurpriseRequestsPanel"
 
 export default function CafeteriaDashboard() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [user, setUser] = useState(null);
   const [menus, setMenus] = useState([]);
   const [reservations, setReservations] = useState([]);
@@ -113,6 +114,16 @@ export default function CafeteriaDashboard() {
   useEffect(() => {
     if (selectedCafeteriaData) loadData();
   }, [loadData, selectedCafeteriaData]);
+
+  // Recargar datos cuando se vuelva desde EditMenu
+  useEffect(() => {
+    if (location.state?.refreshData) {
+      console.log('🔄 Recargando datos del dashboard...');
+      loadData();
+      // Limpiar el state para que no se recargue continuamente
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state, loadData]);
 
   const handleCafeteriaChange = (id) => {
     const cafe = availableCafeterias.find(c => c.id === id);

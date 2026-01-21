@@ -35,19 +35,22 @@ export function NotificationProvider({ children }) {
       es.onmessage = (event) => {
         try {
           const notification = JSON.parse(event.data);
-          addNotification(notification);
+          // Solo agregar si es una notificación real, no mensajes de sistema
+          if (notification.type !== 'connected') {
+            addNotification(notification);
+          }
         } catch (error) {
-          console.error('Error procesando notificación:', error);
+          // Ignorar errores de parsing de keep-alive
+          if (!event.data.startsWith(':')) {
+            console.error('Error procesando notificación:', error);
+          }
         }
       };
 
-      es.onerror = (error) => {
-        console.error('❌ Error en conexión SSE:', error);
+      es.onerror = () => {
         setIsConnected(false);
         es.close();
-        
-        // Reintentar conexión después de 5 segundos
-        setTimeout(() => connect(), 5000);
+        // No reintentar automáticamente para evitar loops infinitos
       };
 
       setEventSource(es);
