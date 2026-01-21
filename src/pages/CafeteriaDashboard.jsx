@@ -70,25 +70,15 @@ export default function CafeteriaDashboard() {
       const cafeteriaName = selectedCafeteriaData.nombre;
       const today = new Date().toISOString().split('T')[0];
 
-      const [allMenus, allReservations] = await Promise.all([
-        base44.entities.Menu.list('-created_date', 50),
-        base44.entities.Reserva.list('-created_date', 100)
+      const [todayMenus, allReservations] = await Promise.all([
+        base44.entities.Menu.filter({ 
+          cafeteria: cafeteriaName, 
+          fecha: today 
+        }),
+        base44.entities.Reserva.filter({ cafeteria: cafeteriaName }, '-created_date', 200)
       ]);
 
-      console.log('📋 Total menús cargados:', allMenus.length);
-      console.log('🏪 Filtrando por cafetería:', cafeteriaName);
-      console.log('📅 Fecha hoy:', today);
-
-      const todayMenus = allMenus.filter(m => {
-        const matchCafe = m.cafeteria === cafeteriaName;
-        const matchDate = m.fecha === today;
-        if (matchCafe) {
-          console.log('  ✅ Menú encontrado:', m.plato_principal, '| Fecha:', m.fecha, '| Hoy:', matchDate);
-        }
-        return matchCafe && matchDate;
-      });
-
-      console.log('🍽️ Menús de hoy para esta cafetería:', todayMenus.length);
+      console.log('🍽️ Menús de hoy cargados:', todayMenus.length);
       setMenus(todayMenus);
 
       const cafeteriaReservations = allReservations.filter(r => r.cafeteria === cafeteriaName);
