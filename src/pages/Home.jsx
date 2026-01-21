@@ -206,7 +206,7 @@ export default function Home() {
         ]);
 
         const completedReservations = allReservations.filter(r => r.payment_status === 'completed');
-        const students = allUsers.filter(u => u.app_role === 'user' || !u.app_role);
+        const students = allUsers.filter(u => u.app_role === 'user');
         const co2Saved = completedReservations.length * 2.5;
 
         const newStats = {
@@ -214,6 +214,8 @@ export default function Home() {
           totalStudents: students.length,
           co2Saved: Math.round(co2Saved)
         };
+
+        console.log('📊 Estadísticas actualizadas:', newStats);
 
         setStats(newStats);
 
