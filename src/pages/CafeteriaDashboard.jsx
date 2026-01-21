@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Plus, ChefHat, Package, TrendingUp, Euro, QrCode, Building2 } from "lucide-react";
+import { Plus, ChefHat, Package, TrendingUp, Euro, QrCode, Building2, Trash2 } from "lucide-react";
 import { OrbitalLoader } from "@/components/ui/orbital-loader";
 import { DropdownMenuCustom } from "@/components/ui/dropdown-menu-custom";
 import SurpriseRequestsPanel from "@/components/cafeteria/SurpriseRequestsPanel";
@@ -120,6 +120,47 @@ export default function CafeteriaDashboard() {
     if (cafe) {
       setSelectedCafeteriaId(id);
       setSelectedCafeteriaData(cafe);
+    }
+  };
+
+  const handleDeleteMenu = async (menu) => {
+    try {
+      // Si el menú tiene hijos recurrentes (es un menú padre)
+      const childMenus = await base44.entities.Menu.filter({ menu_padre_id: menu.id });
+      
+      if (childMenus.length > 0) {
+        const confirmDelete = window.confirm(
+          `Este menú es parte de una serie recurrente con ${childMenus.length + 1} menús.\n\n¿Quieres eliminar toda la serie recurrente?`
+        );
+        
+        if (confirmDelete) {
+          // Borrar todos los hijos
+          await Promise.all(childMenus.map(child => base44.entities.Menu.delete(child.id)));
+          // Borrar el padre
+          await base44.entities.Menu.delete(menu.id);
+          alert('✅ Serie recurrente eliminada completamente');
+        } else {
+          return;
+        }
+      } else {
+        // Menú individual o hijo de serie
+        const confirmDelete = window.confirm(
+          `¿Estás seguro de eliminar este menú?\n\n${menu.plato_principal} + ${menu.plato_secundario}`
+        );
+        
+        if (confirmDelete) {
+          await base44.entities.Menu.delete(menu.id);
+          alert('✅ Menú eliminado');
+        } else {
+          return;
+        }
+      }
+      
+      // Recargar datos
+      await loadData();
+    } catch (error) {
+      console.error('Error eliminando menú:', error);
+      alert('Error al eliminar el menú');
     }
   };
 
@@ -300,16 +341,30 @@ export default function CafeteriaDashboard() {
               <div className="space-y-3">
                 {menus.map((menu) => (
                   <div key={menu.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border-2">
-                    <div>
+                    <div className="flex-1">
                       <h3 className="font-bold text-gray-900">{menu.plato_principal}</h3>
                       <p className="text-sm text-gray-600">+ {menu.plato_secundario}</p>
-                      <Badge variant="outline" className="mt-2">
-                        Stock: {menu.stock_disponible}/{menu.stock_total}
-                      </Badge>
+                      <div className="flex gap-2 mt-2">
+                        <Badge variant="outline">
+                          Stock: {menu.stock_disponible}/{menu.stock_total}
+                        </Badge>
+                        {menu.es_recurrente && (
+                          <Badge className="bg-purple-100 text-purple-800">Recurrente</Badge>
+                        )}
+                      </div>
                     </div>
-                    <Link to={createPageUrl("EditMenu")} state={{ menu }}>
-                      <Button size="sm">Editar</Button>
-                    </Link>
+                    <div className="flex gap-2">
+                      <Link to={createPageUrl("EditMenu")} state={{ menu }}>
+                        <Button size="sm" variant="outline">Editar</Button>
+                      </Link>
+                      <Button 
+                        size="sm" 
+                        variant="destructive"
+                        onClick={() => handleDeleteMenu(menu)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>
