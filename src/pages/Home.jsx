@@ -196,54 +196,39 @@ export default function Home() {
     const loadData = async () => {
       setIsLoading(true);
       try {
-        // Cargar datos públicos sin autenticación
         const today = new Date().toISOString().split('T')[0];
         
-        // Cargar estadísticas globales desde caché o API
-        const cachedStats = sessionStorage.getItem('platpal_home_stats');
-        const cachedTime = sessionStorage.getItem('platpal_home_stats_time');
-        
-        if (cachedStats && cachedTime && (Date.now() - parseInt(cachedTime)) < 300000) {
-          // Usar caché si tiene menos de 5 minutos
-          setStats(JSON.parse(cachedStats));
-        } else {
-          // Cargar datos públicos (no requieren autenticación)
-          const [allReservations, allUsers, allMenus] = await Promise.all([
-            base44.entities.Reserva.list('-created_date', 200),
-            base44.entities.User.list(),
-            base44.entities.Menu.list('-created_date', 20)
-          ]);
+        // Cargar datos públicos (no requieren autenticación)
+        const [allReservations, allUsers, allMenus] = await Promise.all([
+          base44.entities.Reserva.list('-created_date', 500),
+          base44.entities.User.list(),
+          base44.entities.Menu.list('-created_date', 50)
+        ]);
 
-          const completedReservations = allReservations.filter(r => r.payment_status === 'completed');
-          const students = allUsers.filter(u => u.app_role === 'user' || !u.app_role);
-          const co2Saved = completedReservations.length * 2.5;
+        const completedReservations = allReservations.filter(r => r.payment_status === 'completed');
+        const students = allUsers.filter(u => u.app_role === 'user' || !u.app_role);
+        const co2Saved = completedReservations.length * 2.5;
 
-          const newStats = {
-            totalMeals: completedReservations.length,
-            totalStudents: students.length,
-            co2Saved: Math.round(co2Saved)
-          };
+        const newStats = {
+          totalMeals: completedReservations.length,
+          totalStudents: students.length,
+          co2Saved: Math.round(co2Saved)
+        };
 
-          setStats(newStats);
-          
-          // Guardar en caché
-          sessionStorage.setItem('platpal_home_stats', JSON.stringify(newStats));
-          sessionStorage.setItem('platpal_home_stats_time', Date.now().toString());
+        setStats(newStats);
 
-          // Cargar menús destacados
-          const todaysMenus = allMenus.filter(menu => 
-            menu.fecha === today && 
-            menu.stock_disponible > 0 && 
-            menu.imagen_url
-          );
+        // Cargar menús destacados
+        const todaysMenus = allMenus.filter(menu => 
+          menu.fecha === today && 
+          menu.stock_disponible > 0 && 
+          menu.imagen_url
+        );
 
-          const shuffled = todaysMenus.sort(() => 0.5 - Math.random());
-          setDisplayMenus(shuffled.slice(0, 3));
-        }
+        const shuffled = todaysMenus.sort(() => 0.5 - Math.random());
+        setDisplayMenus(shuffled.slice(0, 3));
 
       } catch (error) {
-        console.log('📊 Usando estadísticas por defecto:', error.message);
-        // Mantener valores iniciales en caso de error
+        console.log('📊 Error cargando estadísticas:', error.message);
         setDisplayMenus([]);
       } finally {
         setIsLoading(false);
@@ -251,6 +236,11 @@ export default function Home() {
     };
 
     loadData();
+    
+    // Actualizar automáticamente cada 30 segundos
+    const interval = setInterval(loadData, 30000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   const handleCafeteriaLogin = async () => {
