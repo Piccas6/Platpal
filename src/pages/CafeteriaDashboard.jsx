@@ -5,10 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Plus, ChefHat, Package, TrendingUp, Euro, QrCode, Building2, Trash2 } from "lucide-react";
+import { Plus, ChefHat, Package, TrendingUp, Euro, QrCode, Building2, Trash2, Settings } from "lucide-react";
 import { OrbitalLoader } from "@/components/ui/orbital-loader";
 import { DropdownMenuCustom } from "@/components/ui/dropdown-menu-custom";
+import { Switch } from "@/components/ui/switch";
 import SurpriseRequestsPanel from "@/components/cafeteria/SurpriseRequestsPanel";
+import VoiceStockButton from "@/components/cafeteria/VoiceStockButton";
+import VoiceConfirmationModal from "@/components/cafeteria/VoiceConfirmationModal";
+import VoiceSuccessNotification from "@/components/cafeteria/VoiceSuccessNotification";
 
 export default function CafeteriaDashboard() {
   const navigate = useNavigate();
@@ -26,6 +30,16 @@ export default function CafeteriaDashboard() {
   const [selectedCafeteriaId, setSelectedCafeteriaId] = useState(null);
   const [selectedCafeteriaData, setSelectedCafeteriaData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Voice mode states
+  const [voiceModeEnabled, setVoiceModeEnabled] = useState(() => {
+    return localStorage.getItem('voice_mode_enabled') === 'true';
+  });
+  const [showVoiceSettings, setShowVoiceSettings] = useState(false);
+  const [pendingCommand, setPendingCommand] = useState(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showSuccessNotification, setShowSuccessNotification] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
     const loadUser = async () => {
@@ -164,6 +178,107 @@ export default function CafeteriaDashboard() {
     }
   };
 
+  const handleVoiceCommand = async (transcript) => {
+    try {
+      console.log('🎤 Comando de voz recibido:', transcript);
+      
+      // Crear conversación con el agente de IA
+      const conversation = await base44.agents.createConversation({
+        agent_name: "stock_manager",
+        metadata: {
+          cafeteria: selectedCafeteriaData?.nombre,
+          user: user?.email
+        }
+      });
+
+      // Enviar el comando al agente
+      await base44.agents.addMessage(conversation, {
+        role: "user",
+        content: transcript
+      });
+
+      // Suscribirse a las actualizaciones de la conversación
+      const unsubscribe = base44.agents.subscribeToConversation(conversation.id, (data) => {
+        const lastMessage = data.messages[data.messages.length - 1];
+        
+        if (lastMessage?.role === 'assistant' && lastMessage?.content) {
+          console.log('🤖 Respuesta del agente:', lastMessage.content);
+          
+          // Parsear la respuesta del agente para extraer la confirmación
+          const response = lastMessage.content;
+          
+          // Buscar patrones de confirmación
+          if (response.includes('Confirmar:') || response.includes('confirmas')) {
+            // Extraer información del comando
+            const match = response.match(/(\d+)\s+(?:unidades|raciones)?\s+de\s+(.+?)\s*\(Stock actual:\s*(\d+)\)/i);
+            
+            if (match) {
+              const [, quantity, dishName, currentStock] = match;
+              const newStock = parseInt(currentStock) + parseInt(quantity);
+              
+              setPendingCommand({
+                dishName: dishName.trim(),
+                currentStock: parseInt(currentStock),
+                newStock: newStock,
+                changeDescription: `+${quantity} unidades`,
+                conversationId: conversation.id,
+                originalTranscript: transcript
+              });
+              
+              setShowConfirmModal(true);
+            }
+          } else if (response.includes('múltiples menús') || response.includes('opciones')) {
+            alert(`🤔 ${response}\n\nIntenta ser más específico con el nombre del plato.`);
+          } else if (response.includes('no encontré') || response.includes('No encontré')) {
+            alert(`❌ ${response}`);
+          }
+          
+          unsubscribe();
+        }
+      });
+
+    } catch (error) {
+      console.error('Error procesando comando de voz:', error);
+      alert('Error al procesar el comando. Intenta de nuevo.');
+    }
+  };
+
+  const handleConfirmVoiceUpdate = async () => {
+    try {
+      setShowConfirmModal(false);
+      
+      // Buscar el menú y actualizarlo
+      const matchingMenus = menus.filter(m => 
+        m.plato_principal.toLowerCase().includes(pendingCommand.dishName.toLowerCase()) ||
+        m.plato_secundario.toLowerCase().includes(pendingCommand.dishName.toLowerCase())
+      );
+
+      if (matchingMenus.length > 0) {
+        const menuToUpdate = matchingMenus[0];
+        await base44.entities.Menu.update(menuToUpdate.id, {
+          stock_disponible: pendingCommand.newStock
+        });
+
+        // Mostrar notificación de éxito
+        setSuccessMessage(`${pendingCommand.dishName}: ${pendingCommand.currentStock} → ${pendingCommand.newStock}`);
+        setShowSuccessNotification(true);
+
+        // Recargar datos
+        await loadData();
+      }
+
+      setPendingCommand(null);
+    } catch (error) {
+      console.error('Error actualizando stock:', error);
+      alert('Error al actualizar el stock');
+    }
+  };
+
+  const toggleVoiceMode = (enabled) => {
+    setVoiceModeEnabled(enabled);
+    localStorage.setItem('voice_mode_enabled', enabled);
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-amber-50 flex items-center justify-center">
@@ -278,14 +393,53 @@ export default function CafeteriaDashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-wrap">
           <Link to={createPageUrl("PickupPanel")}>
             <Button variant="outline">
               <QrCode className="w-4 h-4 mr-2" />
               Panel Recogida
             </Button>
           </Link>
+          <Button 
+            variant={showVoiceSettings ? "default" : "outline"}
+            onClick={() => setShowVoiceSettings(!showVoiceSettings)}
+          >
+            <Settings className="w-4 h-4 mr-2" />
+            Modo Voz
+          </Button>
         </div>
+
+        {/* Voice Settings Panel */}
+        {showVoiceSettings && (
+          <Card className="border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-white">
+            <CardHeader>
+              <CardTitle className="text-lg">Configuración de Modo Voz</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-white rounded-xl border-2">
+                <div>
+                  <p className="font-semibold text-gray-900">Habilitar comandos rápidos</p>
+                  <p className="text-sm text-gray-600">Actualiza el stock usando tu voz</p>
+                </div>
+                <Switch 
+                  checked={voiceModeEnabled}
+                  onCheckedChange={toggleVoiceMode}
+                />
+              </div>
+              
+              {voiceModeEnabled && (
+                <div className="p-4 bg-blue-50 rounded-xl border-2 border-blue-200">
+                  <p className="text-sm font-semibold text-blue-900 mb-2">💡 Comandos disponibles:</p>
+                  <ul className="text-sm text-blue-800 space-y-1">
+                    <li>• "Añade 10 raciones de pasta"</li>
+                    <li>• "Pon 5 más de ensalada"</li>
+                    <li>• "Incrementa el stock de pollo en 15"</li>
+                  </ul>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Solicitudes de Menú Sorpresa */}
         <SurpriseRequestsPanel cafeteriaName={selectedCafeteriaData?.nombre} />
@@ -338,31 +492,34 @@ export default function CafeteriaDashboard() {
           </CardHeader>
           <CardContent>
             {menus.length > 0 ? (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {menus.map((menu) => (
-                  <div key={menu.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border-2">
+                  <div key={menu.id} className="flex items-center justify-between p-6 bg-gray-50 rounded-xl border-2 hover:border-emerald-300 transition-colors">
                     <div className="flex-1">
-                      <h3 className="font-bold text-gray-900">{menu.plato_principal}</h3>
-                      <p className="text-sm text-gray-600">+ {menu.plato_secundario}</p>
-                      <div className="flex gap-2 mt-2">
-                        <Badge variant="outline">
+                      <h3 className="text-xl font-bold text-gray-900">{menu.plato_principal}</h3>
+                      <p className="text-base text-gray-600 mt-1">+ {menu.plato_secundario}</p>
+                      <div className="flex gap-2 mt-3">
+                        <Badge variant="outline" className="text-base px-3 py-1">
                           Stock: {menu.stock_disponible}/{menu.stock_total}
                         </Badge>
                         {menu.es_recurrente && (
-                          <Badge className="bg-purple-100 text-purple-800">Recurrente</Badge>
+                          <Badge className="bg-purple-100 text-purple-800 text-base px-3 py-1">Recurrente</Badge>
                         )}
                       </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-3">
                       <Link to={createPageUrl("EditMenu")} state={{ menu }}>
-                        <Button size="sm" variant="outline">Editar</Button>
+                        <Button size="lg" variant="outline" className="h-12 px-6 text-base font-semibold">
+                          Editar
+                        </Button>
                       </Link>
                       <Button 
-                        size="sm" 
+                        size="lg"
                         variant="destructive"
                         onClick={() => handleDeleteMenu(menu)}
+                        className="h-12 w-12"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-5 h-5" />
                       </Button>
                     </div>
                   </div>
@@ -383,6 +540,30 @@ export default function CafeteriaDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Voice Stock Button */}
+      <VoiceStockButton 
+        onVoiceCommand={handleVoiceCommand}
+        isEnabled={voiceModeEnabled}
+      />
+
+      {/* Voice Confirmation Modal */}
+      <VoiceConfirmationModal
+        isOpen={showConfirmModal}
+        onClose={() => {
+          setShowConfirmModal(false);
+          setPendingCommand(null);
+        }}
+        onConfirm={handleConfirmVoiceUpdate}
+        command={pendingCommand}
+      />
+
+      {/* Voice Success Notification */}
+      <VoiceSuccessNotification
+        isVisible={showSuccessNotification}
+        message={successMessage}
+        onClose={() => setShowSuccessNotification(false)}
+      />
     </div>
   );
 }
