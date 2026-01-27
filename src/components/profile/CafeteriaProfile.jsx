@@ -14,6 +14,8 @@ export default function CafeteriaProfile({ user }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isEditingCredentials, setIsEditingCredentials] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [editingCafeteriaId, setEditingCafeteriaId] = useState(null);
+  const [cafeteriaForm, setCafeteriaForm] = useState({});
   const [credentialsForm, setCredentialsForm] = useState({
     full_name: user?.full_name || ''
   });
@@ -53,6 +55,43 @@ export default function CafeteriaProfile({ user }) {
       await base44.auth.updateMe({ full_name: credentialsForm.full_name });
       alert('✅ Datos actualizados');
       setIsEditingCredentials(false);
+    } catch (error) {
+      alert('❌ Error: ' + error.message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleEditCafeteria = (cafe) => {
+    setEditingCafeteriaId(cafe.id);
+    setCafeteriaForm({
+      nombre: cafe.nombre,
+      contacto: cafe.contacto || '',
+      horario_apertura: cafe.horario_apertura || '08:00',
+      hora_fin_reserva: cafe.hora_fin_reserva || '16:00',
+      hora_fin_recogida: cafe.hora_fin_recogida || '18:00',
+      ubicacion_exacta: cafe.ubicacion_exacta || '',
+      descripcion: cafe.descripcion || '',
+      precio_original_default: cafe.precio_original_default || 8.5
+    });
+  };
+
+  const handleSaveCafeteria = async (e) => {
+    e.preventDefault();
+    setIsSaving(true);
+
+    try {
+      await base44.entities.Cafeteria.update(editingCafeteriaId, cafeteriaForm);
+      
+      // Actualizar lista local
+      const allCafeterias = await base44.entities.Cafeteria.list();
+      const userCafeterias = allCafeterias.filter(c => 
+        user.cafeterias_asignadas.includes(c.id)
+      );
+      setCafeterias(userCafeterias);
+      
+      alert('✅ Cafetería actualizada');
+      setEditingCafeteriaId(null);
     } catch (error) {
       alert('❌ Error: ' + error.message);
     } finally {
@@ -151,29 +190,142 @@ export default function CafeteriaProfile({ user }) {
             <div className="space-y-4">
               {cafeterias.map((cafe) => (
                 <div key={cafe.id} className="p-4 bg-gradient-to-r from-emerald-50 to-amber-50 rounded-xl border-2 border-emerald-200">
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">{cafe.nombre}</h3>
-                  <div className="grid md:grid-cols-2 gap-3 text-sm">
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-emerald-600" />
-                      <span>Campus: {cafe.campus}</span>
-                    </div>
-                    {cafe.contacto && (
-                      <div className="flex items-center gap-2">
-                        <Phone className="w-4 h-4 text-emerald-600" />
-                        <span>{cafe.contacto}</span>
+                  {editingCafeteriaId === cafe.id ? (
+                    <form onSubmit={handleSaveCafeteria} className="space-y-4">
+                      <div>
+                        <label className="text-sm font-medium">Nombre</label>
+                        <Input
+                          value={cafeteriaForm.nombre}
+                          onChange={(e) => setCafeteriaForm({...cafeteriaForm, nombre: e.target.value})}
+                          required
+                          className="mt-1"
+                        />
                       </div>
-                    )}
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-emerald-600" />
-                      <span>{cafe.horario_apertura || '08:00'} - {cafe.hora_fin_recogida || '18:00'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Euro className="w-4 h-4 text-emerald-600" />
-                      <span>€{cafe.precio_original_default?.toFixed(2) || '8.50'}</span>
-                    </div>
-                  </div>
-                  {cafe.ubicacion_exacta && (
-                    <p className="mt-3 text-sm text-gray-700">📍 {cafe.ubicacion_exacta}</p>
+                      <div className="grid md:grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-sm font-medium">Contacto</label>
+                          <Input
+                            value={cafeteriaForm.contacto}
+                            onChange={(e) => setCafeteriaForm({...cafeteriaForm, contacto: e.target.value})}
+                            placeholder="+34 123 456 789"
+                            className="mt-1"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium">Precio por defecto (€)</label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={cafeteriaForm.precio_original_default}
+                            onChange={(e) => setCafeteriaForm({...cafeteriaForm, precio_original_default: parseFloat(e.target.value)})}
+                            className="mt-1"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid md:grid-cols-3 gap-3">
+                        <div>
+                          <label className="text-sm font-medium">Hora apertura</label>
+                          <Input
+                            type="time"
+                            value={cafeteriaForm.horario_apertura}
+                            onChange={(e) => setCafeteriaForm({...cafeteriaForm, horario_apertura: e.target.value})}
+                            className="mt-1"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium">Fin reservas</label>
+                          <Input
+                            type="time"
+                            value={cafeteriaForm.hora_fin_reserva}
+                            onChange={(e) => setCafeteriaForm({...cafeteriaForm, hora_fin_reserva: e.target.value})}
+                            className="mt-1"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium">Fin recogidas</label>
+                          <Input
+                            type="time"
+                            value={cafeteriaForm.hora_fin_recogida}
+                            onChange={(e) => setCafeteriaForm({...cafeteriaForm, hora_fin_recogida: e.target.value})}
+                            className="mt-1"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium">Ubicación exacta</label>
+                        <Input
+                          value={cafeteriaForm.ubicacion_exacta}
+                          onChange={(e) => setCafeteriaForm({...cafeteriaForm, ubicacion_exacta: e.target.value})}
+                          placeholder="Ej: Edificio A, planta baja"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium">Descripción</label>
+                        <Input
+                          value={cafeteriaForm.descripcion}
+                          onChange={(e) => setCafeteriaForm({...cafeteriaForm, descripcion: e.target.value})}
+                          placeholder="Descripción breve de tu cafetería"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div className="flex gap-3 pt-2">
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          onClick={() => setEditingCafeteriaId(null)}
+                          className="flex-1"
+                        >
+                          Cancelar
+                        </Button>
+                        <Button 
+                          type="submit" 
+                          disabled={isSaving} 
+                          className="flex-1 bg-emerald-600"
+                        >
+                          {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Save className="w-4 h-4 mr-2" />Guardar</>}
+                        </Button>
+                      </div>
+                    </form>
+                  ) : (
+                    <>
+                      <div className="flex items-start justify-between mb-3">
+                        <h3 className="text-xl font-bold text-gray-900">{cafe.nombre}</h3>
+                        <Button 
+                          onClick={() => handleEditCafeteria(cafe)}
+                          variant="outline" 
+                          size="sm"
+                        >
+                          Editar
+                        </Button>
+                      </div>
+                      <div className="grid md:grid-cols-2 gap-3 text-sm">
+                        <div className="flex items-center gap-2">
+                          <MapPin className="w-4 h-4 text-emerald-600" />
+                          <span>Campus: {cafe.campus}</span>
+                        </div>
+                        {cafe.contacto && (
+                          <div className="flex items-center gap-2">
+                            <Phone className="w-4 h-4 text-emerald-600" />
+                            <span>{cafe.contacto}</span>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-4 h-4 text-emerald-600" />
+                          <span>{cafe.horario_apertura || '08:00'} - {cafe.hora_fin_recogida || '18:00'}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Euro className="w-4 h-4 text-emerald-600" />
+                          <span>€{cafe.precio_original_default?.toFixed(2) || '8.50'}</span>
+                        </div>
+                      </div>
+                      {cafe.ubicacion_exacta && (
+                        <p className="mt-3 text-sm text-gray-700">📍 {cafe.ubicacion_exacta}</p>
+                      )}
+                      {cafe.descripcion && (
+                        <p className="mt-2 text-sm text-gray-600">{cafe.descripcion}</p>
+                      )}
+                    </>
                   )}
                 </div>
               ))}
