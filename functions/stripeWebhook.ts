@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import Stripe from 'npm:stripe@17.5.0';
 
 Deno.serve(async (req) => {
@@ -146,6 +146,46 @@ Deno.serve(async (req) => {
                     });
                     
                     console.log(`${logPrefix} ✅ Reserva ${reservaId} actualizada`);
+
+                    // TRANSFERENCIA AUTOMÁTICA A CAFETERÍA
+                    if (reserva && reserva.cafeteria) {
+                        try {
+                            // Buscar cafetería y usuario asociado
+                            const allCafeterias = await base44.asServiceRole.entities.Cafeteria.list();
+                            const cafeteria = allCafeterias.find(c => c.nombre === reserva.cafeteria);
+                            
+                            if (cafeteria) {
+                                const allUsers = await base44.asServiceRole.entities.User.list();
+                                const cafeteriaUser = allUsers.find(u => 
+                                    u.cafeterias_asignadas?.includes(cafeteria.id) && 
+                                    u.stripe_account_id
+                                );
+
+                                if (cafeteriaUser?.stripe_account_id) {
+                                    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY'));
+                                    
+                                    // Calcular montos (70% para cafetería, 30% para PlatPal)
+                                    const totalAmount = Math.round(reserva.precio_total * 100); // en centavos
+                                    const cafeteriaAmount = Math.round(totalAmount * 0.70);
+                                    
+                                    // Crear transferencia
+                                    const transfer = await stripe.transfers.create({
+                                        amount: cafeteriaAmount,
+                                        currency: 'eur',
+                                        destination: cafeteriaUser.stripe_account_id,
+                                        transfer_group: `ORDER_${reservaId}`,
+                                        description: `Pago menú - ${reserva.menus_detalle}`
+                                    });
+
+                                    console.log(`${logPrefix} 💸 Transferencia creada: €${(cafeteriaAmount/100).toFixed(2)} a ${reserva.cafeteria}`);
+                                } else {
+                                    console.log(`${logPrefix} ⚠️ Cafetería sin cuenta Stripe Connect: ${reserva.cafeteria}`);
+                                }
+                            }
+                        } catch (transferError) {
+                            console.error(`${logPrefix} ❌ Error en transferencia automática:`, transferError.message);
+                        }
+                    }
 
                     // Procesar código de referido si existe
                     if (reserva && reserva.referral_code) {

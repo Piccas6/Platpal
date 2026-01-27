@@ -13,6 +13,7 @@ import SurpriseRequestsPanel from "@/components/cafeteria/SurpriseRequestsPanel"
 import VoiceStockButton from "@/components/cafeteria/VoiceStockButton";
 import VoiceConfirmationModal from "@/components/cafeteria/VoiceConfirmationModal";
 import VoiceSuccessNotification from "@/components/cafeteria/VoiceSuccessNotification";
+import StripeConnectSetup from "@/components/cafeteria/StripeConnectSetup";
 
 export default function CafeteriaDashboard() {
   const navigate = useNavigate();
@@ -448,6 +449,13 @@ export default function CafeteriaDashboard() {
             </CardContent>
           </Card>
         )}
+
+        {/* Configuración Stripe Connect */}
+        <StripeConnectSetup 
+          user={user} 
+          cafeteriaId={selectedCafeteriaData?.id}
+          onComplete={() => window.location.reload()}
+        />
 
         {/* Solicitudes de Menú Sorpresa */}
         <SurpriseRequestsPanel cafeteriaName={selectedCafeteriaData?.nombre} />
