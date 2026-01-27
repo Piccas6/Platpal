@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Building2, MapPin, Phone, Clock, Euro, Loader2, Save } from "lucide-react";
+import StripeConnectSetup from "@/components/cafeteria/StripeConnectSetup";
 
 export default function CafeteriaProfile({ user }) {
   const [cafeterias, setCafeterias] = useState([]);
@@ -125,6 +126,15 @@ export default function CafeteriaProfile({ user }) {
           )}
         </CardContent>
       </Card>
+
+      {/* Stripe Connect Setup */}
+      {cafeterias.length > 0 && (
+        <StripeConnectSetup 
+          user={user} 
+          cafeteriaId={cafeterias[0].id}
+          onComplete={() => window.location.reload()}
+        />
+      )}
 
       {/* Cafeterías */}
       <Card>
