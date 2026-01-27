@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Plus, ChefHat, Package, TrendingUp, Euro, QrCode, Building2, Trash2, Settings } from "lucide-react";
+import { Plus, ChefHat, Package, TrendingUp, Euro, QrCode, Building2, Trash2, Settings, Mic } from "lucide-react";
 import { OrbitalLoader } from "@/components/ui/orbital-loader";
 import { DropdownMenuCustom } from "@/components/ui/dropdown-menu-custom";
 import { Switch } from "@/components/ui/switch";
@@ -349,12 +349,20 @@ export default function CafeteriaDashboard() {
             )}
           </div>
           
-          <Link to={createPageUrl("PublishMenu")} state={{ selectedCafeteria: selectedCafeteriaData }}>
-            <Button className="bg-emerald-600">
-              <Plus className="w-4 h-4 mr-2" />
-              Publicar Menú
-            </Button>
-          </Link>
+          <div className="flex gap-3">
+            <Link to={createPageUrl("PublishMenu")} state={{ selectedCafeteria: selectedCafeteriaData }}>
+              <Button className="bg-emerald-600">
+                <Plus className="w-4 h-4 mr-2" />
+                Publicar Menú
+              </Button>
+            </Link>
+            <Link to={createPageUrl("VoicePublishMenu")}>
+              <Button className="bg-purple-600 hover:bg-purple-700">
+                <Mic className="w-4 h-4 mr-2" />
+                Publicar por Voz
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* Stats */}
