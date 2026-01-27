@@ -76,9 +76,28 @@ export default function VoiceStockButton({ onVoiceCommand, isEnabled = true }) {
     }
 
     if (isListening) {
-      recognition.stop();
+      try {
+        recognition.stop();
+      } catch (error) {
+        console.error('Error deteniendo reconocimiento:', error);
+        setIsListening(false);
+      }
     } else {
-      recognition.start();
+      try {
+        recognition.start();
+      } catch (error) {
+        console.error('Error iniciando reconocimiento:', error);
+        if (error.name === 'InvalidStateError') {
+          setIsListening(false);
+          setTimeout(() => {
+            try {
+              recognition.start();
+            } catch (e) {
+              console.error('Error en reintento:', e);
+            }
+          }, 100);
+        }
+      }
     }
   };
 
