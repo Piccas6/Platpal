@@ -37,15 +37,17 @@ export default function StripeConnectSetup({ user, cafeteriaId, onComplete }) {
         cafeteria_id: cafeteriaId
       });
 
-      if (response.data.onboarding_url) {
+      if (response?.data?.onboarding_url) {
         // Redirigir a Stripe para completar onboarding
         window.location.href = response.data.onboarding_url;
-      } else if (onComplete) {
+      } else if (response?.data?.success && onComplete) {
         onComplete();
+      } else {
+        setError("No se recibió URL de configuración");
       }
     } catch (error) {
       console.error("Error configurando Stripe:", error);
-      setError(error.message || "Error al configurar pagos");
+      setError(error.response?.data?.error || error.message || "Error al configurar pagos");
     } finally {
       setIsLoading(false);
     }
