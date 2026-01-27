@@ -160,62 +160,57 @@ export default function VoicePublishMenu() {
   const handleVoiceCommand = async (text) => {
     setIsProcessing(true);
     try {
-      // Crear o reutilizar conversación
-      let convId = conversationId;
-      if (!convId) {
-        const conversation = await base44.agents.createConversation({
-          agent_name: "menu_dictation",
-          metadata: {
-            cafeteria: cafeterias.find(c => c.id === formData.cafeteria_id)?.nombre,
-            user: user?.email
-          }
-        });
-        convId = conversation.id;
-        setConversationId(convId);
+      console.log('🎤 Procesando:', text);
+      
+      // Parsear directamente el texto con regex y lógica simple
+      const textLower = text.toLowerCase();
+      
+      // Extraer platos (buscar patrones como "X con Y", "X y Y")
+      const platosMatch = text.match(/^([^,]+?)(?:\s+con\s+|\s+y\s+)([^,]+)/i);
+      if (platosMatch) {
+        setFormData(prev => ({
+          ...prev,
+          plato_principal: platosMatch[1].trim(),
+          plato_secundario: platosMatch[2].trim().split(',')[0].trim()
+        }));
       }
-
-      // Enviar mensaje al agente
-      await base44.agents.addMessage({ id: convId }, {
-        role: "user",
-        content: text
-      });
-
-      // Suscribirse para obtener respuesta
-      const unsubscribe = base44.agents.subscribeToConversation(convId, (data) => {
-        const lastMessage = data.messages[data.messages.length - 1];
-        
-        if (lastMessage?.role === 'assistant' && lastMessage?.content) {
-          console.log('🤖 Respuesta del agente:', lastMessage.content);
-          
-          try {
-            // Intentar extraer JSON de la respuesta
-            const jsonMatch = lastMessage.content.match(/\{[\s\S]*\}/);
-            if (jsonMatch) {
-              const extracted = JSON.parse(jsonMatch[0]);
-              
-              // Actualizar formulario con datos extraídos
-              setFormData(prev => ({
-                ...prev,
-                plato_principal: extracted.plato_principal || prev.plato_principal,
-                plato_secundario: extracted.plato_secundario || prev.plato_secundario,
-                stock_total: extracted.stock_total || prev.stock_total,
-                precio_original: extracted.precio_original || prev.precio_original,
-                tipo_cocina: extracted.tipo_cocina || prev.tipo_cocina,
-                es_vegetariano: extracted.es_vegetariano || prev.es_vegetariano,
-                es_vegano: extracted.es_vegano || prev.es_vegano,
-                sin_gluten: extracted.sin_gluten || prev.sin_gluten,
-                alergenos: extracted.alergenos || prev.alergenos
-              }));
-            }
-          } catch (error) {
-            console.error('Error parseando respuesta:', error);
-          }
-          
-          unsubscribe();
-          setIsProcessing(false);
-        }
-      });
-
+      
+      // Extraer stock (buscar números seguidos de "raciones", "unidades", etc)
+      const stockMatch = text.match(/(\d+)\s*(raciones?|unidades?|platos?)/i);
+      if (stockMatch) {
+        setFormData(prev => ({
+          ...prev,
+          stock_total: stockMatch[1]
+        }));
+      }
+      
+      // Extraer precio (buscar números con "euros", "€", etc)
+      const precioMatch = text.match(/(\d+(?:[.,]\d+)?)\s*(?:euros?|€)/i);
+      if (precioMatch) {
+        setFormData(prev => ({
+          ...prev,
+          precio_original: parseFloat(precioMatch[1].replace(',', '.'))
+        }));
+      }
+      
+      // Detectar propiedades
+      if (/sin\s+gluten|celíaco/i.test(textLower)) {
+        setFormData(prev => ({ ...prev, sin_gluten: true }));
+      }
+      if (/vegetariano/i.test(textLower)) {
+        setFormData(prev => ({ ...prev, es_vegetariano: true }));
+      }
+      if (/vegano/i.test(textLower)) {
+        setFormData(prev => ({ ...prev, es_vegano: true }));
+      }
+      
+      // Detectar tipo de cocina
+      const tiposMatch = tiposCocina.find(tipo => textLower.includes(tipo));
+      if (tiposMatch) {
+        setFormData(prev => ({ ...prev, tipo_cocina: tiposMatch }));
+      }
+      
+      setIsProcessing(false);
     } catch (error) {
       console.error('Error procesando comando de voz:', error);
       setIsProcessing(false);
