@@ -116,9 +116,35 @@ Deno.serve(async (req) => {
                             subscripcion_id: bonoCompra.id
                         });
                         console.log(`${logPrefix} ✅ Usuario actualizado con ${activePack.cantidad_menus} créditos`);
-                    } else {
-                        console.warn(`${logPrefix} ⚠️ Usuario no encontrado:`, customerEmail);
-                    }
+
+                            // Notificar al usuario sobre su suscripción activada
+                            try {
+                                await base44.asServiceRole.entities.Notification.create({
+                                    type: 'system',
+                                    title: '🎉 ¡Bono activado!',
+                                    message: `Tu suscripción ha sido activada. Tienes ${activePack.cantidad_menus} menús disponibles este mes.`,
+                                    target_users: [customerEmail],
+                                    notification_data: {
+                                        bono_compra_id: bonoCompra.id,
+                                        cantidad_menus: activePack.cantidad_menus,
+                                        fecha_renovacion: bonoCompra.fecha_renovacion
+                                    },
+                                    sent_at: new Date().toISOString(),
+                                    sent_by: 'system'
+                                });
+
+                                await base44.asServiceRole.integrations.Core.SendEmail({
+                                    to: customerEmail,
+                                    subject: '🎉 ¡Tu Bono PlatPal está activado!',
+                                    body: `¡Hola!\n\nTu suscripción mensual ha sido activada correctamente.\n\n✅ Tienes ${activePack.cantidad_menus} menús disponibles este mes\n📅 Renovación: ${new Date(bonoCompra.fecha_renovacion).toLocaleDateString()}\n\n¡Disfruta de tus menús sostenibles!\n\nPlatPal`
+                                });
+                                console.log(`${logPrefix} ✅ Notificación de bono enviada al usuario`);
+                            } catch (notifErr) {
+                                console.error(`${logPrefix} ⚠️ Error enviando notificación de bono:`, notifErr.message);
+                            }
+                        } else {
+                            console.warn(`${logPrefix} ⚠️ Usuario no encontrado:`, customerEmail);
+                        }
 
                     console.log(`${logPrefix} 🎉 Suscripción activada correctamente`);
                     return Response.json({ received: true, success: true, type: 'subscription_created' }, { status: 200 });
@@ -146,6 +172,30 @@ Deno.serve(async (req) => {
                     });
                     
                     console.log(`${logPrefix} ✅ Reserva ${reservaId} actualizada`);
+
+                    // Notificar al estudiante sobre pago confirmado
+                    if (reserva) {
+                        try {
+                            await base44.asServiceRole.entities.Notification.create({
+                                type: 'order_confirmed',
+                                title: '✅ ¡Pago confirmado!',
+                                message: `Tu pedido #${reserva.codigo_recogida} ha sido confirmado. Recógelo en ${reserva.cafeteria}`,
+                                target_users: [reserva.student_email || customerEmail],
+                                notification_data: {
+                                    reserva_id: reservaId,
+                                    codigo_recogida: reserva.codigo_recogida,
+                                    cafeteria: reserva.cafeteria,
+                                    menu: reserva.menus_detalle,
+                                    precio: reserva.precio_total
+                                },
+                                sent_at: new Date().toISOString(),
+                                sent_by: 'system'
+                            });
+                            console.log(`${logPrefix} ✅ Notificación de pago enviada al estudiante`);
+                        } catch (notifErr) {
+                            console.error(`${logPrefix} ⚠️ Error enviando notificación al estudiante:`, notifErr.message);
+                        }
+                    }
 
                     // TRANSFERENCIA AUTOMÁTICA A CAFETERÍA
                     if (reserva && reserva.cafeteria && !reserva.pagado_con_bono) {
@@ -184,13 +234,59 @@ Deno.serve(async (req) => {
                                     });
 
                                     console.log(`${logPrefix} 💸 Transferencia creada: €${(cafeteriaAmount/100).toFixed(2)} a ${reserva.cafeteria} (${transfer.id})`);
-                                } else {
+
+                                    // Notificar a la cafetería sobre la transferencia
+                                    try {
+                                       await base44.asServiceRole.entities.Notification.create({
+                                           type: 'system',
+                                           title: '💸 Transferencia recibida',
+                                           message: `Se ha transferido €${(cafeteriaAmount/100).toFixed(2)} a tu cuenta por el pedido #${reserva.codigo_recogida}`,
+                                           target_users: [cafeteriaUser.email],
+                                           notification_data: {
+                                               amount: cafeteriaAmount / 100,
+                                               transfer_id: transfer.id,
+                                               reserva_id: reservaId,
+                                               cafeteria: reserva.cafeteria
+                                           },
+                                           sent_at: new Date().toISOString(),
+                                           sent_by: 'system'
+                                       });
+                                       console.log(`${logPrefix} ✅ Notificación de transferencia enviada a cafetería`);
+                                    } catch (notifErr) {
+                                       console.error(`${logPrefix} ⚠️ Error enviando notificación de transferencia:`, notifErr.message);
+                                    }
+                                    } else {
                                     console.log(`${logPrefix} ⚠️ Cafetería sin cuenta Stripe Connect configurada: ${reserva.cafeteria}`);
-                                }
+                                    }
                             }
                         } catch (transferError) {
                             console.error(`${logPrefix} ❌ Error en transferencia automática:`, transferError.message);
-                            // No bloqueamos el flujo si falla la transferencia
+                            
+                            // Notificar al admin sobre el error
+                            try {
+                                await base44.asServiceRole.entities.Notification.create({
+                                    type: 'system',
+                                    title: '⚠️ Error en transferencia automática',
+                                    message: `Error al transferir fondos para el pedido #${reserva.codigo_recogida}: ${transferError.message}`,
+                                    target_users: ['piccas.entrepreneurship@gmail.com'],
+                                    notification_data: {
+                                        error: transferError.message,
+                                        reserva_id: reservaId,
+                                        cafeteria: reserva.cafeteria,
+                                        amount: reserva.precio_total
+                                    },
+                                    sent_at: new Date().toISOString(),
+                                    sent_by: 'system'
+                                });
+                                
+                                await base44.asServiceRole.integrations.Core.SendEmail({
+                                    to: 'piccas.entrepreneurship@gmail.com',
+                                    subject: '⚠️ Error en Transferencia Automática',
+                                    body: `Error al transferir fondos:\n\nReserva: ${reservaId}\nCafetería: ${reserva.cafeteria}\nMonto: €${reserva.precio_total.toFixed(2)}\nError: ${transferError.message}`
+                                });
+                            } catch (notifErr) {
+                                console.error(`${logPrefix} ⚠️ Error enviando notificación de error:`, notifErr.message);
+                            }
                         }
                     }
 
@@ -352,6 +448,32 @@ PlatPal - Menús Sostenibles
                     });
 
                     console.log(`${logPrefix} ✅ Créditos reseteados a: ${bonoCompra.cantidad_menus} menús`);
+                    
+                    // Notificar al usuario sobre la renovación
+                    try {
+                        await base44.asServiceRole.entities.Notification.create({
+                            type: 'system',
+                            title: '🔄 Bono renovado',
+                            message: `Tu suscripción se ha renovado. Tienes ${bonoCompra.cantidad_menus} menús nuevos disponibles.`,
+                            target_users: [bonoCompra.user_email],
+                            notification_data: {
+                                bono_compra_id: bonoCompra.id,
+                                cantidad_menus: bonoCompra.cantidad_menus,
+                                fecha_renovacion: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+                            },
+                            sent_at: new Date().toISOString(),
+                            sent_by: 'system'
+                        });
+                        
+                        await base44.asServiceRole.integrations.Core.SendEmail({
+                            to: bonoCompra.user_email,
+                            subject: '🔄 Tu Bono PlatPal se ha renovado',
+                            body: `¡Hola!\n\nTu suscripción mensual se ha renovado automáticamente.\n\n✅ Tienes ${bonoCompra.cantidad_menus} menús nuevos disponibles\n📅 Próxima renovación: ${new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()}\n\n¡Disfruta!\n\nPlatPal`
+                        });
+                        console.log(`${logPrefix} ✅ Notificación de renovación enviada`);
+                    } catch (notifErr) {
+                        console.error(`${logPrefix} ⚠️ Error enviando notificación de renovación:`, notifErr.message);
+                    }
                 }
 
                 return Response.json({ received: true, success: true, type: 'renewal' }, { status: 200 });
@@ -388,6 +510,31 @@ PlatPal - Menús Sostenibles
                     }
 
                     console.log(`${logPrefix} ✅ Suscripción marcada como cancelada`);
+                    
+                    // Notificar al usuario sobre la cancelación
+                    try {
+                        await base44.asServiceRole.entities.Notification.create({
+                            type: 'system',
+                            title: '❌ Suscripción cancelada',
+                            message: 'Tu suscripción de bonos ha sido cancelada. Puedes reactivarla cuando quieras.',
+                            target_users: [bonoCompra.user_email],
+                            notification_data: {
+                                bono_compra_id: bonoCompra.id,
+                                subscription_id: subscriptionId
+                            },
+                            sent_at: new Date().toISOString(),
+                            sent_by: 'system'
+                        });
+                        
+                        await base44.asServiceRole.integrations.Core.SendEmail({
+                            to: bonoCompra.user_email,
+                            subject: 'Suscripción PlatPal Cancelada',
+                            body: `Hola,\n\nTu suscripción mensual ha sido cancelada.\n\nSi deseas reactivarla en el futuro, puedes hacerlo desde tu perfil.\n\n¡Gracias por usar PlatPal!\n\nPlatPal`
+                        });
+                        console.log(`${logPrefix} ✅ Notificación de cancelación enviada`);
+                    } catch (notifErr) {
+                        console.error(`${logPrefix} ⚠️ Error enviando notificación de cancelación:`, notifErr.message);
+                    }
                 }
 
                 return Response.json({ received: true, success: true, type: 'cancellation' }, { status: 200 });
