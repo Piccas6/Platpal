@@ -273,34 +273,30 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative min-h-[85vh] md:min-h-[90vh] flex items-center justify-center overflow-hidden">
-        <AuroraBackground className="absolute inset-0" showRadialGradient={true} />
-
+      <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-gray-50">
         <motion.div 
-          initial={{ opacity: 0, y: 40 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-16 text-center"
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="relative z-10 max-w-5xl mx-auto px-6 sm:px-8 py-20 sm:py-24 text-center"
         >
-          {/* Logo */}
-          <div className="mb-8 flex justify-center">
-            <div className="relative">
-              <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 bg-white rounded-2xl sm:rounded-[20px] p-4 sm:p-5 border border-gray-200 flex items-center justify-center hover:border-emerald-300 transition-colors duration-300">
-                <img 
-                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68a77c0a8a0286e1f5d59edb/ca5d210a4_ChatGPTImage17sept202520_10_05.png" 
-                  alt="PlatPal Logo" 
-                  className="w-full h-full object-contain"
-                />
-              </div>
+          {/* Logo minimalista */}
+          <div className="mb-12 flex justify-center">
+            <div className="w-20 h-20 bg-white rounded-2xl p-4 shadow-sm flex items-center justify-center">
+              <img 
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68a77c0a8a0286e1f5d59edb/ca5d210a4_ChatGPTImage17sept202520_10_05.png" 
+                alt="PlatPal Logo" 
+                className="w-full h-full object-contain"
+              />
             </div>
           </div>
           
-          {/* Título y subtítulo */}
-          <div className="mb-10 space-y-4">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-gray-900 leading-tight">
+          {/* Título y subtítulo minimalista */}
+          <div className="mb-16 space-y-6">
+            <h1 className="text-5xl sm:text-6xl md:text-7xl font-black text-gray-900 leading-[1.1] tracking-tight">
               {t.hero.title}
             </h1>
-            <p className="text-lg sm:text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl sm:text-2xl text-gray-600 max-w-2xl mx-auto font-light">
               {t.hero.subtitle}
             </p>
           </div>
@@ -316,22 +312,26 @@ export default function Home() {
             <OfficeAccessButton />
           </div>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          {/* CTA Buttons minimalistas */}
+          <div className="flex flex-col sm:flex-row gap-5 justify-center items-center mb-8">
             <Link to={createPageUrl("Menus")}>
-              <ButtonColorful label={t.hero.cta} icon={ArrowRight} />
+              <Button 
+                size="lg"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white px-12 py-7 rounded-full text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
+              >
+                {t.hero.cta}
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
             </Link>
             
-            {/* NEW: Cafeteria Login Button */}
             <Button 
               onClick={handleCafeteriaLogin}
               size="lg" 
               variant="outline" 
-              className="border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-50 px-10 sm:px-14 py-6 sm:py-7 rounded-full text-base sm:text-lg font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all group"
+              className="border-2 border-gray-300 text-gray-700 hover:border-emerald-600 hover:text-emerald-600 px-12 py-7 rounded-full text-lg font-semibold transition-all"
             >
               <LogIn className="mr-2 w-5 h-5" />
               {t.hero.cafeteriaLogin}
-              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>
 
@@ -345,131 +345,110 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* Stats */}
-          <div className="mt-20 sm:mt-24">
-            <p className="text-xs sm:text-sm text-gray-500 mb-8 font-semibold uppercase tracking-wider">
+          {/* Stats minimalistas */}
+          <div className="mt-24">
+            <p className="text-sm text-gray-500 mb-10 font-medium uppercase tracking-wide">
               {t.stats.impactLabel}
             </p>
-            <div className="grid grid-cols-3 gap-4 sm:gap-6 md:gap-8 max-w-4xl mx-auto">
-              {/* Stat 1 - Menús */}
-              <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-100 to-green-100 rounded-2xl sm:rounded-3xl blur-xl opacity-50 group-hover:opacity-70 transition-opacity"></div>
-                <div className="relative bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-emerald-100">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                    <UtensilsCrossed className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                  </div>
-                  {isLoading ? (
-                    <OrbitalLoader className="w-8 h-8" />
-                  ) : (
-                    <>
-                      <div className="text-3xl sm:text-4xl md:text-5xl font-black text-gray-900 mb-2">
-                        {stats.totalMeals}
-                      </div>
-                      <div className="text-xs sm:text-sm text-gray-600 font-medium">{t.stats.meals}</div>
-                    </>
-                  )}
+            <div className="grid grid-cols-3 gap-8 max-w-4xl mx-auto">
+              {/* Stat 1 */}
+              <div className="bg-white rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow border border-gray-100">
+                <div className="w-12 h-12 bg-emerald-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <UtensilsCrossed className="w-6 h-6 text-white" />
                 </div>
+                {isLoading ? (
+                  <OrbitalLoader className="w-8 h-8" />
+                ) : (
+                  <>
+                    <div className="text-4xl font-bold text-gray-900 mb-2">
+                      {stats.totalMeals}
+                    </div>
+                    <div className="text-sm text-gray-600">{t.stats.meals}</div>
+                  </>
+                )}
               </div>
 
-              {/* Stat 2 - Estudiantes */}
-              <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-br from-orange-100 to-amber-100 rounded-2xl sm:rounded-3xl blur-xl opacity-50 group-hover:opacity-70 transition-opacity"></div>
-                <div className="relative bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-orange-100">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                    <Users className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                  </div>
-                  {isLoading ? (
-                    <OrbitalLoader className="w-8 h-8" />
-                  ) : (
-                    <>
-                      <div className="text-3xl sm:text-4xl md:text-5xl font-black text-gray-900 mb-2">
-                        {stats.totalStudents}
-                      </div>
-                      <div className="text-xs sm:text-sm text-gray-600 font-medium">{t.stats.students}</div>
-                    </>
-                  )}
+              {/* Stat 2 */}
+              <div className="bg-white rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow border border-gray-100">
+                <div className="w-12 h-12 bg-emerald-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <Users className="w-6 h-6 text-white" />
                 </div>
+                {isLoading ? (
+                  <OrbitalLoader className="w-8 h-8" />
+                ) : (
+                  <>
+                    <div className="text-4xl font-bold text-gray-900 mb-2">
+                      {stats.totalStudents}
+                    </div>
+                    <div className="text-sm text-gray-600">{t.stats.students}</div>
+                  </>
+                )}
               </div>
 
-              {/* Stat 3 - CO2 */}
-              <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-2xl sm:rounded-3xl blur-xl opacity-50 group-hover:opacity-70 transition-opacity"></div>
-                <div className="relative bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-blue-100">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                    <Leaf className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                  </div>
-                  {isLoading ? (
-                    <OrbitalLoader className="w-8 h-8" />
-                  ) : (
-                    <>
-                      <div className="text-3xl sm:text-4xl md:text-5xl font-black text-gray-900 mb-2">
-                        {stats.co2Saved}
-                      </div>
-                      <div className="text-xs sm:text-sm text-gray-600 font-medium">{t.stats.impact}</div>
-                    </>
-                  )}
+              {/* Stat 3 */}
+              <div className="bg-white rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow border border-gray-100">
+                <div className="w-12 h-12 bg-emerald-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <Leaf className="w-6 h-6 text-white" />
                 </div>
+                {isLoading ? (
+                  <OrbitalLoader className="w-8 h-8" />
+                ) : (
+                  <>
+                    <div className="text-4xl font-bold text-gray-900 mb-2">
+                      {stats.co2Saved}
+                    </div>
+                    <div className="text-sm text-gray-600">{t.stats.impact}</div>
+                  </>
+                )}
               </div>
             </div>
           </div>
         </motion.div>
       </section>
 
-      {/* How it Works */}
-      <section className="py-16 sm:py-20 md:py-24 bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-12 sm:mb-16">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+      {/* How it Works - Minimalista */}
+      <section className="py-24 bg-white">
+        <div className="max-w-5xl mx-auto px-8">
+          <div className="text-center mb-20">
+            <h2 className="text-5xl font-bold text-gray-900">
               {t.howItWorks.title}
             </h2>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-3">
-            <div className="relative group">
-              <div className="h-full bg-gradient-to-br from-emerald-50 to-white p-8 rounded-3xl border-2 border-emerald-100 hover:border-emerald-300 hover:shadow-2xl transition-all duration-300">
-                <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-green-600 text-white rounded-2xl flex items-center justify-center text-2xl font-bold mb-6 group-hover:scale-110 transition-transform shadow-lg">
-                  1
-                </div>
-                <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-3">{t.howItWorks.step1.title}</h3>
-                <p className="text-gray-600 leading-relaxed">{t.howItWorks.step1.desc}</p>
+          <div className="grid gap-12 md:grid-cols-3">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-emerald-600 text-white rounded-2xl flex items-center justify-center text-3xl font-bold mb-6 mx-auto">
+                1
               </div>
-              <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-8 text-emerald-400">
-                <ChevronRight className="w-full h-full" />
-              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">{t.howItWorks.step1.title}</h3>
+              <p className="text-gray-600 text-lg">{t.howItWorks.step1.desc}</p>
             </div>
             
-            <div className="relative group">
-              <div className="h-full bg-gradient-to-br from-amber-50 to-white p-8 rounded-3xl border-2 border-amber-100 hover:border-amber-300 hover:shadow-2xl transition-all duration-300">
-                <div className="w-14 h-14 bg-gradient-to-br from-amber-500 to-orange-500 text-white rounded-2xl flex items-center justify-center text-2xl font-bold mb-6 group-hover:scale-110 transition-transform shadow-lg">
-                  2
-                </div>
-                <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-3">{t.howItWorks.step2.title}</h3>
-                <p className="text-gray-600 leading-relaxed">{t.howItWorks.step2.desc}</p>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-emerald-600 text-white rounded-2xl flex items-center justify-center text-3xl font-bold mb-6 mx-auto">
+                2
               </div>
-              <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-8 text-amber-400">
-                <ChevronRight className="w-full h-full" />
-              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">{t.howItWorks.step2.title}</h3>
+              <p className="text-gray-600 text-lg">{t.howItWorks.step2.desc}</p>
             </div>
             
-            <div className="group">
-              <div className="h-full bg-gradient-to-br from-blue-50 to-white p-8 rounded-3xl border-2 border-blue-100 hover:border-blue-300 hover:shadow-2xl transition-all duration-300">
-                <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-cyan-500 text-white rounded-2xl flex items-center justify-center text-2xl font-bold mb-6 group-hover:scale-110 transition-transform shadow-lg">
-                  3
-                </div>
-                <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-3">{t.howItWorks.step3.title}</h3>
-                <p className="text-gray-600 leading-relaxed">{t.howItWorks.step3.desc}</p>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-emerald-600 text-white rounded-2xl flex items-center justify-center text-3xl font-bold mb-6 mx-auto">
+                3
               </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">{t.howItWorks.step3.title}</h3>
+              <p className="text-gray-600 text-lg">{t.howItWorks.step3.desc}</p>
             </div>
           </div>
         </div>
       </section>
       
       {/* Featured Menus */}
-      <section className="py-16 sm:py-20 md:py-24 bg-gradient-to-b from-white to-emerald-50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-            <div className="text-center mb-12 sm:mb-16">
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4">{t.featured.title}</h2>
-                <p className="text-lg md:text-xl text-gray-600">{t.featured.subtitle}</p>
+      <section className="py-24 bg-gray-50">
+        <div className="max-w-5xl mx-auto px-8">
+            <div className="text-center mb-20">
+                <h2 className="text-5xl font-bold text-gray-900 mb-4">{t.featured.title}</h2>
+                <p className="text-xl text-gray-600">{t.featured.subtitle}</p>
             </div>
             
             {isLoading ? (
@@ -485,29 +464,28 @@ export default function Home() {
                 ))}
               </div>
             ) : displayMenus.length > 0 ? (
-              <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-3">
+              <div className="grid gap-8 md:grid-cols-3">
                   {displayMenus.map((menu, i) => (
-                      <Card key={i} className="group overflow-hidden rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 border-2 border-gray-100 hover:border-emerald-300 hover:-translate-y-2">
+                      <Card key={i} className="group overflow-hidden rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-200">
                           <CardContent className="p-0">
-                              <div className="aspect-[4/3] relative overflow-hidden">
+                              <div className="aspect-[3/2] relative overflow-hidden">
                                   <img 
                                     src={menu.imagen_url}
                                     alt={menu.plato_principal}
-                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                   />
-                                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
                                   <div className="absolute top-4 right-4">
-                                    <div className="bg-emerald-600 text-white px-4 py-2 rounded-full font-bold text-sm shadow-lg">
+                                    <div className="bg-emerald-600 text-white px-3 py-1 rounded-full font-semibold text-sm">
                                       -65%
                                     </div>
                                   </div>
-                                  <div className="absolute bottom-0 left-0 p-6 w-full">
-                                      <h3 className="text-white text-lg md:text-xl font-bold mb-2 line-clamp-2">{menu.plato_principal}</h3>
-                                      <p className="text-white/90 text-sm font-medium flex items-center gap-2">
-                                        <UtensilsCrossed className="w-4 h-4 flex-shrink-0" />
-                                        <span className="truncate">{menu.cafeteria}</span>
-                                      </p>
-                                  </div>
+                              </div>
+                              <div className="p-6">
+                                  <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-1">{menu.plato_principal}</h3>
+                                  <p className="text-gray-600 text-sm flex items-center gap-2">
+                                    <UtensilsCrossed className="w-4 h-4 flex-shrink-0" />
+                                    <span className="truncate">{menu.cafeteria}</span>
+                                  </p>
                               </div>
                           </CardContent>
                       </Card>
@@ -527,54 +505,51 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Why Section */}
-      <section className="py-16 sm:py-20 md:py-24 bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-            <div className="text-center mb-12 sm:mb-16">
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4">{t.why.title}</h2>
+      {/* Why Section - Minimalista */}
+      <section className="py-24 bg-white">
+        <div className="max-w-5xl mx-auto px-8">
+            <div className="text-center mb-20">
+                <h2 className="text-5xl font-bold text-gray-900">{t.why.title}</h2>
             </div>
-            <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-3">
-                <div className="p-8 md:p-10 text-center bg-gradient-to-br from-emerald-50 to-white rounded-3xl border-2 border-emerald-100 hover:border-emerald-300 hover:shadow-2xl transition-all duration-300">
-                    <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                        <Wallet className="w-8 h-8 md:w-10 md:h-10 text-white"/>
+            <div className="grid gap-12 md:grid-cols-3">
+                <div className="text-center">
+                    <div className="w-16 h-16 bg-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <Wallet className="w-8 h-8 text-white"/>
                     </div>
-                    <h3 className="text-xl md:text-2xl font-bold mb-4 text-gray-900">{t.why.benefit1.title}</h3>
-                    <p className="text-gray-600 leading-relaxed">{t.why.benefit1.desc}</p>
+                    <h3 className="text-2xl font-bold mb-4 text-gray-900">{t.why.benefit1.title}</h3>
+                    <p className="text-gray-600 text-lg">{t.why.benefit1.desc}</p>
                 </div>
-                <div className="p-8 md:p-10 text-center bg-gradient-to-br from-amber-50 to-white rounded-3xl border-2 border-amber-100 hover:border-amber-300 hover:shadow-2xl transition-all duration-300">
-                    <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-amber-500 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                        <PartyPopper className="w-8 h-8 md:w-10 md:h-10 text-white"/>
+                <div className="text-center">
+                    <div className="w-16 h-16 bg-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <PartyPopper className="w-8 h-8 text-white"/>
                     </div>
-                    <h3 className="text-xl md:text-2xl font-bold mb-4 text-gray-900">{t.why.benefit2.title}</h3>
-                    <p className="text-gray-600 leading-relaxed">{t.why.benefit2.desc}</p>
+                    <h3 className="text-2xl font-bold mb-4 text-gray-900">{t.why.benefit2.title}</h3>
+                    <p className="text-gray-600 text-lg">{t.why.benefit2.desc}</p>
                 </div>
-                <div className="p-8 md:p-10 text-center bg-gradient-to-br from-blue-50 to-white rounded-3xl border-2 border-blue-100 hover:border-blue-300 hover:shadow-2xl transition-all duration-300 sm:col-span-2 md:col-span-1">
-                    <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                        <Sparkles className="w-8 h-8 md:w-10 md:h-10 text-white"/>
+                <div className="text-center">
+                    <div className="w-16 h-16 bg-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <Sparkles className="w-8 h-8 text-white"/>
                     </div>
-                    <h3 className="text-xl md:text-2xl font-bold mb-4 text-gray-900">{t.why.benefit3.title}</h3>
-                    <p className="text-gray-600 leading-relaxed">{t.why.benefit3.desc}</p>
+                    <h3 className="text-2xl font-bold mb-4 text-gray-900">{t.why.benefit3.title}</h3>
+                    <p className="text-gray-600 text-lg">{t.why.benefit3.desc}</p>
                 </div>
             </div>
         </div>
       </section>
       
-      {/* Final CTA */}
-      <section className="py-20 sm:py-24 md:py-28 bg-gradient-to-br from-emerald-600 to-green-700 text-white relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-        }}></div>
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center relative">
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6">
+      {/* Final CTA - Minimalista */}
+      <section className="py-28 bg-emerald-600 text-white">
+        <div className="max-w-4xl mx-auto px-8 text-center">
+          <h2 className="text-5xl font-bold mb-6">
             {t.ctaEnd.title}
           </h2>
-          <p className="text-lg sm:text-xl md:text-2xl text-white/90 mb-10 max-w-2xl mx-auto">
+          <p className="text-2xl text-white/90 mb-12 max-w-2xl mx-auto font-light">
             {t.ctaEnd.subtitle}
           </p>
           <Link to={createPageUrl("Menus")}>
-            <Button size="lg" className="bg-white text-emerald-600 hover:bg-gray-50 px-10 sm:px-12 py-6 sm:py-7 rounded-full text-base sm:text-lg font-bold shadow-2xl hover:scale-105 transition-all">
+            <Button size="lg" className="bg-white text-emerald-600 hover:bg-gray-100 px-12 py-7 rounded-full text-lg font-semibold shadow-lg transition-all">
               {t.ctaEnd.cta}
-              <ArrowRight className="ml-3 w-5 h-5 sm:w-6 sm:h-6" />
+              <ArrowRight className="ml-3 w-5 h-5" />
             </Button>
           </Link>
         </div>
