@@ -212,9 +212,9 @@ export default function Home() {
         const students = allUsers.filter(u => u.app_role === 'user');
         const co2Saved = completedReservations.length * 2.5;
 
-        // Sumar offsets para mostrar impacto acumulado
+        // Mostrar estadísticas fijas
         const newStats = {
-          totalMeals: completedReservations.length + 53,
+          totalMeals: 53,
           totalStudents: students.length + 42,
           co2Saved: Math.round(co2Saved) + 168
         };
