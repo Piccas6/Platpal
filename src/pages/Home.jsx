@@ -33,7 +33,9 @@ export default function Home() {
   const [stats, setStats] = useState({
     totalMeals: 0,
     totalStudents: 0,
-    co2Saved: 0
+    co2Saved: 0,
+    moneySaved: 0,
+    activeCafeterias: 0
   });
 
   const texts = {
@@ -49,6 +51,8 @@ export default function Home() {
         meals: "Menús salvados",
         students: "Estudiantes activos",
         impact: "Kg CO₂ evitados",
+        money: "€ Ahorrados",
+        cafeterias: "Cafeterías activas",
         impactLabel: "Impacto en tiempo real"
       },
       howItWorks: {
@@ -120,6 +124,8 @@ export default function Home() {
         meals: "Meals saved",
         students: "Active students",
         impact: "Kg CO₂ avoided",
+        money: "€ Saved",
+        cafeterias: "Active cafeterias",
         impactLabel: "Real-time impact"
       },
       howItWorks: {
@@ -202,20 +208,25 @@ export default function Home() {
         const today = new Date().toISOString().split('T')[0];
         
         // Cargar datos públicos (no requieren autenticación)
-        const [allReservations, allUsers, allMenus] = await Promise.all([
+        const [allReservations, allUsers, allMenus, allCafeterias] = await Promise.all([
           base44.entities.Reserva.list('-created_date', 500),
           base44.entities.User.list(),
-          base44.entities.Menu.list('-created_date', 50)
+          base44.entities.Menu.list('-created_date', 50),
+          base44.entities.Cafeteria.list()
         ]);
 
         const completedReservations = allReservations.filter(r => r.payment_status === 'completed');
         const students = allUsers.filter(u => u.app_role === 'user');
         const co2Saved = completedReservations.length * 2.5;
+        const moneySaved = completedReservations.length * 5.5; // Ahorro promedio por menú (8.5€ - 2.99€)
+        const activeCafeterias = allCafeterias.filter(c => c.activa).length;
 
         const newStats = {
           totalMeals: completedReservations.length,
           totalStudents: students.length,
-          co2Saved: Math.round(co2Saved)
+          co2Saved: Math.round(co2Saved),
+          moneySaved: Math.round(moneySaved),
+          activeCafeterias: activeCafeterias
         };
 
         console.log('📊 Estadísticas actualizadas:', newStats);
@@ -352,7 +363,7 @@ export default function Home() {
             <p className="text-xs sm:text-sm text-gray-500 mb-6 sm:mb-8 font-semibold uppercase tracking-wider">
               {t.stats.impactLabel}
             </p>
-            <div className="grid grid-cols-3 gap-3 sm:gap-6 md:gap-8 max-w-4xl mx-auto px-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 md:gap-6 max-w-7xl mx-auto px-2">
               {/* Stat 1 - Menús */}
               <div className="relative group">
                 <div className="absolute inset-0 bg-gradient-to-br from-emerald-100 to-green-100 rounded-xl sm:rounded-3xl blur-xl opacity-50 group-hover:opacity-70 transition-opacity"></div>
@@ -408,6 +419,46 @@ export default function Home() {
                         {stats.co2Saved}
                       </div>
                       <div className="text-[10px] sm:text-sm text-gray-600 font-medium">{t.stats.impact}</div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Stat 4 - Dinero Ahorrado */}
+              <div className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl sm:rounded-3xl blur-xl opacity-50 group-hover:opacity-70 transition-opacity"></div>
+                <div className="relative bg-white rounded-xl sm:rounded-3xl p-3 sm:p-6 md:p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-purple-100">
+                  <div className="w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg sm:rounded-2xl flex items-center justify-center mx-auto mb-2 sm:mb-4">
+                    <Wallet className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
+                  </div>
+                  {isLoading ? (
+                    <OrbitalLoader className="w-6 h-6 sm:w-8 sm:h-8" />
+                  ) : (
+                    <>
+                      <div className="text-2xl sm:text-4xl md:text-5xl font-black text-gray-900 mb-1 sm:mb-2">
+                        {stats.moneySaved}
+                      </div>
+                      <div className="text-[10px] sm:text-sm text-gray-600 font-medium">{t.stats.money}</div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Stat 5 - Cafeterías Activas */}
+              <div className="relative group col-span-2 sm:col-span-1">
+                <div className="absolute inset-0 bg-gradient-to-br from-yellow-100 to-amber-100 rounded-xl sm:rounded-3xl blur-xl opacity-50 group-hover:opacity-70 transition-opacity"></div>
+                <div className="relative bg-white rounded-xl sm:rounded-3xl p-3 sm:p-6 md:p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-yellow-100">
+                  <div className="w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-br from-yellow-500 to-amber-600 rounded-lg sm:rounded-2xl flex items-center justify-center mx-auto mb-2 sm:mb-4">
+                    <UtensilsCrossed className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
+                  </div>
+                  {isLoading ? (
+                    <OrbitalLoader className="w-6 h-6 sm:w-8 sm:h-8" />
+                  ) : (
+                    <>
+                      <div className="text-2xl sm:text-4xl md:text-5xl font-black text-gray-900 mb-1 sm:mb-2">
+                        {stats.activeCafeterias}
+                      </div>
+                      <div className="text-[10px] sm:text-sm text-gray-600 font-medium">{t.stats.cafeterias}</div>
                     </>
                   )}
                 </div>
