@@ -464,8 +464,18 @@ export default function Home() {
       </section>
       
       {/* Featured Menus */}
-      <section className="py-16 sm:py-20 md:py-24 bg-gradient-to-b from-white to-emerald-50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+      <section className="relative py-16 sm:py-20 md:py-24 overflow-hidden">
+        {/* Background Hero Image */}
+        <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-gradient-to-b from-white via-emerald-50/80 to-white"></div>
+          <img 
+            src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200&q=80" 
+            alt="Delicious food"
+            className="w-full h-full object-cover opacity-10"
+          />
+        </div>
+        
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 relative z-10">
             <div className="text-center mb-12 sm:mb-16">
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4">{t.featured.title}</h2>
                 <p className="text-lg md:text-xl text-gray-600">{t.featured.subtitle}</p>
@@ -486,30 +496,36 @@ export default function Home() {
             ) : displayMenus.length > 0 ? (
               <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-3">
                   {displayMenus.map((menu, i) => (
-                      <Card key={i} className="group overflow-hidden rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 border-2 border-gray-100 hover:border-emerald-300 hover:-translate-y-2">
-                          <CardContent className="p-0">
-                              <div className="aspect-[4/3] relative overflow-hidden">
-                                  <img 
-                                    src={menu.imagen_url}
-                                    alt={menu.plato_principal}
-                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                                  />
-                                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
-                                  <div className="absolute top-4 right-4">
-                                    <div className="bg-emerald-600 text-white px-4 py-2 rounded-full font-bold text-sm shadow-lg">
-                                      -65%
+                      <Link key={i} to={createPageUrl("Menus")} className="block">
+                        <Card className="group overflow-hidden rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 border-2 border-gray-100 hover:border-emerald-300 hover:-translate-y-2 cursor-pointer">
+                            <CardContent className="p-0">
+                                <div className="aspect-[4/3] relative overflow-hidden">
+                                    <img 
+                                      src={menu.imagen_url}
+                                      alt={menu.plato_principal}
+                                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent group-hover:from-black/90 transition-all"></div>
+                                    <div className="absolute top-4 right-4">
+                                      <div className="bg-emerald-600 text-white px-4 py-2 rounded-full font-bold text-sm shadow-lg group-hover:scale-110 transition-transform">
+                                        -65%
+                                      </div>
                                     </div>
-                                  </div>
-                                  <div className="absolute bottom-0 left-0 p-6 w-full">
-                                      <h3 className="text-white text-lg md:text-xl font-bold mb-2 line-clamp-2">{menu.plato_principal}</h3>
-                                      <p className="text-white/90 text-sm font-medium flex items-center gap-2">
-                                        <UtensilsCrossed className="w-4 h-4 flex-shrink-0" />
-                                        <span className="truncate">{menu.cafeteria}</span>
-                                      </p>
-                                  </div>
-                              </div>
-                          </CardContent>
-                      </Card>
+                                    <div className="absolute bottom-0 left-0 p-6 w-full">
+                                        <h3 className="text-white text-lg md:text-xl font-bold mb-2 line-clamp-2 group-hover:text-emerald-300 transition-colors">{menu.plato_principal}</h3>
+                                        <p className="text-white/90 text-sm font-medium flex items-center gap-2">
+                                          <UtensilsCrossed className="w-4 h-4 flex-shrink-0" />
+                                          <span className="truncate">{menu.cafeteria}</span>
+                                        </p>
+                                        <div className="mt-3 flex items-center gap-2 text-emerald-300 opacity-0 group-hover:opacity-100 transition-opacity">
+                                          <span className="text-sm font-semibold">Ver menú</span>
+                                          <ArrowRight className="w-4 h-4" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                      </Link>
                   ))}
               </div>
             ) : (
@@ -522,6 +538,17 @@ export default function Home() {
                   {t.featured.noMenusDesc}
                 </p>
               </Card>
+            )}
+            
+            {displayMenus.length > 0 && (
+              <div className="text-center mt-12">
+                <Link to={createPageUrl("Menus")}>
+                  <Button size="lg" variant="outline" className="border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-600 hover:text-white px-10 py-6 rounded-full text-lg font-bold shadow-lg hover:shadow-xl transition-all group">
+                    Ver todos los menús
+                    <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </Link>
+              </div>
             )}
         </div>
       </section>
