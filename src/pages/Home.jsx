@@ -200,30 +200,19 @@ export default function Home() {
       setIsLoading(true);
       try {
         const today = new Date().toISOString().split('T')[0];
-        
-        // Cargar datos públicos (no requieren autenticación)
-        const [allReservations, allUsers, allMenus] = await Promise.all([
-          base44.entities.Reserva.list('-created_date', 500),
-          base44.entities.User.list(),
-          base44.entities.Menu.list('-created_date', 50)
-        ]);
 
-        const completedReservations = allReservations.filter(r => r.payment_status === 'completed');
-        const students = allUsers.filter(u => u.app_role === 'user');
-        const co2Saved = completedReservations.length * 2.5;
-
-        // Mostrar estadísticas fijas
+        // Estadísticas fijas (públicas sin restricciones de permisos)
         const newStats = {
           totalMeals: 53,
-          totalStudents: students.length + 42,
-          co2Saved: Math.round(co2Saved) + 168
+          totalStudents: 42,
+          co2Saved: 168
         };
 
         console.log('📊 Estadísticas actualizadas:', newStats);
-
         setStats(newStats);
 
-        // Cargar menús destacados
+        // Cargar menús destacados (entidad pública)
+        const allMenus = await base44.entities.Menu.list('-created_date', 50);
         const todaysMenus = allMenus.filter(menu => 
           menu.fecha === today && 
           menu.stock_disponible > 0 && 
@@ -234,7 +223,7 @@ export default function Home() {
         setDisplayMenus(shuffled.slice(0, 3));
 
       } catch (error) {
-        console.log('📊 Error cargando estadísticas:', error.message);
+        console.log('📊 Error cargando datos:', error.message);
         setDisplayMenus([]);
       } finally {
         setIsLoading(false);
