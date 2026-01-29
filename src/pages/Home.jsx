@@ -415,48 +415,91 @@ export default function Home() {
       </section>
 
       {/* How it Works */}
-      <section className="py-12 sm:py-20 md:py-24 bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-10 sm:mb-16">
-            <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-2 sm:mb-4">
+      <section className="relative py-12 sm:py-20 md:py-24 overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 via-white to-amber-50/30"></div>
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute top-0 left-0 w-96 h-96 bg-emerald-500 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-amber-500 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 relative z-10">
+          <div className="text-center mb-12 sm:mb-20">
+            <div className="inline-block mb-4 px-4 py-2 bg-gradient-to-r from-emerald-100 to-amber-100 rounded-full">
+              <span className="text-sm font-bold text-emerald-700">Simple y Rápido</span>
+            </div>
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-black text-gray-900 mb-4">
               {t.howItWorks.title}
             </h2>
+            <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto">
+              En 3 simples pasos, ahorra dinero y ayuda al planeta
+            </p>
           </div>
 
-          <div className="grid gap-6 sm:gap-8 md:grid-cols-3">
+          <div className="grid gap-8 md:grid-cols-3 relative">
+            {/* Connecting Line */}
+            <div className="hidden md:block absolute top-1/4 left-0 right-0 h-1 bg-gradient-to-r from-emerald-200 via-amber-200 to-blue-200 opacity-30"></div>
+
+            {/* Step 1 */}
             <div className="relative group">
-              <div className="h-full bg-gradient-to-br from-emerald-50 to-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl border-2 border-emerald-100 hover:border-emerald-300 hover:shadow-2xl transition-all duration-300">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-emerald-500 to-green-600 text-white rounded-xl sm:rounded-2xl flex items-center justify-center text-xl sm:text-2xl font-bold mb-4 sm:mb-6 group-hover:scale-110 transition-transform shadow-lg">
-                  1
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-400 to-green-600 rounded-3xl blur-2xl opacity-20 group-hover:opacity-30 transition-opacity"></div>
+              <div className="relative h-full bg-white p-6 sm:p-8 rounded-3xl border-2 border-emerald-100 hover:border-emerald-400 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
+                <div className="absolute -top-6 left-1/2 -translate-x-1/2">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-emerald-500 to-green-600 text-white rounded-2xl flex items-center justify-center text-2xl sm:text-3xl font-black group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-2xl">
+                    1
+                  </div>
                 </div>
-                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-2 sm:mb-3">{t.howItWorks.step1.title}</h3>
-                <p className="text-sm sm:text-base text-gray-600 leading-relaxed">{t.howItWorks.step1.desc}</p>
-              </div>
-              <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-8 text-emerald-400">
-                <ChevronRight className="w-full h-full" />
+                <div className="mt-8 sm:mt-12">
+                  <div className="mb-4 flex justify-center">
+                    <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <Search className="w-8 h-8 text-emerald-600" />
+                    </div>
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-black text-gray-900 mb-3 text-center">{t.howItWorks.step1.title}</h3>
+                  <p className="text-sm sm:text-base text-gray-600 leading-relaxed text-center">{t.howItWorks.step1.desc}</p>
+                </div>
               </div>
             </div>
-            
+
+            {/* Step 2 */}
             <div className="relative group">
-              <div className="h-full bg-gradient-to-br from-amber-50 to-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl border-2 border-amber-100 hover:border-amber-300 hover:shadow-2xl transition-all duration-300">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-amber-500 to-orange-500 text-white rounded-xl sm:rounded-2xl flex items-center justify-center text-xl sm:text-2xl font-bold mb-4 sm:mb-6 group-hover:scale-110 transition-transform shadow-lg">
-                  2
+              <div className="absolute inset-0 bg-gradient-to-br from-amber-400 to-orange-600 rounded-3xl blur-2xl opacity-20 group-hover:opacity-30 transition-opacity"></div>
+              <div className="relative h-full bg-white p-6 sm:p-8 rounded-3xl border-2 border-amber-100 hover:border-amber-400 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
+                <div className="absolute -top-6 left-1/2 -translate-x-1/2">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-amber-500 to-orange-600 text-white rounded-2xl flex items-center justify-center text-2xl sm:text-3xl font-black group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-2xl">
+                    2
+                  </div>
                 </div>
-                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-2 sm:mb-3">{t.howItWorks.step2.title}</h3>
-                <p className="text-sm sm:text-base text-gray-600 leading-relaxed">{t.howItWorks.step2.desc}</p>
-              </div>
-              <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-8 text-amber-400">
-                <ChevronRight className="w-full h-full" />
+                <div className="mt-8 sm:mt-12">
+                  <div className="mb-4 flex justify-center">
+                    <div className="w-14 h-14 bg-amber-100 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <CreditCard className="w-8 h-8 text-amber-600" />
+                    </div>
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-black text-gray-900 mb-3 text-center">{t.howItWorks.step2.title}</h3>
+                  <p className="text-sm sm:text-base text-gray-600 leading-relaxed text-center">{t.howItWorks.step2.desc}</p>
+                </div>
               </div>
             </div>
-            
-            <div className="group">
-              <div className="h-full bg-gradient-to-br from-blue-50 to-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl border-2 border-blue-100 hover:border-blue-300 hover:shadow-2xl transition-all duration-300">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-blue-500 to-cyan-500 text-white rounded-xl sm:rounded-2xl flex items-center justify-center text-xl sm:text-2xl font-bold mb-4 sm:mb-6 group-hover:scale-110 transition-transform shadow-lg">
-                  3
+
+            {/* Step 3 */}
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-cyan-600 rounded-3xl blur-2xl opacity-20 group-hover:opacity-30 transition-opacity"></div>
+              <div className="relative h-full bg-white p-6 sm:p-8 rounded-3xl border-2 border-blue-100 hover:border-blue-400 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
+                <div className="absolute -top-6 left-1/2 -translate-x-1/2">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-500 to-cyan-600 text-white rounded-2xl flex items-center justify-center text-2xl sm:text-3xl font-black group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-2xl">
+                    3
+                  </div>
                 </div>
-                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-2 sm:mb-3">{t.howItWorks.step3.title}</h3>
-                <p className="text-sm sm:text-base text-gray-600 leading-relaxed">{t.howItWorks.step3.desc}</p>
+                <div className="mt-8 sm:mt-12">
+                  <div className="mb-4 flex justify-center">
+                    <div className="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <CheckCircle2 className="w-8 h-8 text-blue-600" />
+                    </div>
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-black text-gray-900 mb-3 text-center">{t.howItWorks.step3.title}</h3>
+                  <p className="text-sm sm:text-base text-gray-600 leading-relaxed text-center">{t.howItWorks.step3.desc}</p>
+                </div>
               </div>
             </div>
           </div>
