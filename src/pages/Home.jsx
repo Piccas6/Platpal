@@ -214,9 +214,9 @@ export default function Home() {
 
         // Sumar offsets para mostrar impacto acumulado
         const newStats = {
-          totalMeals: completedReservations.length + 1247,
-          totalStudents: students.length + 856,
-          co2Saved: Math.round(co2Saved) + 3118
+          totalMeals: completedReservations.length + 67,
+          totalStudents: students.length + 42,
+          co2Saved: Math.round(co2Saved) + 168
         };
 
         console.log('📊 Estadísticas actualizadas:', newStats);
