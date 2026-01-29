@@ -16,7 +16,10 @@ import {
   ChevronRight,
   LogIn,
   Lock,
-  Download
+  Download,
+  Search,
+  CreditCard,
+  CheckCircle2
 } from "lucide-react";
 import { OrbitalLoader } from "@/components/ui/orbital-loader";
 import { AuroraBackground } from "@/components/ui/aurora-background";
