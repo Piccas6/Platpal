@@ -3,8 +3,29 @@ css
 @tailwind components;
 @tailwind utilities;
 
+/* Mobile-optimized styles */
+body {
+  overscroll-behavior-y: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button, a:not(.content-text), .user-select-none {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.content-text, p, h1, h2, h3, h4, h5, h6, span.selectable {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
 @layer base {
   :root {
+    --safe-area-inset-top: env(safe-area-inset-top, 0px);
+    --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-area-inset-left: env(safe-area-inset-left, 0px);
+    --safe-area-inset-right: env(safe-area-inset-right, 0px);
+    
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;

@@ -30,6 +30,8 @@ export default function Menus() {
   const [reservations, setReservations] = useState([]);
   const [canReserve, setCanReserve] = useState(false);
   const [surveys, setSurveys] = useState([]);
+  const [isPulling, setIsPulling] = useState(false);
+  const [pullDistance, setPullDistance] = useState(0);
 
   const [filters, setFilters] = useState({
     tipo_cocina: 'all',
@@ -387,8 +389,69 @@ export default function Menus() {
     document.title = title;
   }, [selectedCampus]);
 
+  // Pull-to-refresh logic
+  useEffect(() => {
+    let startY = 0;
+    let currentY = 0;
+
+    const handleTouchStart = (e) => {
+      if (window.scrollY === 0) {
+        startY = e.touches[0].clientY;
+      }
+    };
+
+    const handleTouchMove = (e) => {
+      if (window.scrollY === 0 && startY > 0) {
+        currentY = e.touches[0].clientY;
+        const distance = Math.max(0, Math.min(currentY - startY, 100));
+        setPullDistance(distance);
+        
+        if (distance > 60) {
+          setIsPulling(true);
+        }
+      }
+    };
+
+    const handleTouchEnd = () => {
+      if (isPulling && pullDistance > 60) {
+        loadMenus();
+      }
+      setIsPulling(false);
+      setPullDistance(0);
+      startY = 0;
+    };
+
+    document.addEventListener('touchstart', handleTouchStart);
+    document.addEventListener('touchmove', handleTouchMove);
+    document.addEventListener('touchend', handleTouchEnd);
+
+    return () => {
+      document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [isPulling, pullDistance, loadMenus]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-amber-50">
+      {/* Pull-to-refresh indicator */}
+      {pullDistance > 0 && (
+        <div 
+          className="fixed top-0 left-0 right-0 flex items-center justify-center transition-all z-50"
+          style={{ 
+            transform: `translateY(${Math.min(pullDistance, 80)}px)`,
+            opacity: pullDistance / 80 
+          }}
+        >
+          <div className={`bg-emerald-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 ${isPulling ? 'animate-pulse' : ''}`}>
+            <svg className={`w-5 h-5 ${isPulling ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span className="text-sm font-semibold">{isPulling ? 'Actualizando...' : 'Desliza para actualizar'}</span>
+          </div>
+        </div>
+      )}
+      
       <div className="max-w-7xl mx-auto p-6 md:p-8">
         <div className="flex items-center gap-4 mb-6">
           <Link to={createPageUrl(selectedCampus ? "Campus" : "Home")}>
