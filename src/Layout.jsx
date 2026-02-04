@@ -7,6 +7,7 @@ import { NotificationProvider } from "@/components/notifications/NotificationCon
 import NotificationBell from "@/components/notifications/NotificationBell";
 import NotificationTriggers from "@/components/notifications/NotificationTriggers";
 import RoleDetector from "@/components/auth/RoleDetector";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Sidebar,
   SidebarContent,
