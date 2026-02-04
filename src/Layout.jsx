@@ -72,7 +72,6 @@ export default function Layout({ children, currentPageName }) {
   });
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showInstallButton, setShowInstallButton] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -117,26 +116,6 @@ export default function Layout({ children, currentPageName }) {
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     };
-  }, []);
-
-  // Dark mode detection
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    
-    const handleDarkModeChange = (e) => {
-      const isDark = e.matches;
-      setIsDarkMode(isDark);
-      if (isDark) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-    };
-
-    handleDarkModeChange(mediaQuery);
-    mediaQuery.addEventListener('change', handleDarkModeChange);
-
-    return () => mediaQuery.removeEventListener('change', handleDarkModeChange);
   }, []);
 
   const handleInstallClick = async () => {
