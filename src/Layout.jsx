@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Home, MapPin, UtensilsCrossed, HelpCircle, User, ChefHat, Target, Settings, UserCheck, BarChart3, Gift, Plus, Building2, Download, FileText, Package, Users } from "lucide-react";
 import { base44 } from "@/api/base44Client";
@@ -61,6 +61,7 @@ const officeNav = [
 
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState({
     app_role: 'user', 
     full_name: 'Estudiante',
@@ -161,6 +162,15 @@ export default function Layout({ children, currentPageName }) {
   };
   
   const effectiveRole = testRole || currentUser?.app_role || 'user';
+
+  // Check if current route is a main route (not a child route)
+  const mainRoutes = [
+    createPageUrl("Home"),
+    createPageUrl("Menus"),
+    createPageUrl("Bonos"),
+    createPageUrl("Community")
+  ];
+  const isMainRoute = mainRoutes.includes(location.pathname);
 
   // PWA Setup: Inyectar manifest y registrar service worker
   useEffect(() => {
@@ -432,14 +442,15 @@ export default function Layout({ children, currentPageName }) {
           <header className="bg-white/80 backdrop-blur-xl border-b border-gray-100/50 px-6 py-4 md:hidden sticky top-0 z-40" style={{ paddingTop: 'calc(1rem + var(--safe-area-inset-top))' }}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                {location.pathname !== createPageUrl("Home") && (
-                  <Link to={createPageUrl("Home")}>
-                    <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors">
-                      <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                      </svg>
-                    </button>
-                  </Link>
+                {!isMainRoute && (
+                  <button 
+                    onClick={() => navigate(-1)}
+                    className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
                 )}
                 <div className="w-10 h-10 relative flex-shrink-0">
                   <img 
@@ -471,19 +482,56 @@ export default function Layout({ children, currentPageName }) {
           {/* Bottom Navigation for Mobile */}
           <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-gray-200 z-50" style={{ paddingBottom: 'var(--safe-area-inset-bottom)' }}>
             <div className="grid grid-cols-4 gap-1 px-2 py-2">
-              <Link to={createPageUrl("Home")} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-colors ${location.pathname === createPageUrl("Home") ? 'bg-emerald-50 text-emerald-600' : 'text-gray-600 hover:bg-gray-50'}`}>
+              <Link 
+                to={createPageUrl("Home")} 
+                onClick={(e) => {
+                  if (location.pathname === createPageUrl("Home")) {
+                    e.preventDefault();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }
+                }}
+                className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-colors ${location.pathname === createPageUrl("Home") ? 'bg-emerald-50 text-emerald-600' : 'text-gray-600 hover:bg-gray-50'}`}
+              >
                 <Home className="w-5 h-5" />
                 <span className="text-xs font-medium">Inicio</span>
               </Link>
-              <Link to={createPageUrl("Menus")} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-colors ${location.pathname === createPageUrl("Menus") ? 'bg-emerald-50 text-emerald-600' : 'text-gray-600 hover:bg-gray-50'}`}>
+              <Link 
+                to={createPageUrl("Menus")} 
+                onClick={(e) => {
+                  if (location.pathname === createPageUrl("Menus")) {
+                    e.preventDefault();
+                    localStorage.removeItem('selectedCampus');
+                    window.location.href = createPageUrl("Menus");
+                  }
+                }}
+                className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-colors ${location.pathname === createPageUrl("Menus") ? 'bg-emerald-50 text-emerald-600' : 'text-gray-600 hover:bg-gray-50'}`}
+              >
                 <UtensilsCrossed className="w-5 h-5" />
                 <span className="text-xs font-medium">Menús</span>
               </Link>
-              <Link to={createPageUrl("Bonos")} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-colors ${location.pathname === createPageUrl("Bonos") ? 'bg-emerald-50 text-emerald-600' : 'text-gray-600 hover:bg-gray-50'}`}>
+              <Link 
+                to={createPageUrl("Bonos")} 
+                onClick={(e) => {
+                  if (location.pathname === createPageUrl("Bonos")) {
+                    e.preventDefault();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }
+                }}
+                className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-colors ${location.pathname === createPageUrl("Bonos") ? 'bg-emerald-50 text-emerald-600' : 'text-gray-600 hover:bg-gray-50'}`}
+              >
                 <Gift className="w-5 h-5" />
                 <span className="text-xs font-medium">Bonos</span>
               </Link>
-              <Link to={createPageUrl("Community")} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-colors ${location.pathname === createPageUrl("Community") ? 'bg-emerald-50 text-emerald-600' : 'text-gray-600 hover:bg-gray-50'}`}>
+              <Link 
+                to={createPageUrl("Community")} 
+                onClick={(e) => {
+                  if (location.pathname === createPageUrl("Community")) {
+                    e.preventDefault();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }
+                }}
+                className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-colors ${location.pathname === createPageUrl("Community") ? 'bg-emerald-50 text-emerald-600' : 'text-gray-600 hover:bg-gray-50'}`}
+              >
                 <Users className="w-5 h-5" />
                 <span className="text-xs font-medium">Comunidad</span>
               </Link>
