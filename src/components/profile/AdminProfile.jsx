@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Shield, Users, Edit, Save, X, Search, Building2, CheckCircle, XCircle, AlertCircle } from "lucide-react";
+import { Shield, Users, Edit, Save, X, Search, Building2, CheckCircle, XCircle, AlertCircle, Download } from "lucide-react";
+import { exportUsers } from "@/functions/exportUsers";
 
 const roleOptions = [
     { id: 'user', name: 'Estudiante' },
@@ -149,6 +150,24 @@ export default function AdminProfile({ user }) {
     setEditData({});
     setSaveStatus({});
   };
+
+  const handleExportUsers = async () => {
+    try {
+      const response = await exportUsers();
+      const blob = new Blob([response.data], { type: 'text/csv;charset=utf-8;' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `usuarios_platpal_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error exportando usuarios:', error);
+      alert('Error al exportar usuarios');
+    }
+  };
   
   const filteredUsers = allUsers.filter(u => {
     const roleMatch = filterRole === 'all' || u.app_role === filterRole;
@@ -184,6 +203,10 @@ export default function AdminProfile({ user }) {
             <p className="text-gray-600">Gestión de usuarios y cafeterías</p>
           </div>
         </div>
+        <Button onClick={handleExportUsers} className="bg-emerald-600 hover:bg-emerald-700">
+          <Download className="w-4 h-4 mr-2" />
+          Exportar Usuarios
+        </Button>
       </div>
 
       {/* SECCIÓN: Cafeterías Pendientes de Aprobación */}
