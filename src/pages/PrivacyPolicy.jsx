@@ -115,7 +115,7 @@ export default function PrivacyPolicy() {
                 <li><strong>Procesar reservas:</strong> Facilitar la reserva y recogida de menús</li>
                 <li><strong>Pagos:</strong> Procesar transacciones de forma segura</li>
                 <li><strong>Personalización:</strong> Ofrecerte recomendaciones basadas en tus preferencias</li>
-                <li><strong>Comunicación:</strong> Enviarte confirmaciones, recordatorios y actualizaciones importantes</li>
+                <li><strong>Comunicación:</strong> Podemos utilizar tu correo electrónico para enviarte confirmaciones de pedidos, recordatorios, actualizaciones importantes sobre el servicio, ofertas especiales y comunicaciones promocionales relacionadas con PlatPal</li>
                 <li><strong>Mejora del servicio:</strong> Analizar el uso de la plataforma para mejorarla</li>
                 <li><strong>Impacto sostenible:</strong> Calcular y mostrar tu contribución al medio ambiente</li>
               </ul>
