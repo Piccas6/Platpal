@@ -310,21 +310,10 @@ export default function Home() {
           </div>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center px-4">
+          <div className="flex justify-center items-center px-4">
             <Link to={createPageUrl("Menus")} className="w-full sm:w-auto">
               <ButtonColorful label={t.hero.cta} icon={ArrowRight} />
             </Link>
-            
-            <Button 
-              onClick={handleCafeteriaLogin}
-              size="lg" 
-              variant="outline" 
-              className="w-full sm:w-auto border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-50 px-8 sm:px-14 py-5 sm:py-7 rounded-full text-sm sm:text-lg font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all group"
-            >
-              <LogIn className="mr-2 w-4 sm:w-5 h-4 sm:h-5" />
-              <span className="truncate">{t.hero.cafeteriaLogin}</span>
-              <ArrowRight className="ml-2 w-4 sm:w-5 h-4 sm:h-5 group-hover:translate-x-1 transition-transform" />
-            </Button>
           </div>
 
           {/* Investor Link */}
