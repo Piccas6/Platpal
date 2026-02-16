@@ -39,45 +39,14 @@ const ContributionCard = ({ icon: Icon, title, description, color }) => (
 );
 
 export default function ImpactPage() {
-    const [stats, setStats] = useState({
-        foodSavedKg: 0,
-        menusDistributed: 0,
-        moneySaved: 0,
-        co2Saved: 0,
-        partnerCafeterias: 0,
-    });
-    const [isLoading, setIsLoading] = useState(true);
-    
-    useEffect(() => {
-        const loadImpactData = async () => {
-            setIsLoading(true);
-            try {
-                const [reservas, cafeterias] = await Promise.all([
-                    base44.entities.Reserva.filter({ estado: { $in: ['pagado', 'recogido'] } }),
-                    base44.entities.Cafeteria.filter({ aprobada: true })
-                ]);
-
-                const menusDistributed = reservas.length;
-                const foodSavedKg = menusDistributed * 0.4; // ~400g por menú
-                const moneySaved = reservas.reduce((sum, r) => sum + (r.precio_total || 0), 0);
-                const co2Saved = (foodSavedKg * 3.17).toFixed(0); // 3.17 kg CO2 por kg comida
-
-                setStats({
-                    foodSavedKg: foodSavedKg.toFixed(0),
-                    menusDistributed,
-                    moneySaved: moneySaved.toFixed(0),
-                    co2Saved,
-                    partnerCafeterias: cafeterias.length,
-                });
-            } catch (error) {
-                console.error('Error loading impact data:', error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        loadImpactData();
-    }, []);
+    const stats = {
+        foodSavedKg: 21,
+        menusDistributed: 53,
+        moneySaved: 158,
+        co2Saved: 168,
+        partnerCafeterias: 3,
+    };
+    const isLoading = false;
     
     const colors = {
         green: { text: "text-emerald-600", border: "border-emerald-100", bg_gradient: "from-emerald-50 to-green-50", icon: "text-emerald-600" },
