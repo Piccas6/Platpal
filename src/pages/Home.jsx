@@ -19,7 +19,8 @@ import {
   Download,
   Search,
   CreditCard,
-  CheckCircle2
+  CheckCircle2,
+  ChefHat
 } from "lucide-react";
 import { OrbitalLoader } from "@/components/ui/orbital-loader";
 import { AuroraBackground } from "@/components/ui/aurora-background";
