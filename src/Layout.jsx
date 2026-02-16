@@ -167,8 +167,7 @@ export default function Layout({ children, currentPageName }) {
   const mainRoutes = [
     createPageUrl("Home"),
     createPageUrl("Menus"),
-    createPageUrl("Bonos"),
-    createPageUrl("Community")
+    createPageUrl("Impact")
   ];
   const isMainRoute = mainRoutes.includes(location.pathname);
 
@@ -481,7 +480,7 @@ export default function Layout({ children, currentPageName }) {
 
           {/* Bottom Navigation for Mobile */}
           <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-gray-200 z-50" style={{ paddingBottom: 'var(--safe-area-inset-bottom)' }}>
-            <div className="grid grid-cols-4 gap-1 px-2 py-2">
+            <div className="grid grid-cols-3 gap-1 px-2 py-2">
               <Link 
                 to={createPageUrl("Home")} 
                 onClick={(e) => {
@@ -510,30 +509,17 @@ export default function Layout({ children, currentPageName }) {
                 <span className="text-xs font-medium">Menús</span>
               </Link>
               <Link 
-                to={createPageUrl("Bonos")} 
+                to={createPageUrl("Impact")} 
                 onClick={(e) => {
-                  if (location.pathname === createPageUrl("Bonos")) {
+                  if (location.pathname === createPageUrl("Impact")) {
                     e.preventDefault();
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }
                 }}
-                className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-colors ${location.pathname === createPageUrl("Bonos") ? 'bg-emerald-50 text-emerald-600' : 'text-gray-600 hover:bg-gray-50'}`}
+                className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-colors ${location.pathname === createPageUrl("Impact") ? 'bg-emerald-50 text-emerald-600' : 'text-gray-600 hover:bg-gray-50'}`}
               >
-                <Gift className="w-5 h-5" />
-                <span className="text-xs font-medium">Bonos</span>
-              </Link>
-              <Link 
-                to={createPageUrl("Community")} 
-                onClick={(e) => {
-                  if (location.pathname === createPageUrl("Community")) {
-                    e.preventDefault();
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }
-                }}
-                className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-colors ${location.pathname === createPageUrl("Community") ? 'bg-emerald-50 text-emerald-600' : 'text-gray-600 hover:bg-gray-50'}`}
-              >
-                <Users className="w-5 h-5" />
-                <span className="text-xs font-medium">Comunidad</span>
+                <Target className="w-5 h-5" />
+                <span className="text-xs font-medium">Impacto</span>
               </Link>
             </div>
           </nav>

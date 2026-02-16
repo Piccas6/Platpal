@@ -316,14 +316,21 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* Investor Link */}
-          <div className="mt-4 sm:mt-6 px-4">
+          {/* Investor Link & Cafeteria Access */}
+          <div className="mt-4 sm:mt-6 px-4 flex flex-col items-center gap-2">
             <Link to={createPageUrl("InvestorForm")} className="text-xs sm:text-sm text-gray-600 hover:text-emerald-600 transition-colors inline-flex items-center gap-1 sm:gap-2 group">
               <span className="border-b border-transparent group-hover:border-emerald-600 transition-all text-center">
                 {t.hero.investorLink}
               </span>
               <ArrowRight className="w-3 sm:w-4 h-3 sm:h-4 group-hover:translate-x-1 transition-transform flex-shrink-0" />
             </Link>
+            <button
+              onClick={handleCafeteriaLogin}
+              className="text-xs text-gray-400 hover:text-gray-600 transition-colors inline-flex items-center gap-1 group"
+            >
+              <ChefHat className="w-3 h-3" />
+              <span>{t.hero.cafeteriaLogin}</span>
+            </button>
           </div>
 
           {/* Stats */}
