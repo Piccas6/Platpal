@@ -318,20 +318,20 @@ export default function Home() {
           </div>
 
           {/* Investor Link & Cafeteria Access */}
-          <div className="mt-4 sm:mt-6 px-4 flex flex-col items-center gap-2">
-            <Link to={createPageUrl("InvestorForm")} className="text-xs sm:text-sm text-gray-600 hover:text-emerald-600 transition-colors inline-flex items-center gap-1 sm:gap-2 group">
-              <span className="border-b border-transparent group-hover:border-emerald-600 transition-all text-center">
-                {t.hero.investorLink}
-              </span>
-              <ArrowRight className="w-3 sm:w-4 h-3 sm:h-4 group-hover:translate-x-1 transition-transform flex-shrink-0" />
-            </Link>
+          <div className="mt-4 sm:mt-6 px-4 flex flex-col items-center gap-3">
             <button
               onClick={handleCafeteriaLogin}
-              className="text-xs text-gray-400 hover:text-gray-600 transition-colors inline-flex items-center gap-1 group"
+              className="text-sm text-gray-600 hover:text-emerald-600 transition-colors inline-flex items-center gap-2 group font-medium"
             >
-              <ChefHat className="w-3 h-3" />
-              <span>{t.hero.cafeteriaLogin}</span>
+              <ChefHat className="w-4 h-4" />
+              <span className="border-b border-transparent group-hover:border-emerald-600 transition-all">{t.hero.cafeteriaLogin}</span>
             </button>
+            <Link to={createPageUrl("InvestorForm")} className="text-xs text-gray-500 hover:text-gray-700 transition-colors inline-flex items-center gap-1 group">
+              <span className="border-b border-transparent group-hover:border-gray-700 transition-all text-center">
+                {t.hero.investorLink}
+              </span>
+              <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform flex-shrink-0" />
+            </Link>
           </div>
 
           {/* Stats */}
@@ -708,16 +708,18 @@ function OfficeAccessButton() {
     }
   };
 
+  // Solo mostrar si el usuario es admin
+  if (user?.app_role !== 'admin') {
+    return null;
+  }
+
   return (
     <Button 
       onClick={handleClick}
       variant="outline"
-      className="border-2 border-gray-300 text-gray-600 hover:border-blue-600 hover:text-blue-600 font-semibold px-6 py-3 rounded-full transition-all relative"
+      className="border-2 border-gray-300 text-gray-600 hover:border-blue-600 hover:text-blue-600 font-semibold px-6 py-3 rounded-full transition-all"
     >
       🏢 Para Oficinas
-      {user?.app_role !== 'admin' && (
-        <Lock className="w-4 h-4 ml-2 text-gray-400" />
-      )}
     </Button>
   );
 }

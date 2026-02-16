@@ -167,7 +167,8 @@ export default function Layout({ children, currentPageName }) {
   const mainRoutes = [
     createPageUrl("Home"),
     createPageUrl("Menus"),
-    createPageUrl("Impact")
+    createPageUrl("Impact"),
+    createPageUrl("Profile")
   ];
   const isMainRoute = mainRoutes.includes(location.pathname);
 
@@ -480,7 +481,7 @@ export default function Layout({ children, currentPageName }) {
 
           {/* Bottom Navigation for Mobile */}
           <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-gray-200 z-50" style={{ paddingBottom: 'var(--safe-area-inset-bottom)' }}>
-            <div className="grid grid-cols-3 gap-1 px-2 py-2">
+            <div className="grid grid-cols-4 gap-1 px-2 py-2">
               <Link 
                 to={createPageUrl("Home")} 
                 onClick={(e) => {
@@ -520,6 +521,19 @@ export default function Layout({ children, currentPageName }) {
               >
                 <Target className="w-5 h-5" />
                 <span className="text-xs font-medium">Impacto</span>
+              </Link>
+              <Link 
+                to={createPageUrl("Profile")} 
+                onClick={(e) => {
+                  if (location.pathname === createPageUrl("Profile")) {
+                    e.preventDefault();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }
+                }}
+                className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-colors ${location.pathname === createPageUrl("Profile") ? 'bg-emerald-50 text-emerald-600' : 'text-gray-600 hover:bg-gray-50'}`}
+              >
+                <User className="w-5 h-5" />
+                <span className="text-xs font-medium">Perfil</span>
               </Link>
             </div>
           </nav>
