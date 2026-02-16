@@ -10,14 +10,14 @@ export default function ManagerProfile({ user }) {
   const managedCafeterias = user?.cafeterias_gestionadas || [];
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="flex items-center gap-4 mb-8">
-        <div className="w-16 h-16 bg-gradient-to-br from-teal-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
-          <UserCheck className="w-8 h-8 text-white" />
+    <div className="max-w-4xl mx-auto px-4 sm:px-0">
+      <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
+        <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-teal-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg flex-shrink-0">
+          <UserCheck className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Perfil de Manager</h1>
-          <p className="text-gray-600">Supervisa las cafeterías que tienes asignadas.</p>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">Perfil de Manager</h1>
+          <p className="text-xs sm:text-sm md:text-base text-gray-600">Supervisa las cafeterías que tienes asignadas.</p>
         </div>
       </div>
 
@@ -43,9 +43,9 @@ export default function ManagerProfile({ user }) {
         </CardContent>
       </Card>
       
-      <div className="mt-6">
+      <div className="mt-4 sm:mt-6">
         <Link to={createPageUrl("ManagerDashboard")}>
-          <Button className="w-full md:w-auto bg-gradient-to-r from-teal-500 to-blue-500 text-white rounded-2xl py-3 font-semibold shadow-md">
+          <Button className="w-full md:w-auto bg-gradient-to-r from-teal-500 to-blue-500 text-white rounded-xl sm:rounded-2xl py-3 font-semibold shadow-md text-sm sm:text-base">
             <ExternalLink className="w-4 h-4 mr-2" />
             Ir a mi Dashboard de Manager
           </Button>

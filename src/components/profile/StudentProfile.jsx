@@ -74,42 +74,42 @@ export default function StudentProfile({ user }) {
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-4 sm:space-y-6 px-4 sm:px-0">
       {/* Header */}
       <Card className="border-2 border-emerald-100">
-        <CardContent className="p-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-400 to-blue-500 flex items-center justify-center text-white text-3xl font-bold shadow-lg">
+        <CardContent className="p-4 sm:p-6 md:p-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:justify-between">
+            <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-emerald-400 to-blue-500 flex items-center justify-center text-white text-2xl sm:text-3xl font-bold shadow-lg flex-shrink-0">
                 {user?.full_name?.[0]?.toUpperCase() || 'U'}
               </div>
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">{user?.full_name || 'Usuario'}</h1>
-                <p className="text-gray-600">{user?.email}</p>
+              <div className="flex-1 min-w-0">
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 truncate">{user?.full_name || 'Usuario'}</h1>
+                <p className="text-sm sm:text-base text-gray-600 truncate">{user?.email}</p>
                 {user?.campus && (
                   <Badge className="mt-2">
                     <MapPin className="w-3 h-3 mr-1" />
-                    {campusOptions.find(c => c.id === user.campus)?.name}
+                    <span className="text-xs">{campusOptions.find(c => c.id === user.campus)?.name}</span>
                   </Badge>
                 )}
               </div>
             </div>
             
             {isEditing ? (
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={() => setIsEditing(false)}>
-                  <X className="w-4 h-4 mr-2" />
-                  Cancelar
+              <div className="flex gap-2 w-full sm:w-auto">
+                <Button variant="outline" onClick={() => setIsEditing(false)} className="flex-1 sm:flex-none" size="sm">
+                  <X className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Cancelar</span>
                 </Button>
-                <Button onClick={handleSave} disabled={isLoading} className="bg-emerald-600">
-                  <Save className="w-4 h-4 mr-2" />
-                  Guardar
+                <Button onClick={handleSave} disabled={isLoading} className="bg-emerald-600 flex-1 sm:flex-none" size="sm">
+                  <Save className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Guardar</span>
                 </Button>
               </div>
             ) : (
-              <Button variant="outline" onClick={() => setIsEditing(true)}>
-                <Pencil className="w-4 h-4 mr-2" />
-                Editar
+              <Button variant="outline" onClick={() => setIsEditing(true)} className="w-full sm:w-auto" size="sm">
+                <Pencil className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Editar</span>
               </Button>
             )}
           </div>
@@ -139,36 +139,36 @@ export default function StudentProfile({ user }) {
       </Card>
 
       {/* Stats */}
-      <div className="grid md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         <Card>
-          <CardContent className="p-6 text-center">
-            <UtensilsCrossed className="w-8 h-8 text-emerald-600 mx-auto mb-2" />
-            <p className="text-2xl font-bold">{stats.totalReservas}</p>
-            <p className="text-sm text-gray-600">Menús Salvados</p>
+          <CardContent className="p-4 sm:p-6 text-center">
+            <UtensilsCrossed className="w-6 h-6 sm:w-8 sm:h-8 text-emerald-600 mx-auto mb-2" />
+            <p className="text-xl sm:text-2xl font-bold">{stats.totalReservas}</p>
+            <p className="text-xs sm:text-sm text-gray-600">Menús Salvados</p>
           </CardContent>
         </Card>
         
         <Card>
-          <CardContent className="p-6 text-center">
-            <TrendingUp className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-            <p className="text-2xl font-bold">€{stats.totalGastado.toFixed(2)}</p>
-            <p className="text-sm text-gray-600">Total Gastado</p>
+          <CardContent className="p-4 sm:p-6 text-center">
+            <TrendingUp className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 mx-auto mb-2" />
+            <p className="text-xl sm:text-2xl font-bold">€{stats.totalGastado.toFixed(2)}</p>
+            <p className="text-xs sm:text-sm text-gray-600">Total Gastado</p>
           </CardContent>
         </Card>
         
         <Card>
-          <CardContent className="p-6 text-center">
-            <Calendar className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-            <p className="text-2xl font-bold">{stats.menusEsteMes}</p>
-            <p className="text-sm text-gray-600">Este Mes</p>
+          <CardContent className="p-4 sm:p-6 text-center">
+            <Calendar className="w-6 h-6 sm:w-8 sm:h-8 text-purple-600 mx-auto mb-2" />
+            <p className="text-xl sm:text-2xl font-bold">{stats.menusEsteMes}</p>
+            <p className="text-xs sm:text-sm text-gray-600">Este Mes</p>
           </CardContent>
         </Card>
         
         <Card className="bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-200">
-          <CardContent className="p-6 text-center">
-            <Flame className={`w-8 h-8 mx-auto mb-2 ${user?.racha_actual > 0 ? 'text-orange-500' : 'text-gray-400'}`} />
-            <p className="text-2xl font-bold">{user?.racha_actual || 0}</p>
-            <p className="text-sm text-gray-600">Racha Actual</p>
+          <CardContent className="p-4 sm:p-6 text-center">
+            <Flame className={`w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 ${user?.racha_actual > 0 ? 'text-orange-500' : 'text-gray-400'}`} />
+            <p className="text-xl sm:text-2xl font-bold">{user?.racha_actual || 0}</p>
+            <p className="text-xs sm:text-sm text-gray-600">Racha Actual</p>
           </CardContent>
         </Card>
       </div>
@@ -195,35 +195,35 @@ export default function StudentProfile({ user }) {
       {/* Historial */}
       <Card>
         <CardHeader>
-          <CardTitle>Historial de Reservas</CardTitle>
+          <CardTitle className="text-lg sm:text-xl">Historial de Reservas</CardTitle>
         </CardHeader>
         <CardContent>
           {reservations.length > 0 ? (
             <div className="space-y-3 max-h-96 overflow-y-auto">
               {reservations.slice(0, 10).map(r => (
-                <div key={r.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                  <div>
-                    <p className="font-semibold text-gray-900">{r.menus_detalle}</p>
-                    <p className="text-sm text-gray-600">{r.cafeteria}</p>
+                <div key={r.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 sm:p-4 bg-gray-50 rounded-xl">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-gray-900 text-sm sm:text-base truncate">{r.menus_detalle}</p>
+                    <p className="text-xs sm:text-sm text-gray-600 truncate">{r.cafeteria}</p>
                     <p className="text-xs text-gray-500 mt-1">
                       {new Date(r.created_date).toLocaleDateString('es-ES')}
                     </p>
                   </div>
-                  <div className="text-right">
-                    <Badge variant={r.estado === 'recogido' ? 'default' : 'outline'}>
+                  <div className="flex items-center gap-3 sm:flex-col sm:items-end">
+                    <Badge variant={r.estado === 'recogido' ? 'default' : 'outline'} className="text-xs">
                       {r.estado}
                     </Badge>
-                    <p className="text-lg font-bold text-emerald-600 mt-1">€{r.precio_total?.toFixed(2)}</p>
+                    <p className="text-base sm:text-lg font-bold text-emerald-600">€{r.precio_total?.toFixed(2)}</p>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-center py-12">
-              <UtensilsCrossed className="w-16 h-16 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-600">No has hecho reservas aún</p>
+            <div className="text-center py-8 sm:py-12">
+              <UtensilsCrossed className="w-12 h-12 sm:w-16 sm:h-16 text-gray-300 mx-auto mb-3" />
+              <p className="text-sm sm:text-base text-gray-600 px-4">No has hecho reservas aún</p>
               <Link to={createPageUrl("Menus")}>
-                <Button className="mt-4 bg-emerald-600">Explorar Menús</Button>
+                <Button className="mt-4 bg-emerald-600 text-sm sm:text-base">Explorar Menús</Button>
               </Link>
             </div>
           )}

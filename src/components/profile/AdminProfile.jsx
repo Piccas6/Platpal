@@ -192,18 +192,18 @@ export default function AdminProfile({ user }) {
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center shadow-lg">
-            <Shield className="w-8 h-8 text-white" />
+    <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6 px-4 sm:px-0">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 sm:mb-8">
+        <div className="flex items-center gap-3 sm:gap-4">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center shadow-lg flex-shrink-0">
+            <Shield className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Panel de Administración</h1>
-            <p className="text-gray-600">Gestión de usuarios y cafeterías</p>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">Panel de Administración</h1>
+            <p className="text-xs sm:text-sm md:text-base text-gray-600">Gestión de usuarios y cafeterías</p>
           </div>
         </div>
-        <Button onClick={handleExportUsers} className="bg-emerald-600 hover:bg-emerald-700">
+        <Button onClick={handleExportUsers} className="bg-emerald-600 hover:bg-emerald-700 w-full sm:w-auto text-sm" size="sm">
           <Download className="w-4 h-4 mr-2" />
           Exportar Usuarios
         </Button>
@@ -275,19 +275,19 @@ export default function AdminProfile({ user }) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col md:flex-row gap-4 mb-6 p-4 bg-gray-50 rounded-2xl border">
+          <div className="flex flex-col gap-3 sm:gap-4 mb-4 sm:mb-6 p-3 sm:p-4 bg-gray-50 rounded-xl sm:rounded-2xl border">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input 
                 placeholder="Buscar por nombre o email..." 
                 value={filterSearch} 
                 onChange={(e) => setFilterSearch(e.target.value)} 
-                className="pl-9" 
+                className="pl-9 text-sm" 
               />
             </div>
-            <div className="w-full md:w-48">
+            <div className="w-full sm:w-48">
               <Select value={filterRole} onValueChange={setFilterRole}>
-                <SelectTrigger><SelectValue placeholder="Filtrar por rol"/></SelectTrigger>
+                <SelectTrigger className="text-sm"><SelectValue placeholder="Filtrar por rol"/></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos los roles</SelectItem>
                   {roleOptions.map(role => (

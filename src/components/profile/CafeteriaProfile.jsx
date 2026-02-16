@@ -108,10 +108,10 @@ export default function CafeteriaProfile({ user }) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 px-4 sm:px-0">
       <div>
-        <h2 className="text-3xl font-bold text-gray-900">Perfil de Cafetería</h2>
-        <p className="text-gray-600 mt-2">Gestiona tu información</p>
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Perfil de Cafetería</h2>
+        <p className="text-sm sm:text-base text-gray-600 mt-2">Gestiona tu información</p>
       </div>
 
       {/* Credenciales */}
@@ -336,17 +336,17 @@ export default function CafeteriaProfile({ user }) {
 
       {/* Quick Access */}
       <Card className="border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50">
-        <CardContent className="p-6">
-          <h3 className="font-bold text-purple-900 mb-4">🚀 Acceso Rápido</h3>
-          <div className="flex flex-wrap gap-3">
-            <Link to={createPageUrl("CafeteriaDashboard")}>
-              <Button className="bg-emerald-600">Mi Panel</Button>
+        <CardContent className="p-4 sm:p-6">
+          <h3 className="font-bold text-purple-900 mb-3 sm:mb-4 text-sm sm:text-base">🚀 Acceso Rápido</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
+            <Link to={createPageUrl("CafeteriaDashboard")} className="w-full">
+              <Button className="bg-emerald-600 w-full text-sm sm:text-base">Mi Panel</Button>
             </Link>
-            <Link to={createPageUrl("PublishMenu")}>
-              <Button variant="outline">Publicar Menú</Button>
+            <Link to={createPageUrl("PublishMenu")} className="w-full">
+              <Button variant="outline" className="w-full text-sm sm:text-base">Publicar Menú</Button>
             </Link>
-            <Link to={createPageUrl("PickupPanel")}>
-              <Button variant="outline">Panel Recogida</Button>
+            <Link to={createPageUrl("PickupPanel")} className="w-full">
+              <Button variant="outline" className="w-full text-sm sm:text-base">Panel Recogida</Button>
             </Link>
           </div>
         </CardContent>
