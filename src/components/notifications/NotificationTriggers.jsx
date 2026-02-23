@@ -4,35 +4,31 @@ import { useNotifications } from './NotificationContext';
 
 export default function NotificationTriggers({ user }) {
   const { addNotification } = useNotifications();
+  const shownIds = React.useRef(new Set());
 
   useEffect(() => {
     if (!user?.id) return;
 
-    // Polling cada 30 segundos para nuevas notificaciones
     const pollNotifications = async () => {
       try {
         const allNotifications = await base44.entities.Notification.list('-sent_at', 20);
         
-        // Filtrar notificaciones para el usuario actual
         const userNotifications = allNotifications.filter(n => {
-          // Si target_users está vacío, es para todos
           if (!n.target_users || n.target_users.length === 0) {
-            // Solo mostrar a admins/managers/cafeterias
             return ['admin', 'manager', 'cafeteria'].includes(user.app_role);
           }
-          // Si hay target_users específicos, verificar si el usuario está incluido
           return n.target_users.includes(user.email);
         });
 
-        // Filtrar las que aún no se han mostrado (últimas 5 minutos)
+        // Solo mostrar notificaciones de los últimos 5 minutos que no se hayan mostrado ya
         const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
-        const recentNotifications = userNotifications.filter(n => {
+        const newNotifications = userNotifications.filter(n => {
           const sentAt = new Date(n.sent_at);
-          return sentAt > fiveMinutesAgo;
+          return sentAt > fiveMinutesAgo && !shownIds.current.has(n.id);
         });
 
-        // Agregar notificaciones al contexto
-        recentNotifications.forEach(n => {
+        newNotifications.forEach(n => {
+          shownIds.current.add(n.id);
           addNotification({
             id: n.id,
             type: n.type,
@@ -48,14 +44,20 @@ export default function NotificationTriggers({ user }) {
       }
     };
 
-    // Poll inicial
-    pollNotifications();
+    // Marcar notificaciones existentes como ya vistas al inicio
+    const initializeSeenIds = async () => {
+      try {
+        const existing = await base44.entities.Notification.list('-sent_at', 20);
+        existing.forEach(n => shownIds.current.add(n.id));
+      } catch {}
+    };
 
-    // Poll cada 30 segundos
-    const interval = setInterval(pollNotifications, 30000);
+    initializeSeenIds().then(() => {
+      const interval = setInterval(pollNotifications, 30000);
+      return () => clearInterval(interval);
+    });
 
-    return () => clearInterval(interval);
-  }, [user, addNotification]);
+  }, [user?.id]);
 
   // Trigger para stock bajo (solo para cafeterias/admins)
   useEffect(() => {
