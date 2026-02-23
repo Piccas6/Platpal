@@ -4,7 +4,7 @@ import { useNotifications } from './NotificationContext';
 
 export default function NotificationTriggers({ user }) {
   const { addNotification } = useNotifications();
-  const shownIds = React.useRef(new Set());
+  const shownIds = useRef(new Set());
 
   useEffect(() => {
     if (!user?.id) return;
