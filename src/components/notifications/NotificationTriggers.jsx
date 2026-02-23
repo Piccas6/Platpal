@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from 'react';
-// eslint-disable-next-line no-unused-vars
 import { base44 } from '@/api/base44Client';
 import { useNotifications } from './NotificationContext';
 
