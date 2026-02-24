@@ -747,9 +747,17 @@ export default function Menus() {
                     <Select value={surpriseForm.cafeteria_id} onValueChange={(v) => setSurpriseForm(p => ({...p, cafeteria_id: v}))}>
                       <SelectTrigger><SelectValue placeholder="Selecciona cafetería" /></SelectTrigger>
                       <SelectContent>
-                        {cafeterias.map(c => (
-                          <SelectItem key={c.id} value={c.id}>{c.nombre} — {c.campus}</SelectItem>
-                        ))}
+                        {cafeterias
+                          .filter(c => {
+                            const n = c.nombre?.toLowerCase() || '';
+                            const campusOk = c.campus === 'jerez';
+                            const esia = n.includes('esia') || n.includes('e.s.i.a');
+                            const ciencias = n.includes('ciencias');
+                            return campusOk || esia || ciencias;
+                          })
+                          .map(c => (
+                            <SelectItem key={c.id} value={c.id}>{c.nombre} — {c.campus}</SelectItem>
+                          ))}
                       </SelectContent>
                     </Select>
                   </div>
