@@ -767,8 +767,6 @@ export default function Menus() {
                     <Select value={surpriseForm.hora_recogida_deseada} onValueChange={(v) => setSurpriseForm(p => ({...p, hora_recogida_deseada: v}))}>
                       <SelectTrigger><SelectValue placeholder="Selecciona franja" /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="13:00-14:00">13:00 - 14:00</SelectItem>
-                        <SelectItem value="14:00-15:00">14:00 - 15:00</SelectItem>
                         <SelectItem value="15:00-16:00">15:00 - 16:00</SelectItem>
                         <SelectItem value="16:00-17:00">16:00 - 17:00</SelectItem>
                         <SelectItem value="17:00-18:00">17:00 - 18:00</SelectItem>
