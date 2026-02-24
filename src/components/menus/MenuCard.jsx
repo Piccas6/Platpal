@@ -16,6 +16,51 @@ export default function MenuCard({ menu, onReservationSuccess, currentUser, onFa
   );
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
   const [isReserving, setIsReserving] = useState(false);
+  const [countdown, setCountdown] = useState('');
+  const [countdownPhase, setCountdownPhase] = useState(''); // 'reserva' | 'recogida' | 'closed'
+
+  // Contador regresivo
+  useEffect(() => {
+    const updateCountdown = () => {
+      const now = new Date();
+      const parseTime = (t) => {
+        if (!t) return null;
+        const [h, m] = t.split(':').map(Number);
+        const d = new Date();
+        d.setHours(h, m, 0, 0);
+        return d;
+      };
+
+      const reservaInicio = parseTime(menu.hora_inicio_reserva || '15:30');
+      const reservaFin = parseTime(menu.hora_limite_reserva || '16:30');
+      const recogidaFin = parseTime(menu.hora_limite || '18:00');
+
+      if (now < reservaInicio) {
+        const diff = reservaInicio - now;
+        const h = Math.floor(diff / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        const s = Math.floor((diff % 60000) / 1000);
+        setCountdown(`${h > 0 ? h + 'h ' : ''}${m}m ${s}s`);
+        setCountdownPhase('opening');
+      } else if (now >= reservaInicio && now <= reservaFin) {
+        const diff = reservaFin - now;
+        const h = Math.floor(diff / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        const s = Math.floor((diff % 60000) / 1000);
+        setCountdown(`${h > 0 ? h + 'h ' : ''}${m}m ${s}s`);
+        setCountdownPhase('reserva');
+      } else if (now > reservaFin && now <= recogidaFin) {
+        setCountdown('');
+        setCountdownPhase('recogida');
+      } else {
+        setCountdown('');
+        setCountdownPhase('closed');
+      }
+    };
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, [menu]);
 
   // Si no se pasa canReserve como prop, calcularlo localmente
   const [canReserveLocal, setCanReserveLocal] = useState(true);
