@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Clock, MapPin, UtensilsCrossed, Sparkles, Leaf, AlertCircle, Heart } from 'lucide-react';
+import { Clock, MapPin, UtensilsCrossed, Sparkles, Leaf, AlertCircle, Heart, Timer, Flame } from 'lucide-react';
 import ReservationModal from './ReservationModal';
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
