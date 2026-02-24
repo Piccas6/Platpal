@@ -601,16 +601,15 @@ export default function Menus() {
                     <h3 className="font-semibold text-gray-900">Filtrar Menús</h3>
                     <ChevronDown className={`w-4 h-4 text-gray-600 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
                   </button>
-                  <Link to={createPageUrl("SurpriseMenu")}>
                     <Button 
                       variant="outline"
                       size="sm"
                       className="border-purple-300 text-purple-600 hover:bg-purple-50"
+                      onClick={() => setShowSurprisePanel(true)}
                     >
                       <Sparkles className="w-4 h-4 mr-2" />
                       Menú Sorpresa
                     </Button>
-                  </Link>
                 </div>
                 
                 {showFilters && (
