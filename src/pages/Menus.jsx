@@ -362,6 +362,70 @@ export default function Menus() {
     }
   };
 
+  const loadSurpriseRequests = useCallback(async () => {
+    if (!currentUser?.email) return;
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const allReqs = await base44.entities.SurpriseMenuRequest.list('-created_date', 50);
+      const mine = allReqs.filter(r => r.created_by === currentUser.email && r.fecha_solicitud?.startsWith(today));
+      setMyRequests(mine);
+    } catch (e) { console.error(e); }
+  }, [currentUser]);
+
+  useEffect(() => {
+    if (showSurprisePanel && currentUser?.email) loadSurpriseRequests();
+  }, [showSurprisePanel, currentUser, loadSurpriseRequests]);
+
+  const handleSurpriseSubmit = async (e) => {
+    e.preventDefault();
+    if (!surpriseForm.cafeteria_id || !surpriseForm.hora_recogida_deseada) {
+      alert("Por favor completa todos los campos obligatorios");
+      return;
+    }
+    if (!currentUser?.email) { alert("Debes iniciar sesión"); return; }
+    const selectedCafe = cafeterias.find(c => c.id === surpriseForm.cafeteria_id);
+    if (!selectedCafe) return;
+
+    setIsSubmittingSurprise(true);
+    try {
+      await base44.entities.SurpriseMenuRequest.create({
+        student_email: currentUser.email,
+        student_name: currentUser.full_name,
+        cafeteria_id: selectedCafe.id,
+        cafeteria_name: selectedCafe.nombre,
+        campus: selectedCafe.campus,
+        hora_recogida_deseada: surpriseForm.hora_recogida_deseada,
+        notas_estudiante: surpriseForm.notas_estudiante,
+        alergias: [],
+        preferencia_vegetariano: surpriseForm.preferencia_vegetariano,
+        preferencia_vegano: surpriseForm.preferencia_vegano,
+        fecha_solicitud: new Date().toISOString(),
+        estado: "pendiente"
+      });
+      alert("✅ Solicitud enviada. Te notificaremos cuando la cafetería responda.");
+      setSurpriseForm({ cafeteria_id: '', hora_recogida_deseada: '', notas_estudiante: '', preferencia_vegetariano: false, preferencia_vegano: false });
+      loadSurpriseRequests();
+    } catch (err) {
+      console.error(err);
+      alert("Error al enviar la solicitud.");
+    } finally {
+      setIsSubmittingSurprise(false);
+    }
+  };
+
+  const getSurpriseBadge = (estado) => {
+    const map = {
+      pendiente: { color: 'bg-yellow-100 text-yellow-800', icon: Clock, label: 'Pendiente' },
+      aceptada: { color: 'bg-green-100 text-green-800', icon: CheckCircle, label: 'Aceptada' },
+      rechazada: { color: 'bg-red-100 text-red-800', icon: XCircle, label: 'Rechazada' },
+      reservada: { color: 'bg-blue-100 text-blue-800', icon: CheckCircle, label: 'Reservada' },
+      expirada: { color: 'bg-gray-100 text-gray-800', icon: AlertCircle, label: 'Expirada' }
+    };
+    const v = map[estado] || map.pendiente;
+    const Icon = v.icon;
+    return <Badge className={`${v.color} gap-1`}><Icon className="w-3 h-3" />{v.label}</Badge>;
+  };
+
   const toggleFavoriteCafeteria = async (cafeteriaName) => {
     if (!currentUser || !currentUser.id) {
         alert("Debes iniciar sesión para marcar cafeterías como favoritas.");
