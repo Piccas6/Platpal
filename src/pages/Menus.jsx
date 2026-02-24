@@ -717,6 +717,108 @@ export default function Menus() {
           currentUser={currentUser}
         />
 
+        {/* Panel Menú Sorpresa */}
+        {showSurprisePanel && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+            <div className="bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-lg max-h-[90vh] overflow-y-auto">
+              <div className="sticky top-0 bg-white px-6 py-4 border-b flex items-center justify-between z-10 rounded-t-3xl sm:rounded-t-2xl">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-purple-600" />
+                  <h2 className="text-lg font-bold text-gray-900">Menú Sorpresa</h2>
+                </div>
+                <button onClick={() => setShowSurprisePanel(false)} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
+                  <X className="w-5 h-5 text-gray-600" />
+                </button>
+              </div>
+
+              <div className="p-6 space-y-5">
+                <div className="p-4 bg-purple-50 rounded-xl border border-purple-200">
+                  <p className="text-sm text-purple-800 font-medium mb-1">¿Cómo funciona?</p>
+                  <ol className="text-xs text-purple-700 space-y-1 ml-4 list-decimal">
+                    <li>Elige cafetería y hora de recogida</li>
+                    <li>La cafetería tiene 30 min para responder</li>
+                    <li>Si acepta, puedes reservar por €2.99</li>
+                  </ol>
+                </div>
+
+                <form onSubmit={handleSurpriseSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Cafetería *</label>
+                    <Select value={surpriseForm.cafeteria_id} onValueChange={(v) => setSurpriseForm(p => ({...p, cafeteria_id: v}))}>
+                      <SelectTrigger><SelectValue placeholder="Selecciona cafetería" /></SelectTrigger>
+                      <SelectContent>
+                        {cafeterias.map(c => (
+                          <SelectItem key={c.id} value={c.id}>{c.nombre} — {c.campus}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Hora de recogida *</label>
+                    <Select value={surpriseForm.hora_recogida_deseada} onValueChange={(v) => setSurpriseForm(p => ({...p, hora_recogida_deseada: v}))}>
+                      <SelectTrigger><SelectValue placeholder="Selecciona franja" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="13:00-14:00">13:00 - 14:00</SelectItem>
+                        <SelectItem value="14:00-15:00">14:00 - 15:00</SelectItem>
+                        <SelectItem value="15:00-16:00">15:00 - 16:00</SelectItem>
+                        <SelectItem value="16:00-17:00">16:00 - 17:00</SelectItem>
+                        <SelectItem value="17:00-18:00">17:00 - 18:00</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer text-sm">
+                      <input type="checkbox" checked={surpriseForm.preferencia_vegetariano} onChange={e => setSurpriseForm(p => ({...p, preferencia_vegetariano: e.target.checked}))} className="w-4 h-4 accent-purple-600" />
+                      Vegetariano
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer text-sm">
+                      <input type="checkbox" checked={surpriseForm.preferencia_vegano} onChange={e => setSurpriseForm(p => ({...p, preferencia_vegano: e.target.checked}))} className="w-4 h-4 accent-purple-600" />
+                      Vegano
+                    </label>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Notas (opcional)</label>
+                    <Textarea value={surpriseForm.notas_estudiante} onChange={e => setSurpriseForm(p => ({...p, notas_estudiante: e.target.value}))} placeholder="Ej: Sin frutos secos..." rows={2} />
+                  </div>
+
+                  <Button type="submit" disabled={isSubmittingSurprise} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 py-5">
+                    {isSubmittingSurprise ? <OrbitalLoader className="w-5 h-5" /> : '✨ Enviar Solicitud'}
+                  </Button>
+                </form>
+
+                {/* Mis solicitudes de hoy */}
+                {myRequests.length > 0 && (
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-3">Mis solicitudes de hoy</h3>
+                    <div className="space-y-3">
+                      {myRequests.map(r => (
+                        <div key={r.id} className="p-3 bg-gray-50 rounded-xl border">
+                          <div className="flex items-center justify-between mb-1">
+                            <p className="font-medium text-sm text-gray-900">{r.cafeteria_name}</p>
+                            {getSurpriseBadge(r.estado)}
+                          </div>
+                          <p className="text-xs text-gray-500">Recogida: {r.hora_recogida_deseada}</p>
+                          {r.notas_cafeteria && (
+                            <p className="text-xs text-blue-700 mt-1 bg-blue-50 p-2 rounded-lg">{r.notas_cafeteria}</p>
+                          )}
+                          {r.estado === 'aceptada' && r.menu_creado_id && (
+                            <Button size="sm" className="mt-2 w-full bg-green-600 hover:bg-green-700" onClick={() => { setShowSurprisePanel(false); }}>
+                              Ver Menú y Reservar
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Sección de Encuestas */}
         {(currentUser?.app_role === 'admin' || surveys.filter(s => !selectedCampus || s.campus === 'todos' || s.campus === selectedCampus?.id).length > 0) && (
           <div className="mt-12">
