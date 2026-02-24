@@ -59,14 +59,16 @@ export default function Menus() {
   const loadMenus = useCallback(async () => {
     setIsLoading(true);
     try {
-      const fetchedMenus = await base44.entities.Menu.list('-created_date');
+      const [fetchedMenus, fetchedReservations, fetchedSurveys, fetchedCafeterias] = await Promise.all([
+        base44.entities.Menu.list('-created_date'),
+        base44.entities.Reserva.list(),
+        base44.entities.Survey.filter({ activa: true }, '-created_date'),
+        base44.entities.Cafeteria.filter({ activa: true, aprobada: true })
+      ]);
       setAllMenus(fetchedMenus);
-      const fetchedReservations = await base44.entities.Reserva.list();
       setReservations(fetchedReservations);
-      
-      // Cargar encuestas
-      const fetchedSurveys = await base44.entities.Survey.filter({ activa: true }, '-created_date');
       setSurveys(fetchedSurveys);
+      setCafeterias(fetchedCafeterias);
     } catch (error) {
       console.error("Error loading data:", error);
     } finally {
