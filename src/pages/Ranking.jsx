@@ -141,7 +141,6 @@ export default function RankingPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <p className="font-semibold text-gray-900 truncate">{item.nombre}</p>
-                        <span className="text-xs text-gray-400">{item.cafeterias} cafetería{item.cafeterias !== 1 ? 's' : ''}</span>
                       </div>
                       <div className="mt-1.5 h-2 bg-gray-100 rounded-full overflow-hidden">
                         <div
