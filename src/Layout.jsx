@@ -35,6 +35,7 @@ const navigationItems = [
   { title: "Bonos", url: createPageUrl("Bonos"), icon: Gift },
   { title: "Panel Cafetería", url: createPageUrl("CafeteriaDashboard"), icon: ChefHat, requiresAuth: true },
   { title: "Impacto", url: createPageUrl("Impact"), icon: Target },
+  { title: "Ranking", url: createPageUrl("Ranking"), icon: Trophy },
   { title: "FAQ", url: createPageUrl("FAQ"), icon: HelpCircle },
 ];
 
