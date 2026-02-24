@@ -422,15 +422,28 @@ PlatPal - Menús Sostenibles
             </button>
           )}
 
-          {/* Estado */}
-          <div className="absolute bottom-3 left-3">
+          {/* Estado y urgencia */}
+          <div className="absolute bottom-3 left-3 flex flex-col gap-1">
             {isOutOfStock ? (
               <Badge className="bg-red-500 text-white shadow-lg">Agotado</Badge>
             ) : isOutsideReservationWindow() ? (
               <Badge className="bg-orange-500 text-white shadow-lg">Fuera de horario</Badge>
             ) : (
-              <Badge className="bg-emerald-500 text-white shadow-lg">
+              <Badge className={`shadow-lg flex items-center gap-1 ${menu.stock_disponible <= 3 ? 'bg-red-500 text-white animate-pulse' : 'bg-emerald-500 text-white'}`}>
+                {menu.stock_disponible <= 3 && <Flame className="w-3 h-3" />}
                 {menu.stock_disponible} disponibles
+              </Badge>
+            )}
+            {countdownPhase === 'reserva' && countdown && (
+              <Badge className="bg-amber-500 text-white shadow-lg flex items-center gap-1">
+                <Timer className="w-3 h-3" />
+                Cierra en {countdown}
+              </Badge>
+            )}
+            {countdownPhase === 'opening' && countdown && (
+              <Badge className="bg-blue-500 text-white shadow-lg flex items-center gap-1">
+                <Timer className="w-3 h-3" />
+                Abre en {countdown}
               </Badge>
             )}
           </div>
