@@ -93,6 +93,7 @@ import TermsOfService from './pages/TermsOfService';
 import TestPayments from './pages/TestPayments';
 import UploadDocumentsCafeteria from './pages/UploadDocumentsCafeteria';
 import VoicePublishMenu from './pages/VoicePublishMenu';
+import Ranking from './pages/Ranking';
 import __Layout from './Layout.jsx';
 
 
@@ -143,6 +144,7 @@ export const PAGES = {
     "TestPayments": TestPayments,
     "UploadDocumentsCafeteria": UploadDocumentsCafeteria,
     "VoicePublishMenu": VoicePublishMenu,
+    "Ranking": Ranking,
 }
 
 export const pagesConfig = {
