@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Filter, Star, StarOff, Clock, Sparkles, ChevronDown } from "lucide-react";
+import { ArrowLeft, Filter, Star, StarOff, Clock, Sparkles, ChevronDown, X } from "lucide-react";
 import { OrbitalLoader } from "@/components/ui/orbital-loader";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
