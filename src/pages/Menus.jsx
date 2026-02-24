@@ -33,6 +33,11 @@ export default function Menus() {
   const [surveys, setSurveys] = useState([]);
   const [isPulling, setIsPulling] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
+  const [showSurprisePanel, setShowSurprisePanel] = useState(false);
+  const [cafeterias, setCafeterias] = useState([]);
+  const [myRequests, setMyRequests] = useState([]);
+  const [surpriseForm, setSurpriseForm] = useState({ cafeteria_id: '', hora_recogida_deseada: '', notas_estudiante: '', preferencia_vegetariano: false, preferencia_vegano: false });
+  const [isSubmittingSurprise, setIsSubmittingSurprise] = useState(false);
 
   const [filters, setFilters] = useState({
     tipo_cocina: 'all',
