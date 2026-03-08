@@ -6,6 +6,7 @@ export function ButtonColorful({
     className,
     label = "Ver menús disponibles",
     icon: Icon = ArrowRight,
+    id,
     ...props
 }) {
     return (

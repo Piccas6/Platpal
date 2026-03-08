@@ -21,6 +21,7 @@ export function OrbitalLoader({
   className,
   message,
   messagePlacement,
+  id,
   ...props
 }) {
   return (
