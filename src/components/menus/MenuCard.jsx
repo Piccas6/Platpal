@@ -314,6 +314,8 @@ PlatPal - Menús Sostenibles
 
       if (data.checkout_url) {
         console.log('Redirecting to Stripe:', data.checkout_url);
+        // Guardar reserva en localStorage para verificarla al volver de Stripe
+        localStorage.setItem('pendingReservation', JSON.stringify(nuevaReserva));
         window.location.href = data.checkout_url;
       } else {
         throw new Error('No se recibió URL de pago de Stripe.');
