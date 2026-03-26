@@ -19,13 +19,121 @@ export default function SurplusAI() {
   const [dryRun, setDryRun] = useState(true);
   const [expandedRow, setExpandedRow] = useState(null);
 
+  const MOCK_RESULTS = {
+    summary: {
+      total_menus_analyzed: 7,
+      menus_with_surplus_risk: 3,
+      menus_auto_activated: 1,
+      avg_predicted_sell_rate: 0.71,
+    },
+    results: [
+      {
+        menu_id: "m1",
+        plato_principal: "Pollo al horno con patatas",
+        cafeteria: "Cafetería Central — Jerez",
+        predicted_sold: 14,
+        predicted_surplus: 6,
+        predicted_sell_rate: 0.70,
+        confidence: "high",
+        action: "activate_surprise",
+        action_reason: "Jueves históricamente flojo para este plato. Tasa DOW media 68% + tendencia bajista últimas 2 semanas.",
+        data_points_used: 22,
+        algorithm_factors: { dow_avg_rate: 0.68, dish_popularity_rate: 0.72, current_sell_rate: 0.61, trend_factor: 0.91 },
+      },
+      {
+        menu_id: "m2",
+        plato_principal: "Lentejas estofadas con chorizo",
+        cafeteria: "Cafetería Central — Jerez",
+        predicted_sold: 17,
+        predicted_surplus: 3,
+        predicted_sell_rate: 0.85,
+        confidence: "high",
+        action: "none",
+        action_reason: null,
+        data_points_used: 31,
+        algorithm_factors: { dow_avg_rate: 0.83, dish_popularity_rate: 0.89, current_sell_rate: 0.88, trend_factor: 1.02 },
+      },
+      {
+        menu_id: "m3",
+        plato_principal: "Merluza a la plancha con ensalada",
+        cafeteria: "Bar ESIA — Jerez",
+        predicted_sold: 9,
+        predicted_surplus: 11,
+        predicted_sell_rate: 0.45,
+        confidence: "medium",
+        action: "notify_cafeteria",
+        action_reason: "Plato con historial irregular. Alta varianza entre días. Se recomienda reducir stock mañana.",
+        data_points_used: 14,
+        algorithm_factors: { dow_avg_rate: 0.51, dish_popularity_rate: 0.43, current_sell_rate: 0.40, trend_factor: 0.87 },
+      },
+      {
+        menu_id: "m4",
+        plato_principal: "Arroz con pollo y verduras",
+        cafeteria: "Cafetería Ciencias — Puerto Real",
+        predicted_sold: 21,
+        predicted_surplus: 4,
+        predicted_sell_rate: 0.84,
+        confidence: "high",
+        action: "none",
+        action_reason: null,
+        data_points_used: 28,
+        algorithm_factors: { dow_avg_rate: 0.80, dish_popularity_rate: 0.87, current_sell_rate: 0.82, trend_factor: 1.05 },
+      },
+      {
+        menu_id: "m5",
+        plato_principal: "Pasta boloñesa",
+        cafeteria: "Cafetería Ciencias — Puerto Real",
+        predicted_sold: 11,
+        predicted_surplus: 9,
+        predicted_sell_rate: 0.55,
+        confidence: "medium",
+        action: "notify_cafeteria",
+        action_reason: "Segundo día consecutivo con baja reserva anticipada a estas horas. Posible sobrestock.",
+        data_points_used: 18,
+        algorithm_factors: { dow_avg_rate: 0.60, dish_popularity_rate: 0.58, current_sell_rate: 0.49, trend_factor: 0.93 },
+      },
+      {
+        menu_id: "m6",
+        plato_principal: "Solomillo de cerdo con pimientos",
+        cafeteria: "Bar ESIA — Jerez",
+        predicted_sold: 16,
+        predicted_surplus: 2,
+        predicted_sell_rate: 0.89,
+        confidence: "high",
+        action: "notify_high_demand",
+        action_reason: "Tasa de venta anticipada muy alta. Considerar aumentar stock mañana.",
+        data_points_used: 25,
+        algorithm_factors: { dow_avg_rate: 0.85, dish_popularity_rate: 0.92, current_sell_rate: 0.91, trend_factor: 1.08 },
+      },
+      {
+        menu_id: "m7",
+        plato_principal: "Croquetas de jamón con ensalada",
+        cafeteria: "Cafetería Central — Jerez",
+        predicted_sold: 8,
+        predicted_surplus: 5,
+        predicted_sell_rate: 0.62,
+        confidence: "low",
+        action: "none",
+        action_reason: "Datos insuficientes para este plato (debut hace 3 semanas). Predicción con baja confianza.",
+        data_points_used: 6,
+        algorithm_factors: { dow_avg_rate: 0.65, dish_popularity_rate: null, current_sell_rate: 0.58, trend_factor: 1.00 },
+      },
+    ],
+  };
+
   const runAlgorithm = async () => {
     setIsRunning(true);
     setResults(null);
     setError(null);
     try {
-      const response = await base44.functions.invoke('autoSurplusDetection', { dry_run: dryRun });
-      setResults(response.data);
+      if (dryRun) {
+        // Simulación con datos realistas
+        await new Promise(r => setTimeout(r, 2200));
+        setResults(MOCK_RESULTS);
+      } else {
+        const response = await base44.functions.invoke('autoSurplusDetection', { dry_run: false });
+        setResults(response.data);
+      }
     } catch (err) {
       setError(err.message);
     } finally {
