@@ -6,10 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import withAuth from "../components/auth/withAuth";
 import ReferralDashboard from "../components/admin/ReferralDashboard";
+import { Link } from "react-router-dom";
 import { 
   Shield, Users, TrendingUp, RefreshCw, BarChart3,
   Euro, UtensilsCrossed, Building2, CheckCircle, XCircle,
-  Clock, AlertCircle, Gift
+  Clock, AlertCircle, Gift, Brain, Rocket, ExternalLink, FileText
 } from "lucide-react";
 
 function AdminDashboard() {
@@ -204,7 +205,7 @@ function AdminDashboard() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview">
               <BarChart3 className="w-4 h-4 mr-2" />
               Resumen
@@ -218,6 +219,10 @@ function AdminDashboard() {
             <TabsTrigger value="referidos">
               <Gift className="w-4 h-4 mr-2" />
               Referidos
+            </TabsTrigger>
+            <TabsTrigger value="inversor">
+              <Rocket className="w-4 h-4 mr-2" />
+              Demo Inversor
             </TabsTrigger>
           </TabsList>
 
@@ -301,6 +306,87 @@ function AdminDashboard() {
 
           <TabsContent value="referidos" className="mt-6">
             <ReferralDashboard />
+          </TabsContent>
+
+          <TabsContent value="inversor" className="mt-6">
+            <div className="space-y-6">
+              <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3 text-xl">
+                    <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center shadow">
+                      <Rocket className="w-5 h-5 text-white" />
+                    </div>
+                    Demo para Inversores
+                  </CardTitle>
+                  <p className="text-gray-600 text-sm">Accesos directos a las demos técnicas y herramientas de presentación.</p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+
+                  {/* Demo Surplus AI */}
+                  <div className="bg-white rounded-2xl border border-purple-100 p-5 flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow flex-shrink-0">
+                        <Brain className="w-6 h-6 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-gray-900">Surplus AI — Motor Predictivo</h3>
+                        <p className="text-sm text-gray-600 mt-1">
+                          Algoritmo de 4 factores ponderados que predice excedentes alimentarios y activa automáticamente el menú sorpresa. 
+                          Visualización en tiempo real con gráficos de radar y barras.
+                        </p>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          <Badge className="bg-purple-100 text-purple-700 border-purple-200">IA Predictiva</Badge>
+                          <Badge className="bg-pink-100 text-pink-700 border-pink-200">Automatización</Badge>
+                          <Badge className="bg-blue-100 text-blue-700 border-blue-200">Data Viz</Badge>
+                        </div>
+                      </div>
+                    </div>
+                    <Link to="/SurplusAI">
+                      <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white flex-shrink-0 gap-2">
+                        <ExternalLink className="w-4 h-4" />
+                        Abrir Demo
+                      </Button>
+                    </Link>
+                  </div>
+
+                  {/* Formulario Inversor */}
+                  <div className="bg-white rounded-2xl border border-emerald-100 p-5 flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-500 rounded-xl flex items-center justify-center shadow flex-shrink-0">
+                        <FileText className="w-6 h-6 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-gray-900">Formulario de Contacto para Inversores</h3>
+                        <p className="text-sm text-gray-600 mt-1">
+                          Página pública donde los inversores pueden dejar sus datos de contacto. 
+                          Al enviar, se recibe un email automático en contacto@platpal.com.
+                        </p>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">Email automático</Badge>
+                          <Badge className="bg-gray-100 text-gray-700 border-gray-200">Página pública</Badge>
+                        </div>
+                      </div>
+                    </div>
+                    <Link to="/InvestorForm">
+                      <Button variant="outline" className="border-emerald-300 text-emerald-700 hover:bg-emerald-50 flex-shrink-0 gap-2">
+                        <ExternalLink className="w-4 h-4" />
+                        Ver Formulario
+                      </Button>
+                    </Link>
+                  </div>
+
+                  {/* Info acceso */}
+                  <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-sm text-amber-800">
+                    <strong>URLs directas:</strong>
+                    <ul className="mt-1 space-y-1 font-mono text-xs">
+                      <li>• Demo IA: <span className="text-purple-700">/SurplusAI</span></li>
+                      <li>• Formulario inversor: <span className="text-emerald-700">/InvestorForm</span></li>
+                    </ul>
+                  </div>
+
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
