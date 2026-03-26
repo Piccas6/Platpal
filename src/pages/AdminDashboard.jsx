@@ -110,18 +110,18 @@ function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50 p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50 p-3 md:p-6">
+      <div className="max-w-7xl mx-auto space-y-4">
         
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
-              <Shield className="w-7 h-7 text-white" />
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 md:w-14 md:h-14 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
+              <Shield className="w-5 h-5 md:w-7 md:h-7 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-              <p className="text-gray-600">Sistema PlatPal</p>
+              <h1 className="text-xl md:text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+              <p className="text-xs md:text-sm text-gray-600">Sistema PlatPal</p>
             </div>
           </div>
           <Button onClick={loadData} variant="outline" size="icon">
@@ -131,172 +131,138 @@ function AdminDashboard() {
 
         {/* Alert Cafeterías Pendientes */}
         {stats.cafeteriasPendientes > 0 && (
-          <Card className="border-4 border-orange-400 bg-orange-50">
-            <CardContent className="p-6 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <AlertCircle className="w-10 h-10 text-orange-600" />
+          <Card className="border-2 border-orange-400 bg-orange-50">
+            <CardContent className="p-4 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <AlertCircle className="w-7 h-7 text-orange-600 flex-shrink-0" />
                 <div>
-                  <h2 className="text-xl font-bold text-orange-900">
-                    {stats.cafeteriasPendientes} cafetería{stats.cafeteriasPendientes > 1 ? 's' : ''} pendiente{stats.cafeteriasPendientes > 1 ? 's' : ''}
+                  <h2 className="text-base font-bold text-orange-900">
+                    {stats.cafeteriasPendientes} pendiente{stats.cafeteriasPendientes > 1 ? 's' : ''}
                   </h2>
-                  <p className="text-orange-800">Requiere{stats.cafeteriasPendientes > 1 ? 'n' : ''} aprobación</p>
+                  <p className="text-xs text-orange-800">Requiere{stats.cafeteriasPendientes > 1 ? 'n' : ''} aprobación</p>
                 </div>
               </div>
               <Button 
                 onClick={() => setActiveTab('cafeterias')}
-                className="bg-orange-600 hover:bg-orange-700"
+                size="sm"
+                className="bg-orange-600 hover:bg-orange-700 flex-shrink-0"
               >
-                Ver Ahora
+                Ver
               </Button>
             </CardContent>
           </Card>
         )}
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          <Card>
-            <CardContent className="p-6 text-center">
-              <Users className="w-10 h-10 text-blue-600 mx-auto mb-2" />
-              <p className="text-sm text-gray-600">Usuarios</p>
-              <p className="text-3xl font-bold">{stats.totalUsuarios}</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6 text-center">
-              <UtensilsCrossed className="w-10 h-10 text-orange-600 mx-auto mb-2" />
-              <p className="text-sm text-gray-600">Cafeterías</p>
-              <p className="text-3xl font-bold">{stats.totalCafeterias}</p>
-            </CardContent>
-          </Card>
-
-          <Card className={stats.cafeteriasPendientes > 0 ? 'border-2 border-orange-400' : ''}>
-            <CardContent className="p-6 text-center">
-              <Clock className="w-10 h-10 text-orange-600 mx-auto mb-2" />
-              <p className="text-sm text-gray-600">Pendientes</p>
-              <p className="text-3xl font-bold text-orange-600">{stats.cafeteriasPendientes}</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6 text-center">
-              <BarChart3 className="w-10 h-10 text-emerald-600 mx-auto mb-2" />
-              <p className="text-sm text-gray-600">Reservas Hoy</p>
-              <p className="text-3xl font-bold">{stats.reservasHoy}</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6 text-center">
-              <Euro className="w-10 h-10 text-purple-600 mx-auto mb-2" />
-              <p className="text-sm text-gray-600">Ingresos Hoy</p>
-              <p className="text-3xl font-bold">€{stats.ingresosHoy.toFixed(2)}</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6 text-center">
-              <TrendingUp className="w-10 h-10 text-amber-600 mx-auto mb-2" />
-              <p className="text-sm text-gray-600">Menús Activos</p>
-              <p className="text-3xl font-bold">{stats.menusActivos}</p>
-            </CardContent>
-          </Card>
+        {/* Stats Grid — 3 cols on mobile, 6 on desktop */}
+        <div className="grid grid-cols-3 md:grid-cols-6 gap-2 md:gap-4">
+          {[
+            { icon: Users, color: "text-blue-600", label: "Usuarios", value: stats.totalUsuarios },
+            { icon: UtensilsCrossed, color: "text-orange-600", label: "Cafeterías", value: stats.totalCafeterias },
+            { icon: Clock, color: "text-orange-600", label: "Pendientes", value: stats.cafeteriasPendientes, highlight: stats.cafeteriasPendientes > 0 },
+            { icon: BarChart3, color: "text-emerald-600", label: "Reservas", value: stats.reservasHoy },
+            { icon: Euro, color: "text-purple-600", label: "Ingresos", value: `€${stats.ingresosHoy.toFixed(0)}` },
+            { icon: TrendingUp, color: "text-amber-600", label: "Menús", value: stats.menusActivos },
+          ].map(({ icon: Icon, color, label, value, highlight }) => (
+            <Card key={label} className={highlight ? 'border-2 border-orange-400' : ''}>
+              <CardContent className="p-3 md:p-6 text-center">
+                <Icon className={`w-6 h-6 md:w-10 md:h-10 ${color} mx-auto mb-1`} />
+                <p className="text-xs text-gray-600 truncate">{label}</p>
+                <p className={`text-lg md:text-3xl font-bold ${highlight ? 'text-orange-600' : ''}`}>{value}</p>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="overview">
-              <BarChart3 className="w-4 h-4 mr-2" />
-              Resumen
+          <TabsList className="grid w-full grid-cols-4 h-auto">
+            <TabsTrigger value="overview" className="flex flex-col md:flex-row items-center gap-1 py-2 text-xs md:text-sm">
+              <BarChart3 className="w-4 h-4" />
+              <span>Resumen</span>
             </TabsTrigger>
-            <TabsTrigger value="cafeterias">
-              <Building2 className="w-4 h-4 mr-2" />
-              Cafeterías {stats.cafeteriasPendientes > 0 && (
-                <Badge className="ml-2 bg-orange-600 text-white">{stats.cafeteriasPendientes}</Badge>
-              )}
+            <TabsTrigger value="cafeterias" className="flex flex-col md:flex-row items-center gap-1 py-2 text-xs md:text-sm">
+              <Building2 className="w-4 h-4" />
+              <span className="flex items-center gap-1">
+                Cafeterías
+                {stats.cafeteriasPendientes > 0 && (
+                  <Badge className="bg-orange-600 text-white text-xs px-1 py-0">{stats.cafeteriasPendientes}</Badge>
+                )}
+              </span>
             </TabsTrigger>
-            <TabsTrigger value="referidos">
-              <Gift className="w-4 h-4 mr-2" />
-              Referidos
+            <TabsTrigger value="referidos" className="flex flex-col md:flex-row items-center gap-1 py-2 text-xs md:text-sm">
+              <Gift className="w-4 h-4" />
+              <span>Referidos</span>
             </TabsTrigger>
-            <TabsTrigger value="inversor">
-              <Rocket className="w-4 h-4 mr-2" />
-              Demo Inversor
+            <TabsTrigger value="inversor" className="flex flex-col md:flex-row items-center gap-1 py-2 text-xs md:text-sm">
+              <Rocket className="w-4 h-4" />
+              <span>Demo</span>
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overview" className="mt-6">
-            <div className="grid md:grid-cols-2 gap-6">
+          <TabsContent value="overview" className="mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Card>
-                <CardHeader>
-                  <CardTitle>Total Usuarios</CardTitle>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">Total Usuarios</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-4xl font-bold text-gray-900">{stats.totalUsuarios}</p>
-                  <p className="text-sm text-gray-600 mt-2">
-                    {users.filter(u => u.app_role === 'user').length} estudiantes
-                  </p>
+                  <p className="text-sm text-gray-600 mt-1">{users.filter(u => u.app_role === 'user').length} estudiantes</p>
                 </CardContent>
               </Card>
-
               <Card>
-                <CardHeader>
-                  <CardTitle>Cafeterías Activas</CardTitle>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">Cafeterías Activas</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-4xl font-bold text-gray-900">{stats.totalCafeterias}</p>
-                  <p className="text-sm text-gray-600 mt-2">
-                    {cafeterias.filter(c => c.aprobada).length} aprobadas
-                  </p>
+                  <p className="text-sm text-gray-600 mt-1">{cafeterias.filter(c => c.aprobada).length} aprobadas</p>
                 </CardContent>
               </Card>
             </div>
           </TabsContent>
 
-          <TabsContent value="cafeterias" className="mt-6">
+          <TabsContent value="cafeterias" className="mt-4">
             <Card>
-              <CardHeader>
-                <CardTitle>Cafeterías Pendientes</CardTitle>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">Cafeterías Pendientes</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {cafeterias.filter(c => c.estado_onboarding === 'en_revision' && !c.aprobada).map(cafe => (
                     <Card key={cafe.id}>
-                      <CardContent className="p-6">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <h3 className="text-xl font-bold text-gray-900">{cafe.nombre}</h3>
-                            <p className="text-gray-600">{cafe.campus} • {cafe.ubicacion_exacta}</p>
-                            {cafe.descripcion && (
-                              <p className="text-sm text-gray-500 mt-2">{cafe.descripcion}</p>
-                            )}
-                          </div>
-                          <div className="flex gap-2">
-                            <Button
-                              onClick={() => handleAprobarCafeteria(cafe.id)}
-                              className="bg-green-600 hover:bg-green-700"
-                            >
-                              <CheckCircle className="w-4 h-4 mr-2" />
-                              Aprobar
-                            </Button>
-                            <Button
-                              onClick={() => handleRechazarCafeteria(cafe.id)}
-                              variant="outline"
-                              className="border-red-300 text-red-700"
-                            >
-                              <XCircle className="w-4 h-4 mr-2" />
-                              Rechazar
-                            </Button>
-                          </div>
+                      <CardContent className="p-4">
+                        <h3 className="font-bold text-gray-900">{cafe.nombre}</h3>
+                        <p className="text-sm text-gray-600">{cafe.campus} • {cafe.ubicacion_exacta}</p>
+                        {cafe.descripcion && (
+                          <p className="text-xs text-gray-500 mt-1">{cafe.descripcion}</p>
+                        )}
+                        <div className="flex gap-2 mt-3">
+                          <Button
+                            onClick={() => handleAprobarCafeteria(cafe.id)}
+                            size="sm"
+                            className="flex-1 bg-green-600 hover:bg-green-700"
+                          >
+                            <CheckCircle className="w-4 h-4 mr-1" />
+                            Aprobar
+                          </Button>
+                          <Button
+                            onClick={() => handleRechazarCafeteria(cafe.id)}
+                            size="sm"
+                            variant="outline"
+                            className="flex-1 border-red-300 text-red-700"
+                          >
+                            <XCircle className="w-4 h-4 mr-1" />
+                            Rechazar
+                          </Button>
                         </div>
                       </CardContent>
                     </Card>
                   ))}
                   {cafeterias.filter(c => c.estado_onboarding === 'en_revision' && !c.aprobada).length === 0 && (
-                    <div className="text-center py-12">
-                      <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-3" />
-                      <p className="text-gray-600">No hay cafeterías pendientes</p>
+                    <div className="text-center py-10">
+                      <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-2" />
+                      <p className="text-gray-600 text-sm">No hay cafeterías pendientes</p>
                     </div>
                   )}
                 </div>
@@ -304,45 +270,43 @@ function AdminDashboard() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="referidos" className="mt-6">
+          <TabsContent value="referidos" className="mt-4">
             <ReferralDashboard />
           </TabsContent>
 
-          <TabsContent value="inversor" className="mt-6">
-            <div className="space-y-6">
+          <TabsContent value="inversor" className="mt-4">
+            <div className="space-y-4">
               <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-3 text-xl">
-                    <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center shadow">
-                      <Rocket className="w-5 h-5 text-white" />
+                <CardHeader className="pb-2">
+                  <CardTitle className="flex items-center gap-3 text-base md:text-xl">
+                    <div className="w-9 h-9 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center shadow flex-shrink-0">
+                      <Rocket className="w-4 h-4 text-white" />
                     </div>
                     Demo para Inversores
                   </CardTitle>
-                  <p className="text-gray-600 text-sm">Accesos directos a las demos técnicas y herramientas de presentación.</p>
+                  <p className="text-gray-600 text-xs">Accesos directos a las demos técnicas.</p>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-3">
 
                   {/* Demo Surplus AI */}
-                  <div className="bg-white rounded-2xl border border-purple-100 p-5 flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow flex-shrink-0">
-                        <Brain className="w-6 h-6 text-white" />
+                  <div className="bg-white rounded-2xl border border-purple-100 p-4">
+                    <div className="flex items-start gap-3 mb-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow flex-shrink-0">
+                        <Brain className="w-5 h-5 text-white" />
                       </div>
-                      <div>
-                        <h3 className="font-bold text-gray-900">Surplus AI — Motor Predictivo</h3>
-                        <p className="text-sm text-gray-600 mt-1">
-                          Algoritmo de 4 factores ponderados que predice excedentes alimentarios y activa automáticamente el menú sorpresa. 
-                          Visualización en tiempo real con gráficos de radar y barras.
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold text-gray-900 text-sm">Surplus AI — Motor Predictivo</h3>
+                        <p className="text-xs text-gray-600 mt-1">
+                          Algoritmo de 4 factores que predice excedentes y activa el menú sorpresa automáticamente.
                         </p>
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          <Badge className="bg-purple-100 text-purple-700 border-purple-200">IA Predictiva</Badge>
-                          <Badge className="bg-pink-100 text-pink-700 border-pink-200">Automatización</Badge>
-                          <Badge className="bg-blue-100 text-blue-700 border-blue-200">Data Viz</Badge>
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          <Badge className="bg-purple-100 text-purple-700 text-xs">IA Predictiva</Badge>
+                          <Badge className="bg-pink-100 text-pink-700 text-xs">Automatización</Badge>
                         </div>
                       </div>
                     </div>
                     <Link to="/SurplusAI">
-                      <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white flex-shrink-0 gap-2">
+                      <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white gap-2">
                         <ExternalLink className="w-4 h-4" />
                         Abrir Demo
                       </Button>
@@ -350,38 +314,31 @@ function AdminDashboard() {
                   </div>
 
                   {/* Formulario Inversor */}
-                  <div className="bg-white rounded-2xl border border-emerald-100 p-5 flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-500 rounded-xl flex items-center justify-center shadow flex-shrink-0">
-                        <FileText className="w-6 h-6 text-white" />
+                  <div className="bg-white rounded-2xl border border-emerald-100 p-4">
+                    <div className="flex items-start gap-3 mb-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-500 rounded-xl flex items-center justify-center shadow flex-shrink-0">
+                        <FileText className="w-5 h-5 text-white" />
                       </div>
-                      <div>
-                        <h3 className="font-bold text-gray-900">Formulario de Contacto para Inversores</h3>
-                        <p className="text-sm text-gray-600 mt-1">
-                          Página pública donde los inversores pueden dejar sus datos de contacto. 
-                          Al enviar, se recibe un email automático en contacto@platpal.com.
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold text-gray-900 text-sm">Formulario de Contacto</h3>
+                        <p className="text-xs text-gray-600 mt-1">
+                          Inversores dejan sus datos. Email automático a contacto@platpal.com.
                         </p>
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">Email automático</Badge>
-                          <Badge className="bg-gray-100 text-gray-700 border-gray-200">Página pública</Badge>
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          <Badge className="bg-emerald-100 text-emerald-700 text-xs">Email automático</Badge>
                         </div>
                       </div>
                     </div>
                     <Link to="/InvestorForm">
-                      <Button variant="outline" className="border-emerald-300 text-emerald-700 hover:bg-emerald-50 flex-shrink-0 gap-2">
+                      <Button variant="outline" className="w-full border-emerald-300 text-emerald-700 hover:bg-emerald-50 gap-2">
                         <ExternalLink className="w-4 h-4" />
                         Ver Formulario
                       </Button>
                     </Link>
                   </div>
 
-                  {/* Info acceso */}
-                  <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-sm text-amber-800">
-                    <strong>URLs directas:</strong>
-                    <ul className="mt-1 space-y-1 font-mono text-xs">
-                      <li>• Demo IA: <span className="text-purple-700">/SurplusAI</span></li>
-                      <li>• Formulario inversor: <span className="text-emerald-700">/InvestorForm</span></li>
-                    </ul>
+                  <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3 text-xs text-amber-800">
+                    <strong>URLs:</strong> <span className="font-mono">/SurplusAI</span> · <span className="font-mono">/InvestorForm</span>
                   </div>
 
                 </CardContent>
