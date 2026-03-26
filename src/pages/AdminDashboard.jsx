@@ -276,73 +276,66 @@ function AdminDashboard() {
 
           <TabsContent value="inversor" className="mt-4">
             <div className="space-y-4">
-              <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50">
-                <CardHeader className="pb-2">
-                  <CardTitle className="flex items-center gap-3 text-base md:text-xl">
-                    <div className="w-9 h-9 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center shadow flex-shrink-0">
-                      <Rocket className="w-4 h-4 text-white" />
+
+              {/* Surplus AI */}
+              <Card className="border border-gray-200 overflow-hidden">
+                <div className="bg-slate-900 px-5 py-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Brain className="w-5 h-5 text-purple-400" />
+                    <div>
+                      <p className="text-white font-semibold text-sm">Surplus AI</p>
+                      <p className="text-slate-400 text-xs">Motor de predicción de excedentes</p>
                     </div>
-                    Demo para Inversores
-                  </CardTitle>
-                  <p className="text-gray-600 text-xs">Accesos directos a las demos técnicas.</p>
-                </CardHeader>
-                <CardContent className="space-y-3">
-
-                  {/* Demo Surplus AI */}
-                  <div className="bg-white rounded-2xl border border-purple-100 p-4">
-                    <div className="flex items-start gap-3 mb-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow flex-shrink-0">
-                        <Brain className="w-5 h-5 text-white" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-gray-900 text-sm">Surplus AI — Motor Predictivo</h3>
-                        <p className="text-xs text-gray-600 mt-1">
-                          Algoritmo de 4 factores que predice excedentes y activa el menú sorpresa automáticamente.
-                        </p>
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          <Badge className="bg-purple-100 text-purple-700 text-xs">IA Predictiva</Badge>
-                          <Badge className="bg-pink-100 text-pink-700 text-xs">Automatización</Badge>
-                        </div>
-                      </div>
-                    </div>
-                    <Link to="/SurplusAI">
-                      <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white gap-2">
-                        <ExternalLink className="w-4 h-4" />
-                        Abrir Demo
-                      </Button>
-                    </Link>
                   </div>
-
-                  {/* Formulario Inversor */}
-                  <div className="bg-white rounded-2xl border border-emerald-100 p-4">
-                    <div className="flex items-start gap-3 mb-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-500 rounded-xl flex items-center justify-center shadow flex-shrink-0">
-                        <FileText className="w-5 h-5 text-white" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-gray-900 text-sm">Formulario de Contacto</h3>
-                        <p className="text-xs text-gray-600 mt-1">
-                          Inversores dejan sus datos. Email automático a contacto@platpal.com.
-                        </p>
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          <Badge className="bg-emerald-100 text-emerald-700 text-xs">Email automático</Badge>
-                        </div>
-                      </div>
-                    </div>
-                    <Link to="/InvestorForm">
-                      <Button variant="outline" className="w-full border-emerald-300 text-emerald-700 hover:bg-emerald-50 gap-2">
-                        <ExternalLink className="w-4 h-4" />
-                        Ver Formulario
-                      </Button>
-                    </Link>
+                  <span className="text-xs bg-purple-900 text-purple-300 border border-purple-700 px-2 py-0.5 rounded-full">En producción</span>
+                </div>
+                <CardContent className="p-4">
+                  <p className="text-sm text-gray-700 leading-relaxed mb-3">
+                    Cuando una cafetería acaba el servicio con comida sobrante, normalmente la tira. 
+                    Este algoritmo detecta esa situación antes de que pase — cruza el ritmo de ventas del día 
+                    con el historial de los últimos 90 días y activa automáticamente el "menú sorpresa" 
+                    rebajado sin que el cocinero tenga que hacer nada.
+                  </p>
+                  <div className="flex flex-wrap gap-2 text-xs text-gray-500 mb-4">
+                    <span>· 4 señales ponderadas</span>
+                    <span>· Sin intervención manual</span>
+                    <span>· Se ejecuta cada hora</span>
                   </div>
-
-                  <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3 text-xs text-amber-800">
-                    <strong>URLs:</strong> <span className="font-mono">/SurplusAI</span> · <span className="font-mono">/InvestorForm</span>
-                  </div>
-
+                  <Link to="/SurplusAI">
+                    <Button className="w-full bg-slate-900 hover:bg-slate-800 text-white gap-2">
+                      <ExternalLink className="w-4 h-4" />
+                      Ver demo en vivo
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
+
+              {/* Investor Form */}
+              <Card className="border border-gray-200">
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3 mb-3">
+                    <FileText className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-semibold text-gray-900 text-sm">Formulario para inversores</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Página pública donde inversores pueden dejar su contacto. 
+                        Llega directo a contacto@platpal.com con todos sus datos.
+                      </p>
+                    </div>
+                  </div>
+                  <Link to="/InvestorForm">
+                    <Button variant="outline" className="w-full gap-2 text-sm">
+                      <ExternalLink className="w-4 h-4" />
+                      Abrir formulario
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+
+              <p className="text-xs text-gray-400 px-1">
+                URLs directas: <span className="font-mono">/SurplusAI</span> · <span className="font-mono">/InvestorForm</span>
+              </p>
+
             </div>
           </TabsContent>
         </Tabs>
