@@ -15,6 +15,26 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     checkAppState();
+
+    // Re-check auth when user returns to the PWA (e.g. after OAuth in external tab)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        checkAppState();
+      }
+    };
+
+    // Also handle focus event for PWA standalone mode
+    const handleFocus = () => {
+      checkAppState();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
   const checkAppState = async () => {
@@ -124,8 +144,16 @@ export const AuthProvider = ({ children }) => {
   };
 
   const navigateToLogin = () => {
-    // Use the SDK's redirectToLogin method
-    base44.auth.redirectToLogin(window.location.href);
+    // In PWA standalone mode, we must redirect within the same window
+    // so the auth token is returned to the PWA context, not a browser tab
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches ||
+                  window.navigator.standalone === true;
+
+    const returnUrl = isPWA
+      ? window.location.origin + window.location.pathname
+      : window.location.href;
+
+    base44.auth.redirectToLogin(returnUrl);
   };
 
   return (

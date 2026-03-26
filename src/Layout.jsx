@@ -141,7 +141,13 @@ export default function Layout({ children, currentPageName }) {
 
   const handleLogin = async () => {
     try {
-      await base44.auth.redirectToLogin();
+      // In PWA standalone mode, redirect within same window so token returns to PWA context
+      const isPWA = window.matchMedia('(display-mode: standalone)').matches ||
+                    window.navigator.standalone === true;
+      const returnUrl = isPWA
+        ? window.location.origin + window.location.pathname
+        : window.location.href;
+      await base44.auth.redirectToLogin(returnUrl);
     } catch (error) {
       console.error('Login error:', error);
     }
