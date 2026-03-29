@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { 
   User as UserIcon, MapPin, Pencil, Save, UtensilsCrossed,
-  Mail, Phone, TrendingUp, Calendar, Flame, X, Gift, Loader2
+  Mail, Phone, TrendingUp, Calendar, Flame, X, Gift, Loader2, MessageCircle
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -114,6 +114,24 @@ export default function StudentProfile({ user }) {
             )}
           </div>
 
+          {/* WhatsApp status (siempre visible) */}
+          {!isEditing && (
+            <div className="mt-4 pt-4 border-t flex items-center gap-3">
+              {user?.telefono ? (
+                <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
+                  <MessageCircle className="w-4 h-4 flex-shrink-0" />
+                  <span>WhatsApp activo · <strong>{user.telefono}</strong></span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 text-sm text-gray-500 bg-gray-50 border border-dashed border-gray-200 rounded-lg px-3 py-2">
+                  <MessageCircle className="w-4 h-4 flex-shrink-0" />
+                  <span>Añade tu teléfono para recibir confirmaciones por WhatsApp</span>
+                  <button onClick={() => setIsEditing(true)} className="text-emerald-600 font-semibold hover:underline ml-1">Añadir</button>
+                </div>
+              )}
+            </div>
+          )}
+
           {isEditing && (
             <div className="grid md:grid-cols-2 gap-4 mt-6 pt-6 border-t">
               <div>
@@ -125,13 +143,17 @@ export default function StudentProfile({ user }) {
                 />
               </div>
               <div>
-                <label className="text-sm font-medium">Teléfono</label>
+                <label className="text-sm font-medium flex items-center gap-1.5">
+                  <MessageCircle className="w-4 h-4 text-emerald-600" />
+                  Teléfono WhatsApp
+                </label>
                 <Input
                   value={editData.telefono}
                   onChange={(e) => setEditData({...editData, telefono: e.target.value})}
-                  placeholder="+34 123 456 789"
+                  placeholder="+34 612 345 678"
                   className="mt-1"
                 />
+                <p className="text-xs text-gray-400 mt-1">Recibirás el código de recogida por WhatsApp al reservar.</p>
               </div>
             </div>
           )}
