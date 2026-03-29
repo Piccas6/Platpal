@@ -153,7 +153,29 @@ export default function StudentProfile({ user }) {
                   placeholder="+34 612 345 678"
                   className="mt-1"
                 />
-                <p className="text-xs text-gray-400 mt-1">Recibirás el código de recogida por WhatsApp al reservar.</p>
+                <p className="text-xs text-gray-400 mt-1 mb-3">Recibirás el código de recogida por WhatsApp al reservar.</p>
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mt-2">
+                  <p className="text-xs font-semibold text-amber-800 mb-3 flex items-center gap-1.5">
+                    <MessageCircle className="w-3.5 h-3.5" />
+                    Activa el servicio en 3 pasos (solo la primera vez)
+                  </p>
+                  <ol className="space-y-2.5">
+                    {[
+                      { n: "1", text: "Abre WhatsApp y busca el contacto ", link: "https://wa.me/34613142125", linkText: "+34 613 142 125" },
+                      { n: "2", text: 'Envíale exactamente este mensaje: ', code: "I allow callmebot to send me messages" },
+                      { n: "3", text: "Espera la respuesta con tu API key (llega en segundos). ¡Ya está activo!" },
+                    ].map(step => (
+                      <li key={step.n} className="flex items-start gap-2 text-xs text-amber-700">
+                        <span className="w-5 h-5 rounded-full bg-amber-200 text-amber-900 font-bold flex items-center justify-center flex-shrink-0 mt-0.5 text-[10px]">{step.n}</span>
+                        <span>
+                          {step.text}
+                          {step.link && <a href={step.link} target="_blank" rel="noopener noreferrer" className="font-semibold underline">{step.linkText}</a>}
+                          {step.code && <code className="bg-white border border-amber-200 px-1.5 py-0.5 rounded font-mono text-[11px] text-gray-800 block mt-1 select-all">{step.code}</code>}
+                        </span>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
               </div>
             </div>
           )}
