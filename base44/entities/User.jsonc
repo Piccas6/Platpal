@@ -1,0 +1,205 @@
+{
+  "name": "User",
+  "type": "object",
+  "required": [],
+  "properties": {
+    "app_role": {
+      "type": "string",
+      "enum": [
+        "user",
+        "office_user",
+        "cafeteria",
+        "manager",
+        "admin"
+      ],
+      "default": "user"
+    },
+    "is_student": {
+      "type": "boolean",
+      "default": true
+    },
+    "company_name": {
+      "type": "string"
+    },
+    "company_role": {
+      "type": "string",
+      "enum": [
+        "employee",
+        "office_manager",
+        "hr",
+        "admin"
+      ]
+    },
+    "campus": {
+      "type": "string",
+      "enum": [
+        "jerez",
+        "puerto_real",
+        "cadiz",
+        "algeciras"
+      ]
+    },
+    "onboarding_completado": {
+      "type": "boolean",
+      "default": false
+    },
+    "telefono": {
+      "type": "string",
+      "description": "N\u00famero de tel\u00e9fono del usuario"
+    },
+    "whatsapp_api_key": {
+      "type": "string",
+      "description": "API key personal de CallMeBot para recibir mensajes de WhatsApp"
+    },
+    "bio": {
+      "type": "string"
+    },
+    "avatar_url": {
+      "type": "string"
+    },
+    "stripe_account_id": {
+      "type": "string"
+    },
+    "stripe_onboarding_completed": {
+      "type": "boolean",
+      "default": false
+    },
+    "iban": {
+      "type": "string"
+    },
+    "titular_cuenta": {
+      "type": "string"
+    },
+    "saldo_disponible": {
+      "type": "number",
+      "default": 0
+    },
+    "creditos_menu_bono": {
+      "type": "number",
+      "default": 0
+    },
+    "tiene_subscripcion_activa": {
+      "type": "boolean",
+      "default": false
+    },
+    "subscripcion_id": {
+      "type": "string"
+    },
+    "cafeterias_asignadas": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "cafeterias_gestionadas": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "saved_menus_count": {
+      "type": "number",
+      "default": 0
+    },
+    "weekly_saved_menus": {
+      "type": "number",
+      "default": 0
+    },
+    "achievements": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "cafeterias_favoritas": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "menus_favoritos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "preferencias_dieta": {
+      "type": "object",
+      "properties": {
+        "es_vegetariano": {
+          "type": "boolean",
+          "default": false
+        },
+        "es_vegano": {
+          "type": "boolean",
+          "default": false
+        },
+        "sin_gluten": {
+          "type": "boolean",
+          "default": false
+        },
+        "alergenos_evitar": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        }
+      },
+      "default": {}
+    },
+    "notifications_enabled": {
+      "type": "boolean",
+      "default": false
+    },
+    "notification_preferences": {
+      "type": "object",
+      "properties": {
+        "nuevos_menus": {
+          "type": "boolean",
+          "default": true
+        },
+        "ofertas_especiales": {
+          "type": "boolean",
+          "default": true
+        },
+        "recordatorios_recogida": {
+          "type": "boolean",
+          "default": true
+        },
+        "comunidad": {
+          "type": "boolean",
+          "default": false
+        },
+        "ultimas_unidades": {
+          "type": "boolean",
+          "default": true
+        },
+        "cafeterias_favoritas_nuevos_menus": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "default": {}
+    },
+    "notification_token": {
+      "type": "string"
+    },
+    "racha_actual": {
+      "type": "number",
+      "default": 0
+    },
+    "racha_maxima": {
+      "type": "number",
+      "default": 0
+    },
+    "ultima_compra_fecha": {
+      "type": "string",
+      "format": "date"
+    }
+  }
+}

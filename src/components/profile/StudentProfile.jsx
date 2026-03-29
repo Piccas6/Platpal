@@ -22,7 +22,8 @@ export default function StudentProfile({ user }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
     full_name: user?.full_name || '',
-    telefono: user?.telefono || ''
+    telefono: user?.telefono || '',
+    whatsapp_api_key: user?.whatsapp_api_key || ''
   });
   const [isLoading, setIsLoading] = useState(false);
   const [reservations, setReservations] = useState([]);
@@ -117,16 +118,22 @@ export default function StudentProfile({ user }) {
           {/* WhatsApp status (siempre visible) */}
           {!isEditing && (
             <div className="mt-4 pt-4 border-t flex items-center gap-3">
-              {user?.telefono ? (
+              {user?.telefono && user?.whatsapp_api_key ? (
                 <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
                   <MessageCircle className="w-4 h-4 flex-shrink-0" />
                   <span>WhatsApp activo · <strong>{user.telefono}</strong></span>
                 </div>
+              ) : user?.telefono && !user?.whatsapp_api_key ? (
+                <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                  <MessageCircle className="w-4 h-4 flex-shrink-0" />
+                  <span>Teléfono guardado. Falta activar WhatsApp (API key)</span>
+                  <button onClick={() => setIsEditing(true)} className="text-emerald-600 font-semibold hover:underline ml-1">Activar</button>
+                </div>
               ) : (
                 <div className="flex items-center gap-2 text-sm text-gray-500 bg-gray-50 border border-dashed border-gray-200 rounded-lg px-3 py-2">
                   <MessageCircle className="w-4 h-4 flex-shrink-0" />
-                  <span>Añade tu teléfono para recibir confirmaciones por WhatsApp</span>
-                  <button onClick={() => setIsEditing(true)} className="text-emerald-600 font-semibold hover:underline ml-1">Añadir</button>
+                  <span>Recibe confirmaciones por WhatsApp</span>
+                  <button onClick={() => setIsEditing(true)} className="text-emerald-600 font-semibold hover:underline ml-1">Configurar</button>
                 </div>
               )}
             </div>
@@ -154,16 +161,17 @@ export default function StudentProfile({ user }) {
                   className="mt-1"
                 />
                 <p className="text-xs text-gray-400 mt-1 mb-3">Recibirás el código de recogida por WhatsApp al reservar.</p>
-                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mt-2">
+
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mt-2 mb-3">
                   <p className="text-xs font-semibold text-amber-800 mb-3 flex items-center gap-1.5">
                     <MessageCircle className="w-3.5 h-3.5" />
                     Activa el servicio en 3 pasos (solo la primera vez)
                   </p>
                   <ol className="space-y-2.5">
                     {[
-                      { n: "1", text: "Abre WhatsApp y busca el contacto ", link: "https://wa.me/34613142125", linkText: "+34 613 142 125" },
+                      { n: "1", text: "Abre WhatsApp y escribe al contacto ", link: "https://wa.me/34613142125", linkText: "+34 613 142 125" },
                       { n: "2", text: 'Envíale exactamente este mensaje: ', code: "I allow callmebot to send me messages" },
-                      { n: "3", text: "Espera la respuesta con tu API key (llega en segundos). ¡Ya está activo!" },
+                      { n: "3", text: "Recibirás tu API key por WhatsApp. Pégala abajo y guarda." },
                     ].map(step => (
                       <li key={step.n} className="flex items-start gap-2 text-xs text-amber-700">
                         <span className="w-5 h-5 rounded-full bg-amber-200 text-amber-900 font-bold flex items-center justify-center flex-shrink-0 mt-0.5 text-[10px]">{step.n}</span>
@@ -175,6 +183,22 @@ export default function StudentProfile({ user }) {
                       </li>
                     ))}
                   </ol>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium flex items-center gap-1.5">
+                    <MessageCircle className="w-4 h-4 text-emerald-600" />
+                    API Key de WhatsApp (CallMeBot)
+                  </label>
+                  <Input
+                    value={editData.whatsapp_api_key}
+                    onChange={(e) => setEditData({...editData, whatsapp_api_key: e.target.value})}
+                    placeholder="Ej: 1234567"
+                    className="mt-1"
+                  />
+                  {user?.whatsapp_api_key && (
+                    <p className="text-xs text-emerald-600 mt-1">✅ API key guardada — WhatsApp activo</p>
+                  )}
                 </div>
               </div>
             </div>
