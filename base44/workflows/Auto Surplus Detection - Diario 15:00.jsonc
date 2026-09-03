@@ -1,0 +1,46 @@
+{
+  "name": "Auto Surplus Detection - Diario 15:00",
+  "description": "Ejecuta el algoritmo de predicci\u00f3n de excedentes 30 minutos antes del cierre de reservas. Detecta autom\u00e1ticamente qu\u00e9 men\u00fas van a sobrar y los marca como Men\u00fa Sorpresa sin intervenci\u00f3n humana.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 14 * * *",
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "auto_surplus_detection_diario_15_00",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "autoSurplusDetection",
+            "args": {
+              "dry_run": false
+            }
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "autoSurplusDetection"
+  }
+}
